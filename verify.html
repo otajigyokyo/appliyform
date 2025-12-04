@@ -252,17 +252,17 @@
             
             if (data.status === 'ACTIVE') {
                 statusClass = 'status-active';
-                statusIcon = '?';
+                statusIcon = '○'; // 日本語の丸
                 statusText = '有効';
                 document.body.style.background = 'linear-gradient(135deg, #56ab2f 0%, #a8e063 100%)';
             } else if (data.status === 'INACTIVE') {
                 statusClass = 'status-inactive';
-                statusIcon = '?';
+                statusIcon = '×'; // 日本語のバツ
                 statusText = '無効';
                 document.body.style.background = 'linear-gradient(135deg, #eb3349 0%, #f45c43 100%)';
             } else {
                 statusClass = 'status-unknown';
-                statusIcon = '?';
+                statusIcon = '？'; // 全角クエスチョン
                 statusText = '不明';
                 document.body.style.background = 'linear-gradient(135deg, #ffc107 0%, #ff9800 100%)';
             }
