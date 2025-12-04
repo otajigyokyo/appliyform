@@ -1,0 +1,1925 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>買出人章交付申請フォーム</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+    <!-- PDF.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 3px solid #4285f4;
+            padding-bottom: 20px;
+        }
+
+        .header h1 {
+            color: #4285f4;
+            font-size: 2.2em;
+            margin-bottom: 10px;
+        }
+
+        .header .subtitle {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .required {
+            color: #e74c3c;
+            font-size: 0.9em;
+            margin-left: 5px;
+        }
+
+      /* 日付入力フィールドの調整 */
+        input[type="date"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 20px;
+            font-weight: 900;
+            color: #000;
+            letter-spacing: 0.5px;
+            /* ? 以下を追加 */
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-color: white;
+            font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 20px;
+            transition: border-color 0.3s ease;
+            font-weight: 900;  /* Extra Bold */
+            color: #000;  /* 真っ黒 */
+            letter-spacing: 0.5px;  /* 文字間隔を広げる */
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #4285f4;
+            box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+
+/* 日付フィールド(readonly)のスタイル */
+input[type="date"][readonly] {
+    background-color: #f8f9fa;
+    cursor: not-allowed;
+    color: #495057;
+}
+
+/* スマホ対応 */
+@media (max-width: 1200px) {
+    input[type="date"][readonly] {
+        background-color: #f8f9fa;
+        cursor: not-allowed;
+    }
+}
+
+
+        .btn-container {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid #eee;
+        }
+
+        .btn {
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0 10px;
+        }
+
+        .btn-primary {
+            background-color: #4285f4;
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: #3367d6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3);
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #545b62;
+        }
+
+        .btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+            opacity: 0.6;
+        }
+
+        /* ========== ローディング表示（目立つ版） ========== */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .loading-overlay.show {
+            display: flex;
+        }
+
+        .loading-content {
+            background: white;
+            padding: 40px 60px;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .spinner-large {
+            display: inline-block;
+            width: 60px;
+            height: 60px;
+            border: 5px solid #e0e0e0;
+            border-top: 5px solid #4285f4;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        .loading-text {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .loading-subtext {
+            font-size: 14px;
+            color: #666;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 旧ローディング（フォールバック用） */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4285f4;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .message {
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 6px;
+            display: none;
+        }
+
+        .message.success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .message.error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        /* ========== 成功メッセージ（大きく目立つ版） ========== */
+        .success-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .success-overlay.show {
+            display: flex;
+        }
+
+        .success-content {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .success-icon {
+            font-size: 60px;
+            margin-bottom: 15px;
+        }
+
+        .success-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #28a745;
+            margin-bottom: 15px;
+        }
+
+        .success-member-id {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+
+        .success-payment-notice {
+            background: #e8f5e9;
+            border: 2px solid #28a745;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .success-payment-notice h4 {
+            color: #155724;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .success-payment-notice p {
+            color: #155724;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .success-payment-notice .email-subject {
+            background: #fff;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            display: inline-block;
+            margin: 5px 0;
+        }
+
+        .success-close-btn {
+            background: #4285f4;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        .success-close-btn:hover {
+            background: #3367d6;
+        }
+
+        .note {
+            background-color: #e7f3ff;
+            border: 1px solid #bee5eb;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 20px 0;
+            font-size: 0.95em;
+            color: #0c5460;
+        }
+
+        .warning-note {
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+            font-size: 0.9em;
+            color: #856404;
+        }
+
+        .warning-note ul {
+            margin: 10px 0 0 20px;
+        }
+
+        .warning-note li {
+            margin: 5px 0;
+        }
+
+        /* 規約セクション */
+        .terms-section {
+            background-color: #fff9e6;
+            border: 2px solid #ffc107;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 30px 0;
+        }
+
+        .terms-section h2 {
+            color: #856404;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .terms-content {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            font-size: 0.95em;
+            line-height: 1.8;
+        }
+
+        .terms-content h3 {
+            color: #4285f4;
+            font-size: 1.2em;
+            margin: 20px 0 10px 0;
+            border-bottom: 2px solid #4285f4;
+            padding-bottom: 5px;
+        }
+
+        .terms-content h3:first-child {
+            margin-top: 0;
+        }
+
+        .terms-content section {
+            margin-bottom: 25px;
+        }
+
+        .terms-content section h4 {
+            color: #333;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .terms-content p {
+            margin-bottom: 10px;
+            text-align: justify;
+        }
+
+        .terms-content ul {
+            margin: 10px 0 10px 25px;
+        }
+
+        .terms-content li {
+            margin: 8px 0;
+        }
+
+        .terms-agreement {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            border: 2px solid #dee2e6;
+        }
+
+        .terms-agreement input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        .terms-agreement label {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #333;
+            cursor: pointer;
+            margin: 0;
+        }
+
+        .terms-agreement.checked {
+            background-color: #d4edda;
+            border-color: #28a745;
+        }
+
+        .terms-agreement.checked label {
+            color: #155724;
+        }
+
+        /* ファイルアップロード */
+        .file-upload-section {
+            background-color: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+            text-align: center;
+        }
+
+        .file-upload-section h3 {
+            color: #495057;
+            margin-bottom: 10px;
+        }
+
+        .file-upload-section p {
+            color: #6c757d;
+            margin-bottom: 15px;
+        }
+
+        .file-upload-input {
+            display: none;
+        }
+
+        .file-upload-button {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+            transition: background-color 0.3s ease;
+        }
+
+        .file-upload-button:hover {
+            background-color: #218838;
+        }
+
+        .file-preview {
+            margin-top: 15px;
+            display: none;
+        }
+
+        .file-preview img {
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .file-info {
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        /* トリミングモーダル */
+        .crop-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+        }
+
+        .crop-modal-content {
+            background-color: white;
+            margin: 2% auto;
+            padding: 20px;
+            width: 90%;
+            max-width: 800px;
+            border-radius: 8px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .crop-container {
+            max-height: 500px;
+            margin: 20px 0;
+        }
+
+        .crop-container img {
+            max-width: 100%;
+        }
+
+        .crop-buttons {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .crop-info {
+            text-align: center;
+            margin: 15px 0;
+            padding: 10px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #1976d2;
+        }
+
+        /* ========== スマホ対応（1200pxまで） ========== */
+        @media (max-width: 1200px) {
+            body {
+                padding: 10px;
+                font-size: 32px; /* 4倍 */
+            }
+            
+            .container {
+                padding: 30px 20px;
+            }
+
+            .header h1 {
+                font-size: 48px; /* 約4倍 */
+            }
+
+            .header .subtitle {
+                font-size: 28px; /* 約4倍 */
+            }
+
+            .form-group label {
+                font-size: 32px; /* 約4倍 */
+                margin-bottom: 12px;
+            }
+
+            .required {
+                font-size: 28px; /* 約4倍 */
+            }
+
+            .form-control {
+                font-size: 36px; /* 約4倍 */
+                padding: 20px 25px;
+                font-weight: 900;  /* ← 追加 */
+                color: #000;  /* ← 追加 */
+                letter-spacing: 1px;  /* ← スマホは少し広めに */
+            }
+
+            textarea.form-control {
+                min-height: 200px;
+            }
+            
+            /* 縦並びに変更 */
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+
+            .form-row .form-group {
+                width: 100%;
+            }
+            
+            .btn {
+                width: 100%;
+                margin: 10px 0;
+                padding: 25px 40px;
+                font-size: 36px; /* 約4倍 */
+            }
+
+    input[type="date"] {
+        font-size: 32px; /* 他のフィールドと統一 */
+        padding: 20px 25px;
+        font-weight: 900;
+        color: #000;
+        letter-spacing: 1px;
+        /* ? 以下を追加 */
+        line-height: 1.2;
+        min-height: 80px; /* 十分な高さを確保 */
+    }
+
+            .note {
+                font-size: 28px; /* 約4倍 */
+                padding: 25px;
+            }
+
+            .warning-note {
+                font-size: 28px; /* 約4倍 */
+                padding: 25px;
+            }
+
+            .terms-section h2 {
+                font-size: 40px; /* 約4倍 */
+            }
+
+            .terms-content {
+                font-size: 28px; /* 約4倍 */
+                padding: 25px;
+                max-height: 600px;
+            }
+
+            .terms-content h3 {
+                font-size: 36px; /* 約4倍 */
+            }
+
+            .terms-content section h4 {
+                font-size: 32px; /* 約4倍 */
+            }
+
+            .terms-agreement {
+                padding: 25px;
+            }
+
+            .terms-agreement input[type="checkbox"] {
+                width: 40px;
+                height: 40px;
+                margin-right: 20px;
+            }
+
+            .terms-agreement label {
+                font-size: 32px; /* 約4倍 */
+            }
+
+            .file-upload-section h3 {
+                font-size: 36px; /* 約4倍 */
+            }
+
+            .file-upload-section p {
+                font-size: 28px; /* 約4倍 */
+            }
+
+            .file-upload-button {
+                font-size: 36px; /* 約4倍 */
+                padding: 20px 40px;
+            }
+
+            .file-info {
+                font-size: 28px; /* 約4倍 */
+            }
+
+            .crop-modal-content {
+                width: 95%;
+                margin: 5% auto;
+                padding: 30px;
+            }
+
+            .crop-modal-content h2 {
+                font-size: 40px;
+            }
+
+            .crop-info {
+                font-size: 28px;
+                padding: 20px;
+            }
+
+            .message {
+                font-size: 32px;
+                padding: 25px;
+            }
+
+            .loading {
+                font-size: 32px;
+            }
+
+            .spinner {
+                width: 60px;
+                height: 60px;
+                border-width: 6px;
+            }
+
+            /* スマホ用ローディング調整 */
+            .loading-content {
+                padding: 30px 40px;
+            }
+
+            .spinner-large {
+                width: 80px;
+                height: 80px;
+                border-width: 6px;
+            }
+
+            .loading-text {
+                font-size: 28px;
+            }
+
+            .loading-subtext {
+                font-size: 20px;
+            }
+
+            /* スマホ用成功メッセージ調整 */
+            .success-content {
+                padding: 25px;
+            }
+
+            .success-icon {
+                font-size: 80px;
+            }
+
+            .success-title {
+                font-size: 32px;
+            }
+
+            .success-member-id {
+                font-size: 24px;
+            }
+
+            .success-payment-notice h4 {
+                font-size: 22px;
+            }
+
+            .success-payment-notice p {
+                font-size: 20px;
+            }
+
+            .success-close-btn {
+                font-size: 24px;
+                padding: 20px 50px;
+            }
+        }
+
+        /* PC表示（1201px以上）はそのまま */
+        @media (min-width: 1201px) {
+            /* 既存のスタイルを維持 */
+        }
+    </style>
+</head>
+<body>
+    <!-- ローディングオーバーレイ -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner-large"></div>
+            <div class="loading-text">送信中...</div>
+            <div class="loading-subtext">しばらくお待ちください</div>
+        </div>
+    </div>
+
+    <!-- 成功メッセージオーバーレイ -->
+    <div class="success-overlay" id="successOverlay">
+        <div class="success-content">
+            <div class="success-icon">?</div>
+            <div class="success-title">登録が完了しました</div>
+            <div class="success-member-id" id="successMemberId"></div>
+            
+            <div class="success-payment-notice">
+                <h4>?? お支払いの登録について</h4>
+                <p>別途、支払い管理システムより以下の件名でメールが送信されます。</p>
+                <div class="email-subject">【大田市場花き事業協同組合】決済方法登録URLのご案内</div>
+                <p>そのメールに記載のURLから、お支払い方法の登録をお願いいたします。</p>
+                <p style="color: #856404; background: #fff3cd; padding: 8px; border-radius: 4px; margin-top: 10px;">
+                    ※お支払い登録が完了するまで、買出人章の発行ができません
+                </p>
+            </div>
+            
+            <button class="success-close-btn" onclick="closeSuccessOverlay()">閉じる</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>買出人章交付申請フォーム</h1>
+            <div class="subtitle">必要事項をご入力の上、送信ボタンを押してください</div>
+        </div>
+
+        <div class="note">
+            <strong>注意事項：</strong>
+            必須項目は必ずご入力ください。ふりがなは手動で入力してください。
+        </div>
+
+        <form id="applicationForm">
+            <!-- 日付 -->
+            <div class="form-group">
+              <label for="date">日付 <span class="required">*必須</span></label>
+              <input type="date" id="date" name="date" class="form-control" required readonly>
+            </div>
+
+            <!-- 店名 -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="shopName">店名 <span class="required">*必須</span></label>
+                    <input type="text" id="shopName" name="shopName" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="shopNameFurigana">店名（ふりがな） <span class="required">*必須</span></label>
+                    <input type="text" id="shopNameFurigana" name="shopNameFurigana" class="form-control" required placeholder="ふりがなを入力してください">
+                </div>
+            </div>
+
+            <!-- 代表者名 -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="representativeName">代表者名 <span class="required">*必須</span></label>
+                    <input type="text" id="representativeName" name="representativeName" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="representativeNameFurigana">代表者名（ふりがな） <span class="required">*必須</span></label>
+                    <input type="text" id="representativeNameFurigana" name="representativeNameFurigana" class="form-control" required placeholder="ふりがなを入力してください">
+                </div>
+            </div>
+
+            <!-- 買出人章着用者氏名 -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="wearerName">買出人章着用者氏名 <span class="required">*必須</span></label>
+                    <input type="text" id="wearerName" name="wearerName" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="wearerNameFurigana">買出人章着用者氏名（ふりがな） <span class="required">*必須</span></label>
+                    <input type="text" id="wearerNameFurigana" name="wearerNameFurigana" class="form-control" required placeholder="ふりがなを入力してください">
+                </div>
+            </div>
+
+            <!-- 郵便番号・住所 -->
+            <div class="form-row">
+                <div class="form-group" style="flex: 0 0 200px;">
+                    <label for="postalCode">郵便番号 <span class="required">*必須</span></label>
+                    <input type="text" id="postalCode" name="postalCode" class="form-control" placeholder="000-0000" required>
+                </div>
+                <div class="form-group">
+                    <label for="address">住所 <span class="required">*必須</span></label>
+                    <input type="text" id="address" name="address" class="form-control" placeholder="郵便番号から住所が入力されます" required>
+                </div>
+            </div>
+
+            <!-- 電話・FAX -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="phone">電話 <span class="required">*必須</span></label>
+                    <input type="tel" id="phone" name="phone" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="fax">FAX</label>
+                    <input type="tel" id="fax" name="fax" class="form-control">
+                </div>
+            </div>
+
+            <!-- 連絡先電話 -->
+            <div class="form-group">
+                <label for="contactPhone">連絡先電話</label>
+                <input type="tel" id="contactPhone" name="contactPhone" class="form-control">
+            </div>
+
+            <!-- ? メールアドレス追加 -->
+            <div class="form-group">
+              <label for="email">メールアドレス <span class="required">*必須</span></label>
+              <input type="email" id="email" name="email" class="form-control" required placeholder="example@example.com">
+            </div>
+
+            <!-- 業態・主な販売先 -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="businessType">業態 <span class="required">*必須</span></label>
+                    <input type="text" id="businessType" name="businessType" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="mainCustomers">主な販売先</label>
+                    <input type="text" id="mainCustomers" name="mainCustomers" class="form-control">
+                </div>
+            </div>
+
+            <!-- 備考 -->
+            <div class="form-group">
+                <label for="remarks">備考</label>
+                <textarea id="remarks" name="remarks" class="form-control" rows="4" placeholder="その他ご連絡事項がございましたらご記入ください"></textarea>
+            </div>
+
+            <!-- ファイルアップロード1: 申請者本人の顔写真 -->
+            <div class="file-upload-section">
+                <h3>申請者本人の顔写真 <span class="required">*必須</span></h3>
+                <p>証明写真をアップロードしてください<br>
+                <small>縦35mm × 横25mmサイズにトリミングされます</small></p>
+                <input type="file" id="photoUpload" name="photoUpload" class="file-upload-input" accept="image/*" onchange="handlePhotoSelect(event)">
+                <button type="button" class="file-upload-button" onclick="document.getElementById('photoUpload').click()">
+                    顔写真を選択
+                </button>
+                <div class="file-preview" id="photoPreview"></div>
+            </div>
+
+            <!-- ファイルアップロード2: 花き業の公的書類 -->
+            <div class="file-upload-section">
+                <h3>花き業の記載のある公的書類、どれか一つ <span class="required">*必須</span></h3>
+                <p>花き業が確認できる公的書類をアップロードしてください</p>
+                <div class="warning-note">
+                    <strong>注意事項：</strong>
+                    <ul>
+                        <li>花き業の記載がある下記書類をアップロードしてください</li>
+                        <li>税務署受付済みの所得申告書、納税証明、会社謄本、店舗契約書写し、開業届出書写し等、公的に判断できるもの</li>
+                        <li><strong>不可の例：</strong>フラワーデザイン教室のチラシや店舗写真、名刺のみは不可です</li>
+                    </ul>
+                </div>
+                <input type="file" id="documentUpload" name="documentUpload" class="file-upload-input" accept="image/*,.pdf" onchange="handleDocumentSelect(event)">
+                <button type="button" class="file-upload-button" onclick="document.getElementById('documentUpload').click()">
+                    公的書類を選択
+                </button>
+                <div class="file-preview" id="documentPreview"></div>
+            </div>
+
+            <!-- 規約セクション -->
+            <div class="terms-section">
+                <h2>?? 買出人章規約</h2>
+                <div class="terms-content">
+                    <h3>大田市場花き事業協同組合（ハナメセナ）</h3>
+
+                    <section id="art1">
+                        <h4>第1条　買出人章の定義</h4>
+                        <p>「買出人章」とは、市場構内において生花・仲卸業者・関連業者から商品を購入するための証章であり、一般の市場見学者や不審入場者と区別するために作成されたものです。</p>
+                    </section>
+
+                    <section id="art2">
+                        <h4>第2条　携行義務</h4>
+                        <p>花き部内では、常時首から下げて携行しなければなりません。</p>
+                    </section>
+
+                    <section id="art3">
+                        <h4>第3条　取得資格</h4>
+                        <p>「買出人章」の取得資格は、花きおよび関連資材の取扱いに従事している方に限ります。</p>
+                    </section>
+
+                    <section id="art4">
+                        <h4>第4条　資格の個人性および譲渡禁止</h4>
+                        <p>「買出人章」は個人資格であり、第三者への貸与・譲渡・売買・質入れ、その他いかなる処分も禁止します。</p>
+                    </section>
+
+                    <section id="art5">
+                        <h4>第5条　携行しない者の制限</h4>
+                        <p>「買出人章」を携行しない者は、花き部仲卸売場および花き関連商協同組合加盟店で商品を購入することはできません。</p>
+                    </section>
+
+                    <section id="art6">
+                        <h4>第6条　資格の停止・解除</h4>
+                        <p>「買出人章」携行者が大田市場花き部の場内ルールに重大な違反をした場合は、その資格を停止または解除することがあります。場内ルールは必ず厳守してください。</p>
+                    </section>
+
+                    <section id="art7">
+                        <h4>第7条　資格維持費用および再発行・登録変更</h4>
+                        <ul>
+                            <li>「買出人章」発行時から毎月800円の資格維持手数料を徴収し、当該手数料をお支払いいただいている期間中は、更新手続きなく資格を維持できます。</li>
+                            <li>紛失時の再発行手数料は1,500円とし、ハナメセナ窓口にて現金でお支払いください。</li>
+                            <li>買出人の担当者変更、または店舗名の変更がある場合は、改めて新規登録が必要となります。</li>
+                        </ul>
+                    </section>
+
+                    <section id="art8">
+                        <h4>第8条　資格の解除</h4>
+                        <p>買出人資格を解除する場合は、大田市場花き事業協同組合（ハナメセナ）への書面による申請、または徴収代行業者（会費ペイ）での手続きをお願いいたします。解除から費用徴収停止までの期間は、会費ペイの規約に従うものとします。</p>
+                    </section>
+
+                    <section id="art9">
+                        <h4>第9条　無効買出人章使用の禁止</h4>
+                        <p>仲卸等にて買出人章の確認を行います。資格のない者による無効な買出人章の使用を禁止します。</p>
+                    </section>
+
+                    <section id="art10">
+                        <h4>第10条　個人情報の取扱い</h4>
+                        <p>登録時にいただく個人および店舗情報は、大田市場花き事業協同組合、仲卸組合、資材関連団体で共有します。これらの情報は販売促進等の正当な業務目的以外には使用いたしません。</p>
+                    </section>
+                </div>
+
+                <div class="terms-agreement" id="termsAgreementBox">
+                    <input type="checkbox" id="termsAgreement" name="termsAgreement" onchange="toggleSubmitButton()">
+                    <label for="termsAgreement">上記の買出人章規約に同意します <span class="required">*必須</span></label>
+                </div>
+            </div>
+
+            <!-- 送信ボタン -->
+            <div class="btn-container">
+                <button type="button" id="resetBtn" class="btn btn-secondary">リセット</button>
+                <button type="submit" id="submitBtn" class="btn btn-primary" disabled>申請を送信</button>
+            </div>
+        </form>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <div>処理中...</div>
+        </div>
+
+        <div class="message" id="message"></div>
+    </div>
+
+    <!-- トリミングモーダル -->
+    <div id="cropModal" class="crop-modal">
+        <div class="crop-modal-content">
+            <h2 style="text-align: center; margin-bottom: 10px;">画像をトリミング</h2>
+            <div class="crop-info">
+                縦35mm × 横25mm（縦横比 5:7）にトリミングされます<br>
+                画像をドラッグして位置を調整してください
+            </div>
+            <div class="crop-container">
+                <img id="cropImage" src="">
+            </div>
+            <div class="crop-buttons">
+                <button type="button" class="btn btn-secondary" onclick="cancelCrop()">キャンセル</button>
+                <button type="button" class="btn btn-primary" onclick="confirmCrop()">トリミング確定</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+    
+    <script>
+    // PDF.js の設定
+    if (typeof pdfjsLib !== 'undefined') {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+
+        let photoData = null;
+        let documentData = null;
+        let cropper = null;
+        let selectedPhotoFile = null;
+        let selectedDocumentFile = null;
+
+        // 今日の日付を設定
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date();
+            const dateString = today.getFullYear() + '-' + 
+                             String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+                             String(today.getDate()).padStart(2, '0');
+            document.getElementById('date').value = dateString;
+        });
+
+        // 規約同意チェックボックスの変更で送信ボタンの有効/無効を切り替え
+        function toggleSubmitButton() {
+            const checkbox = document.getElementById('termsAgreement');
+            const submitBtn = document.getElementById('submitBtn');
+            const agreementBox = document.getElementById('termsAgreementBox');
+            
+            if (checkbox.checked) {
+                submitBtn.disabled = false;
+                agreementBox.classList.add('checked');
+            } else {
+                submitBtn.disabled = true;
+                agreementBox.classList.remove('checked');
+            }
+        }
+
+        // 顔写真選択ハンドラー
+        function handlePhotoSelect(event) {
+            const file = event.target.files[0];
+            if (!file) {
+                resetPhotoPreview();
+                return;
+            }
+
+            if (!file.type.startsWith('image/')) {
+                showMessage('画像ファイルを選択してください。', 'error');
+                event.target.value = '';
+                return;
+            }
+
+            if (file.size > 50 * 1024 * 1024) {
+                showMessage('ファイルサイズが50MBを超えています。', 'error');
+                event.target.value = '';
+                return;
+            }
+
+            selectedPhotoFile = file;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('cropImage').src = e.target.result;
+                showCropModal();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // 公的書類選択ハンドラー
+        function handleDocumentSelect(event) {
+            const file = event.target.files[0];
+            if (!file) {
+                resetDocumentPreview();
+                return;
+            }
+
+            const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/bmp', 'image/webp', 'application/pdf'];
+            if (!validTypes.includes(file.type)) {
+                showMessage('画像ファイル（JPEG, PNG, GIF等）またはPDFを選択してください。', 'error');
+                event.target.value = '';
+                return;
+            }
+
+            if (file.size > 50 * 1024 * 1024) {
+                showMessage('ファイルサイズが50MBを超えています。', 'error');
+                event.target.value = '';
+                return;
+            }
+
+            selectedDocumentFile = file;
+            
+            if (file.type === 'application/pdf') {
+                convertPdfToImage(file);
+            } else {
+                compressDocument(file);
+            }
+        }
+
+        // PDFを画像に変換
+        function convertPdfToImage(file) {
+            const preview = document.getElementById('documentPreview');
+            preview.innerHTML = '<div class="file-info">PDFを画像に変換中...</div>';
+            preview.style.display = 'block';
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const typedArray = new Uint8Array(e.target.result);
+                
+                pdfjsLib.getDocument(typedArray).promise.then(function(pdf) {
+                    pdf.getPage(1).then(function(page) {
+                        const viewport = page.getViewport({ scale: 1 });
+                        const scale = 1600 / viewport.width;
+                        const scaledViewport = page.getViewport({ scale: scale });
+                        
+                        const canvas = document.createElement('canvas');
+                        const context = canvas.getContext('2d');
+                        canvas.width = scaledViewport.width;
+                        canvas.height = scaledViewport.height;
+                        
+                        const renderContext = {
+                            canvasContext: context,
+                            viewport: scaledViewport
+                        };
+                        
+                        page.render(renderContext).promise.then(function() {
+                            canvas.toBlob(function(blob) {
+                                compressDocumentFromBlob(blob, file.name);
+                            }, 'image/jpeg', 0.85);
+                        }).catch(function(error) {
+                            console.error('PDFレンダリングエラー:', error);
+                            showMessage('PDFの変換中にエラーが発生しました。', 'error');
+                            resetDocumentPreview();
+                        });
+                    });
+                }).catch(function(error) {
+                    console.error('PDF読み込みエラー:', error);
+                    showMessage('PDFファイルの読み込みに失敗しました。', 'error');
+                    resetDocumentPreview();
+                });
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function compressDocumentFromBlob(blob, originalFileName) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    compressDocumentImage(img, originalFileName);
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(blob);
+        }
+
+        function compressDocument(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    compressDocumentImage(img, file.name);
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function compressDocumentImage(img, fileName) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            let width = img.width;
+            let height = img.height;
+            const maxSize = 1600;
+            
+            if (width > maxSize || height > maxSize) {
+                if (width > height) {
+                    height = (height / width) * maxSize;
+                    width = maxSize;
+                } else {
+                    width = (width / height) * maxSize;
+                    height = maxSize;
+                }
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            let quality = 0.8;
+            let dataUrl = canvas.toDataURL('image/jpeg', quality);
+            let size = dataUrl.length * 0.75;
+            
+            const targetSize = 500 * 1024;
+            while (size > targetSize && quality > 0.5) {
+                quality -= 0.1;
+                dataUrl = canvas.toDataURL('image/jpeg', quality);
+                size = dataUrl.length * 0.75;
+            }
+            
+            documentData = dataUrl;
+            
+            const preview = document.getElementById('documentPreview');
+            const sizeKB = (size / 1024).toFixed(1);
+            const compressionInfo = quality < 0.8 ? `（品質${Math.round(quality*100)}%に圧縮）` : '';
+            const isPdf = fileName.toLowerCase().endsWith('.pdf');
+            const fileType = isPdf ? 'PDF→JPEG変換' : 'JPEG圧縮';
+            
+            preview.innerHTML = `
+                <div class="file-info">
+                    <strong>元ファイル:</strong> ${fileName}<br>
+                    <strong>処理:</strong> ${fileType}<br>
+                    <strong>サイズ:</strong> ${Math.floor(width)} × ${Math.floor(height)} px<br>
+                    <strong>容量:</strong> ${sizeKB} KB ${compressionInfo}
+                </div>
+                <img src="${dataUrl}" style="margin-top: 10px; max-width: 300px; border: 1px solid #ddd;">
+            `;
+            preview.style.display = 'block';
+        }
+
+        function showCropModal() {
+            const modal = document.getElementById('cropModal');
+            modal.style.display = 'block';
+            
+            const image = document.getElementById('cropImage');
+            
+            if (cropper) {
+                cropper.destroy();
+            }
+            
+            cropper = new Cropper(image, {
+                aspectRatio: 5 / 7,
+                viewMode: 1,
+                dragMode: 'move',
+                autoCropArea: 1,
+                restore: false,
+                guides: true,
+                center: true,
+                highlight: false,
+                cropBoxMovable: false,
+                cropBoxResizable: false,
+                toggleDragModeOnDblclick: false,
+            });
+        }
+
+        function cancelCrop() {
+            document.getElementById('cropModal').style.display = 'none';
+            document.getElementById('photoUpload').value = '';
+            if (cropper) {
+                cropper.destroy();
+                cropper = null;
+            }
+        }
+
+        function confirmCrop() {
+            if (!cropper) return;
+            
+            const canvas = cropper.getCroppedCanvas({
+                width: 250,
+                height: 350,
+                imageSmoothingQuality: 'high'
+            });
+            
+            const croppedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+            photoData = croppedDataUrl;
+            
+            const preview = document.getElementById('photoPreview');
+            preview.innerHTML = `
+                <div class="file-info">
+                    <strong>ファイル名:</strong> ${selectedPhotoFile.name}<br>
+                    <strong>トリミングサイズ:</strong> 250 × 350 px (25mm × 35mm相当)
+                </div>
+                <img src="${croppedDataUrl}" style="margin-top: 10px; max-width: 200px;">
+            `;
+            preview.style.display = 'block';
+            
+            document.getElementById('cropModal').style.display = 'none';
+            if (cropper) {
+                cropper.destroy();
+                cropper = null;
+            }
+        }
+
+        function resetPhotoPreview() {
+            document.getElementById('photoPreview').style.display = 'none';
+            document.getElementById('photoPreview').innerHTML = '';
+            photoData = null;
+            selectedPhotoFile = null;
+        }
+
+        function resetDocumentPreview() {
+            document.getElementById('documentPreview').style.display = 'none';
+            document.getElementById('documentPreview').innerHTML = '';
+            documentData = null;
+            selectedDocumentFile = null;
+        }
+
+
+
+
+/*　ふりがな入力 */
+
+// ========== ふりがな自動入力機能（改良版） ========== //
+
+/**
+ * カタカナをひらがなに変換
+ */
+function convertToHiragana(str) {
+    if (!str) return '';
+    return str.replace(/[\u30A1-\u30F6]/g, function(match) {
+        const chr = match.charCodeAt(0) - 0x60;
+        return String.fromCharCode(chr);
+    });
+}
+
+/**
+ * ひらがな・カタカナのみかチェック
+ */
+function isKana(str) {
+    return /^[\u3040-\u309F\u30A0-\u30FF\s]+$/.test(str);
+}
+
+// ========== 店名のふりがな自動入力 ========== //
+let shopNameKanaBuffer = '';
+let shopNameIsComposing = false;
+
+document.getElementById('shopName').addEventListener('compositionstart', function() {
+    shopNameIsComposing = true;
+    shopNameKanaBuffer = '';
+});
+
+document.getElementById('shopName').addEventListener('compositionupdate', function(e) {
+    if (!shopNameIsComposing) return;
+    
+    // e.dataには変換中の文字列が入る
+    const inputText = e.data || '';
+    
+    // かな文字のみの場合、バッファに保存
+    if (inputText && isKana(inputText)) {
+        shopNameKanaBuffer = inputText;
+    }
+});
+
+document.getElementById('shopName').addEventListener('compositionend', function(e) {
+    shopNameIsComposing = false;
+    
+    // バッファに保存された読み仮名をふりがなに追加
+    if (shopNameKanaBuffer) {
+        const kana = convertToHiragana(shopNameKanaBuffer);
+        const currentFurigana = document.getElementById('shopNameFurigana').value;
+        document.getElementById('shopNameFurigana').value = currentFurigana + kana;
+    }
+    
+    shopNameKanaBuffer = '';
+});
+
+// 店名が完全に削除された場合、ふりがなもクリア
+document.getElementById('shopName').addEventListener('input', function() {
+    if (!shopNameIsComposing && this.value.trim() === '') {
+        document.getElementById('shopNameFurigana').value = '';
+    }
+});
+
+// ========== 代表者名のふりがな自動入力 ========== //
+let representativeNameKanaBuffer = '';
+let representativeNameIsComposing = false;
+
+document.getElementById('representativeName').addEventListener('compositionstart', function() {
+    representativeNameIsComposing = true;
+    representativeNameKanaBuffer = '';
+});
+
+document.getElementById('representativeName').addEventListener('compositionupdate', function(e) {
+    if (!representativeNameIsComposing) return;
+    
+    const inputText = e.data || '';
+    
+    if (inputText && isKana(inputText)) {
+        representativeNameKanaBuffer = inputText;
+    }
+});
+
+document.getElementById('representativeName').addEventListener('compositionend', function(e) {
+    representativeNameIsComposing = false;
+    
+    if (representativeNameKanaBuffer) {
+        const kana = convertToHiragana(representativeNameKanaBuffer);
+        const currentFurigana = document.getElementById('representativeNameFurigana').value;
+        document.getElementById('representativeNameFurigana').value = currentFurigana + kana;
+    }
+    
+    representativeNameKanaBuffer = '';
+});
+
+document.getElementById('representativeName').addEventListener('input', function() {
+    if (!representativeNameIsComposing && this.value.trim() === '') {
+        document.getElementById('representativeNameFurigana').value = '';
+    }
+});
+
+// ========== 買出人章着用者氏名のふりがな自動入力 ========== //
+let wearerNameKanaBuffer = '';
+let wearerNameIsComposing = false;
+
+document.getElementById('wearerName').addEventListener('compositionstart', function() {
+    wearerNameIsComposing = true;
+    wearerNameKanaBuffer = '';
+});
+
+document.getElementById('wearerName').addEventListener('compositionupdate', function(e) {
+    if (!wearerNameIsComposing) return;
+    
+    const inputText = e.data || '';
+    
+    if (inputText && isKana(inputText)) {
+        wearerNameKanaBuffer = inputText;
+    }
+});
+
+document.getElementById('wearerName').addEventListener('compositionend', function(e) {
+    wearerNameIsComposing = false;
+    
+    if (wearerNameKanaBuffer) {
+        const kana = convertToHiragana(wearerNameKanaBuffer);
+        const currentFurigana = document.getElementById('wearerNameFurigana').value;
+        document.getElementById('wearerNameFurigana').value = currentFurigana + kana;
+    }
+    
+    wearerNameKanaBuffer = '';
+});
+
+document.getElementById('wearerName').addEventListener('input', function() {
+    if (!wearerNameIsComposing && this.value.trim() === '') {
+        document.getElementById('wearerNameFurigana').value = '';
+    }
+});
+
+/*　ふりがな入力 */
+
+
+
+// 郵便番号処理（改善版）
+let isComposing = false; // IME入力中フラグ
+
+document.getElementById('postalCode').addEventListener('compositionstart', function() {
+    isComposing = true;
+});
+
+document.getElementById('postalCode').addEventListener('compositionend', function() {
+    isComposing = false;
+});
+
+let addressTimeout;
+document.getElementById('postalCode').addEventListener('input', function(e) {
+    if (isComposing) return; // IME入力中は処理しない
+    
+    // 数字とハイフンのみ許可
+    let value = this.value.replace(/[^0-9-]/g, '');
+    
+    // ハイフンを全て削除して数字だけ取り出す
+    const numbersOnly = value.replace(/-/g, '');
+    
+    // 7桁を超える入力は切り詰め
+    const truncated = numbersOnly.substring(0, 7);
+    
+    // カーソル位置を保存
+    const cursorPosition = this.selectionStart;
+    const oldLength = this.value.length;
+    
+    // フォーマット: 3桁入力後は自動的にハイフン追加
+    if (truncated.length > 3) {
+        value = truncated.substring(0, 3) + '-' + truncated.substring(3);
+    } else {
+        value = truncated;
+    }
+    
+    // 値を更新
+    this.value = value;
+    
+    // カーソル位置を調整
+    const newLength = this.value.length;
+    const lengthDiff = newLength - oldLength;
+    
+    if (lengthDiff > 0 && value.includes('-') && cursorPosition === 3) {
+        // ハイフンが挿入された直後の場合、カーソルをハイフンの後ろに
+        this.setSelectionRange(cursorPosition + 1, cursorPosition + 1);
+    } else if (lengthDiff !== 0) {
+        // その他の場合、適切な位置に調整
+        const newCursorPosition = Math.min(cursorPosition + lengthDiff, value.length);
+        this.setSelectionRange(newCursorPosition, newCursorPosition);
+    }
+    
+    // 住所取得タイマーをクリア
+    if (addressTimeout) {
+        clearTimeout(addressTimeout);
+    }
+    
+    // 7桁の形式（xxx-xxxx）が完成したら住所を取得
+    if (/^\d{3}-\d{4}$/.test(this.value)) {
+        addressTimeout = setTimeout(() => {
+            getAddressFromPostalCode(this.value);
+        }, 200);  // 500ms → 200msに短縮
+    }
+});
+
+// フォーカスアウト時の処理
+document.getElementById('postalCode').addEventListener('blur', function() {
+    const numbersOnly = this.value.replace(/[^0-9]/g, '');
+    
+    if (numbersOnly.length === 7) {
+        this.value = numbersOnly.substring(0, 3) + '-' + numbersOnly.substring(3);
+        
+        // 住所取得
+        if (addressTimeout) {
+            clearTimeout(addressTimeout);
+        }
+        getAddressFromPostalCode(this.value);
+    } else if (numbersOnly.length === 0) {
+        this.value = '';
+    }
+});
+
+
+        // ========== 外部ホスティング用 API設定 ==========
+        // ★ 以下のURLを実際のGASデプロイURLに変更してください
+        const API_URL = 'https://script.google.com/macros/s/AKfycbwbbyZoRzhWu8Ft5xVvyI1LJc7_RLZaeLwVGapXnlYIIJBUSlgJXQTzofwuLl5nux43kg/exec';
+
+        // API呼び出し共通関数
+        async function callApi(action, data = {}) {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'text/plain',
+                },
+                body: JSON.stringify({ action, ...data })
+            });
+            return await response.json();
+        }
+
+        function getAddressFromPostalCode(postalCode) {
+            callApi('getAddress', { postalCode })
+                .then(address => {
+                    if (address) {
+                        document.getElementById('address').value = address;
+                        document.getElementById('address').style.backgroundColor = '#f8f9fa';
+                    }
+                })
+                .catch(error => {
+                    console.error('住所取得エラー:', error);
+                });
+        }
+
+        // ローディングオーバーレイ表示
+        function showLoadingOverlay(show) {
+            const overlay = document.getElementById('loadingOverlay');
+            if (show) {
+                overlay.classList.add('show');
+            } else {
+                overlay.classList.remove('show');
+            }
+        }
+
+        // 成功オーバーレイ表示
+        function showSuccessOverlay(memberId) {
+            const overlay = document.getElementById('successOverlay');
+            document.getElementById('successMemberId').textContent = '会員番号: ' + memberId;
+            overlay.classList.add('show');
+        }
+
+        // 成功オーバーレイを閉じる
+        function closeSuccessOverlay() {
+            const overlay = document.getElementById('successOverlay');
+            overlay.classList.remove('show');
+        }
+
+        // フォーム送信
+        document.getElementById('applicationForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (!validateForm()) {
+                return;
+            }
+
+            showLoadingOverlay(true);
+            document.getElementById('submitBtn').disabled = true;
+
+            const formData = {
+                date: document.getElementById('date').value,
+                storeName: document.getElementById('shopName').value,
+                storeNameFurigana: document.getElementById('shopNameFurigana').value,
+                representativeName: document.getElementById('representativeName').value,
+                representativeNameFurigana: document.getElementById('representativeNameFurigana').value,
+                badgeWearerName: document.getElementById('wearerName').value,
+                badgeWearerNameFurigana: document.getElementById('wearerNameFurigana').value,
+                postalCode: document.getElementById('postalCode').value,
+                address: document.getElementById('address').value,
+                phone: document.getElementById('phone').value,
+                fax: document.getElementById('fax').value,
+                email: document.getElementById('email').value,  // ← 追加
+                contactPhone: document.getElementById('contactPhone').value,
+                remarks: document.getElementById('remarks').value,
+                businessType: document.getElementById('businessType').value,
+                mainCustomers: document.getElementById('mainCustomers').value
+            };
+
+            const applicantName = formData.representativeName || formData.storeName;
+
+            // async/await版のフォーム送信処理
+            submitFormAsync(formData, applicantName);
+        });
+
+        // 非同期フォーム送信処理
+        async function submitFormAsync(formData, applicantName) {
+            try {
+                // ステップ1: フォルダ作成
+                const folderResult = await callApi('createFolder', { applicantName });
+                
+                if (!folderResult.success) {
+                    showLoadingOverlay(false);
+                    document.getElementById('submitBtn').disabled = false;
+                    showMessage('フォルダ作成エラー: ' + folderResult.error, 'error');
+                    return;
+                }
+
+                const folderId = folderResult.folderId;
+
+                // ステップ2: ファイルアップロード（並列実行）
+                const uploadPromises = [];
+
+                // 顔写真アップロード
+                if (photoData) {
+                    uploadPromises.push(
+                        callApi('uploadFile', {
+                            dataUrl: photoData,
+                            fileName: selectedPhotoFile.name,
+                            folderId: folderId,
+                            fileType: 'photo'
+                        }).then(result => {
+                            formData.photoFile = result;
+                        }).catch(error => {
+                            console.error('顔写真アップロードエラー:', error);
+                            formData.photoFile = { success: false, error: error.toString() };
+                        })
+                    );
+                }
+
+                // 公的書類アップロード
+                if (documentData) {
+                    uploadPromises.push(
+                        callApi('uploadFile', {
+                            dataUrl: documentData,
+                            fileName: selectedDocumentFile.name,
+                            folderId: folderId,
+                            fileType: 'document'
+                        }).then(result => {
+                            formData.documentFile = result;
+                        }).catch(error => {
+                            console.error('公的書類アップロードエラー:', error);
+                            formData.documentFile = { success: false, error: error.toString() };
+                        })
+                    );
+                }
+
+                // 全てのアップロードを待機
+                await Promise.all(uploadPromises);
+
+                // ステップ3: フォームデータ保存
+                const result = await callApi('saveForm', { formData });
+                
+                showLoadingOverlay(false);
+                document.getElementById('submitBtn').disabled = false;
+                
+                if (result.success) {
+                    // 成功オーバーレイを表示
+                    showSuccessOverlay(result.memberId);
+                    
+                    // フォームをリセット
+                    document.getElementById('applicationForm').reset();
+                    resetPhotoPreview();
+                    resetDocumentPreview();
+                    
+                    // 規約チェックボックスもリセット
+                    document.getElementById('termsAgreement').checked = false;
+                    document.getElementById('termsAgreementBox').classList.remove('checked');
+                    document.getElementById('submitBtn').disabled = true;
+                    
+                    const today = new Date();
+                    const dateString = today.getFullYear() + '-' + 
+                                     String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+                                     String(today.getDate()).padStart(2, '0');
+                    document.getElementById('date').value = dateString;
+                } else {
+                    showMessage('エラー: ' + (result.error || result.message), 'error');
+                }
+
+            } catch (error) {
+                showLoadingOverlay(false);
+                document.getElementById('submitBtn').disabled = false;
+                showMessage('送信中にエラーが発生しました: ' + error.toString(), 'error');
+            }
+        }
+
+        // 旧submitFormData関数は不要になりましたが、互換性のため残す
+        function submitFormData(formData) {
+            callApi('saveForm', { formData })
+                .then(result => {
+                    showLoadingOverlay(false);
+                    document.getElementById('submitBtn').disabled = false;
+                    
+                    if (result.success) {
+                        // 成功オーバーレイを表示
+                        showSuccessOverlay(result.memberId);
+                        
+                        // フォームをリセット
+                        document.getElementById('applicationForm').reset();
+                        resetPhotoPreview();
+                        resetDocumentPreview();
+                        
+                        // 規約チェックボックスもリセット
+                        document.getElementById('termsAgreement').checked = false;
+                        document.getElementById('termsAgreementBox').classList.remove('checked');
+                        document.getElementById('submitBtn').disabled = true;
+                        
+                        const today = new Date();
+                        const dateString = today.getFullYear() + '-' + 
+                                         String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+                                         String(today.getDate()).padStart(2, '0');
+                        document.getElementById('date').value = dateString;
+                    } else {
+                        showMessage('エラー: ' + (result.error || result.message), 'error');
+                    }
+                })
+                .catch(error => {
+                    showLoadingOverlay(false);
+                    document.getElementById('submitBtn').disabled = false;
+                    showMessage('送信中にエラーが発生しました: ' + error.toString(), 'error');
+                });
+        }
+
+        // リセット
+        document.getElementById('resetBtn').addEventListener('click', function() {
+            if (confirm('入力内容をリセットしますか？')) {
+                document.getElementById('applicationForm').reset();
+                resetPhotoPreview();
+                resetDocumentPreview();
+                
+                // 規約チェックボックスもリセット
+                document.getElementById('termsAgreement').checked = false;
+                document.getElementById('termsAgreementBox').classList.remove('checked');
+                document.getElementById('submitBtn').disabled = true;
+                
+                const today = new Date();
+                const dateString = today.getFullYear() + '-' + 
+                                 String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+                                 String(today.getDate()).padStart(2, '0');
+                document.getElementById('date').value = dateString;
+                
+                hideMessage();
+            }
+        });
+
+        function validateForm() {
+            const requiredFields = [
+                'date', 'shopName', 'shopNameFurigana', 'representativeName', 
+                'representativeNameFurigana', 'wearerName', 'wearerNameFurigana',
+                'postalCode', 'address', 'phone', 'businessType', 'email'
+            ];
+
+            for (let fieldId of requiredFields) {
+                const field = document.getElementById(fieldId);
+                if (!field.value.trim()) {
+                    showMessage('必須項目が入力されていません: ' + field.previousElementSibling.textContent.replace(' *必須', ''), 'error');
+                    field.focus();
+                    return false;
+                }
+            }
+
+            const postalCode = document.getElementById('postalCode').value;
+            if (!/^\d{3}-\d{4}$/.test(postalCode)) {
+                showMessage('郵便番号は000-0000の形式で入力してください。', 'error');
+                document.getElementById('postalCode').focus();
+                return false;
+            }
+
+            if (!photoData) {
+                showMessage('申請者本人の顔写真をアップロードしてください。', 'error');
+                return false;
+            }
+
+            if (!documentData) {
+                showMessage('花き業の記載のある公的書類をアップロードしてください。', 'error');
+                return false;
+            }
+
+            // 規約同意チェック
+            const termsAgreed = document.getElementById('termsAgreement').checked;
+            if (!termsAgreed) {
+                showMessage('買出人章規約に同意してください。', 'error');
+                document.getElementById('termsAgreement').focus();
+                return false;
+            }
+
+            // メールアドレス形式チェック
+            const email = document.getElementById('email').value;
+            if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                showMessage('メールアドレスの形式が正しくありません。', 'error');
+                document.getElementById('email').focus();
+                return false;
+            }
+
+            return true;
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+
+        function showMessage(message, type) {
+            const messageElement = document.getElementById('message');
+            messageElement.textContent = message;
+            messageElement.className = 'message ' + type;
+            messageElement.style.display = 'block';
+            
+            // メッセージ表示位置までスクロール
+            messageElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    hideMessage();
+                }, 5000);
+            }
+        }
+
+        function hideMessage() {
+            document.getElementById('message').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
