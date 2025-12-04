@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+    <title>会員証チェック</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { width: 100%; min-height: 100vh; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            min-height: 100vh;
+        }
+        
+        /* ローディング */
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid #e0e0e0;
+            border-top: 5px solid #4285f4;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            font-size: 18px;
+            color: #666;
+        }
+        
+        /* カード */
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 8vw;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            width: 98%;
+            max-width: 500px;
+            display: none;
+        }
+        
+        .card.show { display: block; }
+        
+        .card h2 {
+            margin: 0 0 6vw 0;
+            text-align: center;
+            font-size: min(20vw, 80px);
+            font-weight: bold;
+        }
+        
+        .status-badge {
+            padding: 6vw;
+            border-radius: 15px;
+            text-align: center;
+            margin: 5vw 0;
+        }
+        
+        .status-icon {
+            font-size: min(25vw, 100px);
+            display: block;
+            margin-bottom: 3vw;
+        }
+        
+        .status-text {
+            font-size: min(12vw, 48px);
+            font-weight: bold;
+        }
+        
+        .info-section {
+            margin-top: 5vw;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 3vw 0;
+            border-bottom: 1px solid #eee;
+            font-size: min(5vw, 18px);
+        }
+        
+        .info-row:last-child { border-bottom: none; }
+        
+        .label {
+            color: #666;
+            font-weight: 500;
+        }
+        
+        .value {
+            color: #333;
+            font-weight: bold;
+            text-align: right;
+        }
+        
+        /* ステータス別スタイル */
+        .status-active {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+        }
+        
+        .status-active h2 { color: #28a745; }
+        .status-active .status-badge { background: #d4edda; color: #155724; border: 3px solid #28a745; }
+        
+        .status-inactive {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+        }
+        
+        .status-inactive h2 { color: #dc3545; }
+        .status-inactive .status-badge { background: #f8d7da; color: #721c24; border: 3px solid #dc3545; }
+        
+        .status-unknown {
+            background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+        }
+        
+        .status-unknown h2 { color: #ffc107; }
+        .status-unknown .status-badge { background: #fff3cd; color: #856404; border: 3px solid #ffc107; }
+        
+        /* エラー */
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            display: none;
+        }
+        
+        .error-message.show { display: block; }
+        
+        .timestamp {
+            text-align: center;
+            margin-top: 5vw;
+            padding-top: 3vw;
+            border-top: 1px solid #eee;
+            font-size: min(3.5vw, 14px);
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <!-- ローディング -->
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <div class="loading-text">会員情報を確認中...</div>
+    </div>
+    
+    <!-- エラーメッセージ -->
+    <div class="error-message" id="errorMessage"></div>
+    
+    <!-- 結果カード -->
+    <div class="card" id="resultCard">
+        <h2 id="memberIdDisplay"></h2>
+        
+        <div class="status-badge" id="statusBadge">
+            <span class="status-icon" id="statusIcon"></span>
+            <span class="status-text" id="statusText"></span>
+        </div>
+        
+        <div class="info-section">
+            <div class="info-row">
+                <span class="label">店名</span>
+                <span class="value" id="storeName"></span>
+            </div>
+            <div class="info-row">
+                <span class="label">代表者名</span>
+                <span class="value" id="representativeName"></span>
+            </div>
+            <div class="info-row" id="expiresRow" style="display:none;">
+                <span class="label">有効期限</span>
+                <span class="value" id="expiresAt"></span>
+            </div>
+            <div class="info-row">
+                <span class="label">最終確認</span>
+                <span class="value" id="lastScan"></span>
+            </div>
+        </div>
+        
+        <div class="timestamp" id="timestamp"></div>
+    </div>
+
+    <script>
+        // ★ GAS APIのURL（変更しないでください）
+        const API_URL = 'https://script.google.com/macros/s/AKfycbwbbyZoRzhWu8Ft5xVvyI1LJc7_RLZaeLwVGapXnlYIIJBUSlgJXQTzofwuLl5nux43kg/exec';
+        
+        // URLからqr_tokenを取得
+        const urlParams = new URLSearchParams(window.location.search);
+        const qrToken = urlParams.get('qr_token');
+        
+        // 要素取得
+        const loadingEl = document.getElementById('loading');
+        const errorEl = document.getElementById('errorMessage');
+        const cardEl = document.getElementById('resultCard');
+        
+        // トークンがない場合
+        if (!qrToken) {
+            showError('QRコードが無効です');
+        } else {
+            verifyQrCode(qrToken);
+        }
+        
+        // QRコード検証
+        async function verifyQrCode(token) {
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify({ action: 'verifyQr', token: token })
+                });
+                
+                const result = await response.json();
+                
+                loadingEl.style.display = 'none';
+                
+                if (result.status === 'NOT_FOUND') {
+                    showError('会員情報が見つかりません');
+                    return;
+                }
+                
+                showResult(result);
+                
+            } catch (error) {
+                console.error('API Error:', error);
+                showError('通信エラーが発生しました');
+            }
+        }
+        
+        // エラー表示
+        function showError(message) {
+            loadingEl.style.display = 'none';
+            errorEl.textContent = message;
+            errorEl.classList.add('show');
+        }
+        
+        // 結果表示
+        function showResult(data) {
+            // ステータス設定
+            let statusClass, statusIcon, statusText;
+            
+            if (data.status === 'ACTIVE') {
+                statusClass = 'status-active';
+                statusIcon = '?';
+                statusText = '有効';
+                document.body.style.background = 'linear-gradient(135deg, #56ab2f 0%, #a8e063 100%)';
+            } else if (data.status === 'INACTIVE') {
+                statusClass = 'status-inactive';
+                statusIcon = '?';
+                statusText = '無効';
+                document.body.style.background = 'linear-gradient(135deg, #eb3349 0%, #f45c43 100%)';
+            } else {
+                statusClass = 'status-unknown';
+                statusIcon = '?';
+                statusText = '不明';
+                document.body.style.background = 'linear-gradient(135deg, #ffc107 0%, #ff9800 100%)';
+            }
+            
+            cardEl.classList.add(statusClass);
+            
+            // データ設定
+            document.getElementById('memberIdDisplay').textContent = data.member_id || '-';
+            document.getElementById('statusIcon').textContent = statusIcon;
+            document.getElementById('statusText').textContent = statusText;
+            document.getElementById('storeName').textContent = data.store_name || '-';
+            document.getElementById('representativeName').textContent = data.representative_name || '-';
+            document.getElementById('lastScan').textContent = data.last_scan_at || '-';
+            
+            // 有効期限
+            if (data.expires_at) {
+                document.getElementById('expiresRow').style.display = 'flex';
+                document.getElementById('expiresAt').textContent = data.expires_at;
+            }
+            
+            // タイムスタンプ
+            const now = new Date();
+            document.getElementById('timestamp').textContent = 
+                '確認日時: ' + now.toLocaleString('ja-JP');
+            
+            cardEl.classList.add('show');
+        }
+    </script>
+</body>
+</html>
