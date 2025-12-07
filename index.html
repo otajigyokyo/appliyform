@@ -73,11 +73,10 @@
             padding: 12px 15px;
             border: 2px solid #ddd;
             border-radius: 6px;
-            font-size: 20px;
-            font-weight: 900;
+            font-size: 16px;
+            font-weight: 600;
             color: #000;
-            letter-spacing: 0.5px;
-            /* ? 以下を追加 */
+            letter-spacing: 0.3px;
             appearance: none;
             -webkit-appearance: none;
             -moz-appearance: none;
@@ -90,11 +89,11 @@
             padding: 12px 15px;
             border: 2px solid #ddd;
             border-radius: 6px;
-            font-size: 20px;
+            font-size: 16px;
             transition: border-color 0.3s ease;
-            font-weight: 900;  /* Extra Bold */
-            color: #000;  /* 真っ黒 */
-            letter-spacing: 0.5px;  /* 文字間隔を広げる */
+            font-weight: 600;
+            color: #000;
+            letter-spacing: 0.3px;
         }
 
         .form-control:focus {
@@ -126,7 +125,7 @@ input[type="date"][readonly] {
 }
 
 /* スマホ対応 */
-@media (max-width: 1200px) {
+@media (max-width: 768px) {
     input[type="date"][readonly] {
         background-color: #f8f9fa;
         cursor: not-allowed;
@@ -618,44 +617,44 @@ input[type="date"][readonly] {
             color: #1976d2;
         }
 
-        /* ========== スマホ対応（1200pxまで） ========== */
-        @media (max-width: 1200px) {
+        /* ========== スマホ対応（768px以下） - GitHub Pages用 ========== */
+        @media (max-width: 768px) {
             body {
                 padding: 10px;
-                font-size: 32px; /* 4倍 */
+                font-size: 16px;
             }
             
             .container {
-                padding: 30px 20px;
+                padding: 20px 15px;
             }
 
             .header h1 {
-                font-size: 48px; /* 約4倍 */
+                font-size: 1.4em;
             }
 
             .header .subtitle {
-                font-size: 28px; /* 約4倍 */
+                font-size: 14px;
             }
 
             .form-group label {
-                font-size: 32px; /* 約4倍 */
-                margin-bottom: 12px;
+                font-size: 14px;
+                margin-bottom: 8px;
             }
 
             .required {
-                font-size: 28px; /* 約4倍 */
+                font-size: 12px;
             }
 
             .form-control {
-                font-size: 36px; /* 約4倍 */
-                padding: 20px 25px;
-                font-weight: 900;  /* ← 追加 */
-                color: #000;  /* ← 追加 */
-                letter-spacing: 1px;  /* ← スマホは少し広めに */
+                font-size: 16px; /* iOS自動ズーム防止のため16px以上 */
+                padding: 12px 15px;
+                font-weight: 600;
+                color: #000;
+                letter-spacing: 0.3px;
             }
 
             textarea.form-control {
-                min-height: 200px;
+                min-height: 80px;
             }
             
             /* 縦並びに変更 */
@@ -671,174 +670,179 @@ input[type="date"][readonly] {
             .btn {
                 width: 100%;
                 margin: 10px 0;
-                padding: 25px 40px;
-                font-size: 36px; /* 約4倍 */
+                padding: 14px 20px;
+                font-size: 16px;
             }
 
-    input[type="date"] {
-        font-size: 32px; /* 他のフィールドと統一 */
-        padding: 20px 25px;
-        font-weight: 900;
-        color: #000;
-        letter-spacing: 1px;
-        /* ? 以下を追加 */
-        line-height: 1.2;
-        min-height: 80px; /* 十分な高さを確保 */
-    }
+            input[type="date"] {
+                font-size: 16px;
+                padding: 12px 15px;
+                font-weight: 600;
+                color: #000;
+                letter-spacing: 0.3px;
+                line-height: 1.2;
+                min-height: 44px;
+            }
 
             .note {
-                font-size: 28px; /* 約4倍 */
-                padding: 25px;
+                font-size: 13px;
+                padding: 12px;
             }
 
             .warning-note {
-                font-size: 28px; /* 約4倍 */
-                padding: 25px;
+                font-size: 13px;
+                padding: 12px;
             }
 
             .terms-section h2 {
-                font-size: 40px; /* 約4倍 */
+                font-size: 18px;
             }
 
             .terms-content {
-                font-size: 28px; /* 約4倍 */
-                padding: 25px;
-                max-height: 600px;
+                font-size: 13px;
+                padding: 12px;
+                max-height: 200px;
             }
 
             .terms-content h3 {
-                font-size: 36px; /* 約4倍 */
+                font-size: 15px;
             }
 
             .terms-content section h4 {
-                font-size: 32px; /* 約4倍 */
+                font-size: 14px;
             }
 
             .terms-agreement {
-                padding: 25px;
+                padding: 12px;
             }
 
             .terms-agreement input[type="checkbox"] {
-                width: 40px;
-                height: 40px;
-                margin-right: 20px;
+                width: 20px;
+                height: 20px;
+                margin-right: 10px;
             }
 
             .terms-agreement label {
-                font-size: 32px; /* 約4倍 */
+                font-size: 14px;
             }
 
             .file-upload-section h3 {
-                font-size: 36px; /* 約4倍 */
+                font-size: 15px;
             }
 
             .file-upload-section p {
-                font-size: 28px; /* 約4倍 */
+                font-size: 13px;
             }
 
             .file-upload-button {
-                font-size: 36px; /* 約4倍 */
-                padding: 20px 40px;
+                font-size: 14px;
+                padding: 12px 20px;
             }
 
             .file-info {
-                font-size: 28px; /* 約4倍 */
+                font-size: 13px;
             }
 
             .crop-modal-content {
                 width: 95%;
                 margin: 5% auto;
-                padding: 30px;
+                padding: 15px;
             }
 
             .crop-modal-content h2 {
-                font-size: 40px;
+                font-size: 18px;
             }
 
             .crop-info {
-                font-size: 28px;
-                padding: 20px;
+                font-size: 13px;
+                padding: 10px;
             }
 
             .message {
-                font-size: 32px;
-                padding: 25px;
+                font-size: 14px;
+                padding: 12px;
             }
 
             .loading {
-                font-size: 32px;
+                font-size: 14px;
             }
 
             .spinner {
-                width: 60px;
-                height: 60px;
-                border-width: 6px;
+                width: 30px;
+                height: 30px;
+                border-width: 3px;
             }
 
             /* スマホ用ローディング調整 */
             .loading-content {
-                padding: 30px 40px;
+                padding: 20px 25px;
             }
 
             .spinner-large {
-                width: 80px;
-                height: 80px;
-                border-width: 6px;
+                width: 50px;
+                height: 50px;
+                border-width: 4px;
             }
 
             .loading-text {
-                font-size: 28px;
+                font-size: 18px;
             }
 
             .loading-subtext {
-                font-size: 20px;
+                font-size: 14px;
             }
 
             /* スマホ用成功メッセージ調整 */
             .success-content {
-                padding: 25px;
+                padding: 20px;
             }
 
             .success-icon {
-                font-size: 80px;
+                font-size: 50px;
             }
 
             .success-title {
-                font-size: 32px;
+                font-size: 18px;
             }
 
             .success-member-id {
-                font-size: 24px;
+                font-size: 14px;
             }
 
             .success-payment-notice h4 {
-                font-size: 22px;
+                font-size: 14px;
             }
 
             .success-payment-notice p {
-                font-size: 20px;
+                font-size: 13px;
             }
 
             .success-close-btn {
-                font-size: 24px;
-                padding: 20px 50px;
+                font-size: 16px;
+                padding: 12px 30px;
             }
 
-            /* ★追加: スマホ用アップロードボタン */
+            /* ★スマホ用アップロードボタン */
             .upload-buttons {
                 flex-direction: column;
                 align-items: center;
             }
             
             .upload-buttons .file-upload-button {
-                width: 80%;
-                margin: 8px 0;
+                width: 90%;
+                margin: 6px 0;
             }
         }
 
-        /* PC表示（1201px以上）はそのまま */
-        @media (min-width: 1201px) {
-            /* 既存のスタイルを維持 */
+        /* タブレット対応（769px〜1024px） */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .container {
+                max-width: 700px;
+            }
+            
+            .form-control {
+                font-size: 16px;
+            }
         }
     </style>
 </head>
