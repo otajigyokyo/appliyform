@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
@@ -536,6 +536,23 @@ input[type="date"][readonly] {
             background-color: #218838;
         }
 
+        /* ★追加: カメラ・ファイル選択ボタン */
+        .upload-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 15px 0;
+        }
+
+        .file-upload-button.camera-btn {
+            background-color: #2196F3;
+        }
+
+        .file-upload-button.camera-btn:hover {
+            background-color: #1976D2;
+        }
+
         .file-preview {
             margin-top: 15px;
             display: none;
@@ -806,6 +823,17 @@ input[type="date"][readonly] {
                 font-size: 24px;
                 padding: 20px 50px;
             }
+
+            /* ★追加: スマホ用アップロードボタン */
+            .upload-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .upload-buttons .file-upload-button {
+                width: 80%;
+                margin: 8px 0;
+            }
         }
 
         /* PC表示（1201px以上）はそのまま */
@@ -827,12 +855,12 @@ input[type="date"][readonly] {
     <!-- 成功メッセージオーバーレイ -->
     <div class="success-overlay" id="successOverlay">
         <div class="success-content">
-            <div class="success-icon">?</div>
+            <div class="success-icon">✅</div>
             <div class="success-title">登録が完了しました</div>
             <div class="success-member-id" id="successMemberId"></div>
             
             <div class="success-payment-notice">
-                <h4>?? お支払いの登録について</h4>
+                <h4>💳 お支払いの登録について</h4>
                 <p>別途、支払い管理システムより以下の件名でメールが送信されます。</p>
                 <div class="email-subject">【大田市場花き事業協同組合】決済方法登録URLのご案内</div>
                 <p>そのメールに記載のURLから、お支払い方法の登録をお願いいたします。</p>
@@ -929,7 +957,7 @@ input[type="date"][readonly] {
                 <input type="tel" id="contactPhone" name="contactPhone" class="form-control">
             </div>
 
-            <!-- ? メールアドレス追加 -->
+            <!-- メールアドレス追加 -->
             <div class="form-group">
               <label for="email">メールアドレス <span class="required">*必須</span></label>
               <input type="email" id="email" name="email" class="form-control" required placeholder="example@example.com">
@@ -953,19 +981,25 @@ input[type="date"][readonly] {
                 <textarea id="remarks" name="remarks" class="form-control" rows="4" placeholder="その他ご連絡事項がございましたらご記入ください"></textarea>
             </div>
 
-            <!-- ファイルアップロード1: 申請者本人の顔写真 -->
+            <!-- ★修正: ファイルアップロード1: 申請者本人の顔写真（カメラ機能追加） -->
             <div class="file-upload-section">
                 <h3>申請者本人の顔写真 <span class="required">*必須</span></h3>
                 <p>証明写真をアップロードしてください<br>
                 <small>縦35mm × 横25mmサイズにトリミングされます</small></p>
                 <input type="file" id="photoUpload" name="photoUpload" class="file-upload-input" accept="image/*" onchange="handlePhotoSelect(event)">
-                <button type="button" class="file-upload-button" onclick="document.getElementById('photoUpload').click()">
-                    顔写真を選択
-                </button>
+                <input type="file" id="photoCamera" name="photoCamera" class="file-upload-input" accept="image/*" capture="user" onchange="handlePhotoSelect(event)">
+                <div class="upload-buttons">
+                    <button type="button" class="file-upload-button" onclick="document.getElementById('photoUpload').click()">
+                        📁 写真を選択
+                    </button>
+                    <button type="button" class="file-upload-button camera-btn" onclick="document.getElementById('photoCamera').click()">
+                        📷 カメラで撮影
+                    </button>
+                </div>
                 <div class="file-preview" id="photoPreview"></div>
             </div>
 
-            <!-- ファイルアップロード2: 花き業の公的書類 -->
+            <!-- ★修正: ファイルアップロード2: 花き業の公的書類（カメラ機能追加） -->
             <div class="file-upload-section">
                 <h3>花き業の記載のある公的書類、どれか一つ <span class="required">*必須</span></h3>
                 <p>花き業が確認できる公的書類をアップロードしてください</p>
@@ -978,15 +1012,21 @@ input[type="date"][readonly] {
                     </ul>
                 </div>
                 <input type="file" id="documentUpload" name="documentUpload" class="file-upload-input" accept="image/*,.pdf" onchange="handleDocumentSelect(event)">
-                <button type="button" class="file-upload-button" onclick="document.getElementById('documentUpload').click()">
-                    公的書類を選択
-                </button>
+                <input type="file" id="documentCamera" name="documentCamera" class="file-upload-input" accept="image/*" capture="environment" onchange="handleDocumentSelect(event)">
+                <div class="upload-buttons">
+                    <button type="button" class="file-upload-button" onclick="document.getElementById('documentUpload').click()">
+                        📁 ファイルを選択
+                    </button>
+                    <button type="button" class="file-upload-button camera-btn" onclick="document.getElementById('documentCamera').click()">
+                        📷 カメラで撮影
+                    </button>
+                </div>
                 <div class="file-preview" id="documentPreview"></div>
             </div>
 
             <!-- 規約セクション -->
             <div class="terms-section">
-                <h2>?? 買出人章規約</h2>
+                <h2>📜 買出人章規約</h2>
                 <div class="terms-content">
                     <h3>大田市場花き事業協同組合（ハナメセナ）</h3>
 
@@ -1071,7 +1111,7 @@ input[type="date"][readonly] {
         <div class="crop-modal-content">
             <h2 style="text-align: center; margin-bottom: 10px;">画像をトリミング</h2>
             <div class="crop-info">
-                縦35mm × 横25mm（縦横比 5:7）にトリミングされます<br>
+                📏 縦35mm × 横25mm（縦横比 5:7）にトリミングされます<br>
                 画像をドラッグして位置を調整してください
             </div>
             <div class="crop-container">
@@ -1084,17 +1124,14 @@ input[type="date"][readonly] {
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
-    
     <script>
-    // PDF.js の設定
-    if (typeof pdfjsLib !== 'undefined') {
+        // PDF.jsのワーカー設定
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-    }
 
+        // グローバル変数
+        let cropper = null;
         let photoData = null;
         let documentData = null;
-        let cropper = null;
         let selectedPhotoFile = null;
         let selectedDocumentFile = null;
 
@@ -1332,6 +1369,7 @@ input[type="date"][readonly] {
         function cancelCrop() {
             document.getElementById('cropModal').style.display = 'none';
             document.getElementById('photoUpload').value = '';
+            document.getElementById('photoCamera').value = '';
             if (cropper) {
                 cropper.destroy();
                 cropper = null;
@@ -1370,6 +1408,8 @@ input[type="date"][readonly] {
         function resetPhotoPreview() {
             document.getElementById('photoPreview').style.display = 'none';
             document.getElementById('photoPreview').innerHTML = '';
+            document.getElementById('photoUpload').value = '';
+            document.getElementById('photoCamera').value = '';
             photoData = null;
             selectedPhotoFile = null;
         }
@@ -1377,6 +1417,8 @@ input[type="date"][readonly] {
         function resetDocumentPreview() {
             document.getElementById('documentPreview').style.display = 'none';
             document.getElementById('documentPreview').innerHTML = '';
+            document.getElementById('documentUpload').value = '';
+            document.getElementById('documentCamera').value = '';
             documentData = null;
             selectedDocumentFile = null;
         }
@@ -1585,7 +1627,7 @@ document.getElementById('postalCode').addEventListener('input', function(e) {
     if (/^\d{3}-\d{4}$/.test(this.value)) {
         addressTimeout = setTimeout(() => {
             getAddressFromPostalCode(this.value);
-        }, 200);  // 500ms → 200msに短縮
+        }, 100);  // ★改善: 200ms → 100msに短縮
     }
 });
 
@@ -1623,16 +1665,39 @@ document.getElementById('postalCode').addEventListener('blur', function() {
             return await response.json();
         }
 
+        // ★改善: 郵便番号→住所変換（直接API呼び出しで高速化）
         function getAddressFromPostalCode(postalCode) {
-            callApi('getAddress', { postalCode })
-                .then(address => {
-                    if (address) {
-                        document.getElementById('address').value = address;
-                        document.getElementById('address').style.backgroundColor = '#f8f9fa';
+            const zipCode = postalCode.replace('-', '');
+            const addressField = document.getElementById('address');
+            
+            // 検索中表示
+            addressField.value = '検索中...';
+            addressField.style.backgroundColor = '#fff3cd';
+            
+            // 直接 zipcloud API を呼び出し（GAS経由より高速）
+            fetch(`https://zipcloud.ibsnet.co.jp/api/search?zipcode=${zipCode}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.results && data.results[0]) {
+                        const result = data.results[0];
+                        const address = result.address1 + result.address2 + result.address3;
+                        addressField.value = address;
+                        addressField.style.backgroundColor = '#d4edda'; // 成功時は緑
+                        
+                        // 2秒後に背景色をリセット
+                        setTimeout(() => {
+                            addressField.style.backgroundColor = '#f8f9fa';
+                        }, 2000);
+                    } else {
+                        addressField.value = '';
+                        addressField.placeholder = '住所が見つかりませんでした';
+                        addressField.style.backgroundColor = '#fff';
                     }
                 })
                 .catch(error => {
                     console.error('住所取得エラー:', error);
+                    addressField.value = '';
+                    addressField.style.backgroundColor = '#fff';
                 });
         }
 
@@ -1682,7 +1747,7 @@ document.getElementById('postalCode').addEventListener('blur', function() {
                 address: document.getElementById('address').value,
                 phone: document.getElementById('phone').value,
                 fax: document.getElementById('fax').value,
-                email: document.getElementById('email').value,  // ← 追加
+                email: document.getElementById('email').value,
                 contactPhone: document.getElementById('contactPhone').value,
                 remarks: document.getElementById('remarks').value,
                 businessType: document.getElementById('businessType').value,
