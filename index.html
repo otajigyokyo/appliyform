@@ -931,7 +931,7 @@ input[type="date"][readonly] {
             <div class="form-row">
                 <div class="form-group" style="flex: 0 0 200px;">
                     <label for="postalCode">郵便番号 <span class="required">*必須</span></label>
-                    <input type="text" id="postalCode" name="postalCode" class="form-control" placeholder="000-0000" required>
+                    <input type="text" id="postalCode" name="postalCode" class="form-control" placeholder="000-0000" required inputmode="numeric" pattern="[0-9-]*">
                 </div>
                 <div class="form-group">
                     <label for="address">住所 <span class="required">*必須</span></label>
@@ -960,7 +960,7 @@ input[type="date"][readonly] {
             <!-- メールアドレス追加 -->
             <div class="form-group">
               <label for="email">メールアドレス <span class="required">*必須</span></label>
-              <input type="email" id="email" name="email" class="form-control" required placeholder="example@example.com">
+              <input type="email" id="email" name="email" class="form-control" required placeholder="example@example.com" inputmode="email" autocapitalize="off" autocomplete="email">
             </div>
 
             <!-- 業態・主な販売先 -->
@@ -1565,6 +1565,45 @@ document.getElementById('wearerName').addEventListener('input', function() {
 
 /*　ふりがな入力 */
 
+
+// ========== メールアドレス半角変換 ========== //
+document.getElementById('email').addEventListener('input', function(e) {
+    // 全角英数字・記号を半角に変換
+    let value = this.value;
+    
+    // 全角英数字を半角に変換
+    value = value.replace(/[Ａ-Ｚａ-ｚ０-９]/g, function(s) {
+        return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
+    });
+    
+    // 全角記号を半角に変換
+    value = value.replace(/＠/g, '@');
+    value = value.replace(/．/g, '.');
+    value = value.replace(/＿/g, '_');
+    value = value.replace(/－/g, '-');
+    value = value.replace(/　/g, ''); // 全角スペースを削除
+    value = value.replace(/ /g, '');  // 半角スペースも削除
+    
+    // 値を更新
+    if (this.value !== value) {
+        this.value = value;
+    }
+});
+
+// フォーカスアウト時にも変換
+document.getElementById('email').addEventListener('blur', function(e) {
+    let value = this.value;
+    value = value.replace(/[Ａ-Ｚａ-ｚ０-９]/g, function(s) {
+        return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
+    });
+    value = value.replace(/＠/g, '@');
+    value = value.replace(/．/g, '.');
+    value = value.replace(/＿/g, '_');
+    value = value.replace(/－/g, '-');
+    value = value.replace(/　/g, '');
+    value = value.replace(/ /g, '');
+    this.value = value;
+});
 
 
 // 郵便番号処理（改善版）
