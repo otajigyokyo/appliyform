@@ -844,6 +844,84 @@ input[type="date"][readonly] {
                 font-size: 16px;
             }
         }
+
+    /* ★追加: 月額手数料の注意書き */
+.fee-notice {
+    background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+    border: 3px solid #ff9800;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 30px 0;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
+}
+
+.fee-notice-icon {
+    font-size: 40px;
+    flex-shrink: 0;
+}
+
+.fee-notice-content {
+    flex: 1;
+}
+
+.fee-notice-title {
+    font-size: 14px;
+    color: #e65100;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.fee-notice-amount {
+    font-size: 28px;
+    font-weight: bold;
+    color: #d84315;
+    margin-bottom: 5px;
+}
+
+.fee-notice-desc {
+    font-size: 13px;
+    color: #bf360c;
+}
+
+/* ★追加: 規約スクロール必須のスタイル */
+.terms-agreement.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.terms-agreement.disabled label {
+    color: #999;
+}
+
+.scroll-hint {
+    text-align: center;
+    padding: 10px;
+    background-color: #fff3cd;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    font-size: 14px;
+    color: #856404;
+    display: block;
+}
+
+.scroll-hint.hidden {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .fee-notice {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+    
+    .fee-notice-amount {
+        font-size: 24px;
+    }
+}
     </style>
 </head>
 <body>
@@ -1088,13 +1166,28 @@ input[type="date"][readonly] {
                         <p>登録時にいただく個人および店舗情報は、大田市場花き事業協同組合、仲卸組合、資材関連団体で共有します。これらの情報は販売促進等の正当な業務目的以外には使用いたしません。</p>
                     </section>
                 </div>
-
+                <!-- ★追加: スクロール促進メッセージ -->
+                <div class="scroll-hint" id="scrollHint">
+                    ⬇️ 規約を最後までお読みください ⬇️
+                </div>
                 <div class="terms-agreement" id="termsAgreementBox">
                     <input type="checkbox" id="termsAgreement" name="termsAgreement" onchange="toggleSubmitButton()">
                     <label for="termsAgreement">上記の買出人章規約に同意します <span class="required">*必須</span></label>
                 </div>
             </div>
 
+            <!-- ★追加: 月額手数料の注意書き -->
+            <div class="fee-notice">
+                <div class="fee-notice-icon">💰</div>
+                <div class="fee-notice-content">
+                    <div class="fee-notice-title">資格維持手数料について</div>
+                    <div class="fee-notice-amount">月額 800円（税込）</div>
+                    <div class="fee-notice-desc">買出人章の発行後、毎月自動で決済されます</div>
+                </div>
+            </div>
+
+            <!-- 送信ボタン -->
+            
             <!-- 送信ボタン -->
             <div class="btn-container">
                 <button type="button" id="resetBtn" class="btn btn-secondary">リセット</button>
@@ -2028,6 +2121,40 @@ document.getElementById('postalCode').addEventListener('blur', function() {
         function hideMessage() {
             document.getElementById('message').style.display = 'none';
         }
+
+        // ========== 規約スクロール監視 ========== //
+const termsContent = document.querySelector('.terms-content');
+const termsAgreementBox = document.getElementById('termsAgreementBox');
+const termsCheckbox = document.getElementById('termsAgreement');
+const scrollHint = document.getElementById('scrollHint');
+
+let hasScrolledToBottom = false;
+
+termsContent.addEventListener('scroll', function() {
+    // スクロール位置が最後に近いかチェック（余裕を持たせて20px）
+    const isAtBottom = termsContent.scrollHeight - termsContent.scrollTop - termsContent.clientHeight < 20;
+    
+    if (isAtBottom && !hasScrolledToBottom) {
+        hasScrolledToBottom = true;
+        
+        // チェックボックスを有効化
+        termsAgreementBox.classList.remove('disabled');
+        
+        // ヒントを非表示
+        scrollHint.classList.add('hidden');
+        
+        console.log('規約を最後まで読みました');
+    }
+});
+
+// チェックボックスがdisabled状態でクリックされた時のメッセージ
+termsAgreementBox.addEventListener('click', function(e) {
+    if (termsAgreementBox.classList.contains('disabled')) {
+        e.preventDefault();
+        alert('規約を最後までスクロールしてお読みください。');
+        termsContent.scrollTop = termsContent.scrollHeight; // 規約欄にフォーカス
+    }
+});
     </script>
 </body>
 </html>
