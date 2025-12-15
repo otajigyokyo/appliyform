@@ -495,6 +495,38 @@ input[type="date"][readonly] {
             color: #155724;
         }
 
+        /* ★追加: 規約スクロール必須のスタイル */
+        .terms-agreement.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .terms-agreement.disabled label {
+            color: #999;
+        }
+
+        .scroll-hint {
+            text-align: center;
+            padding: 12px;
+            background-color: #fff3cd;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #856404;
+            display: block;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+
+        .scroll-hint.hidden {
+            display: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
         /* ファイルアップロード */
         .file-upload-section {
             background-color: #f8f9fa;
@@ -615,6 +647,47 @@ input[type="date"][readonly] {
             border-radius: 4px;
             font-size: 14px;
             color: #1976d2;
+        }
+
+        /* ★追加: 月額手数料の注意書き */
+        .fee-notice {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            border: 3px solid #ff9800;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 30px 0;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
+        }
+
+        .fee-notice-icon {
+            font-size: 40px;
+            flex-shrink: 0;
+        }
+
+        .fee-notice-content {
+            flex: 1;
+        }
+
+        .fee-notice-title {
+            font-size: 14px;
+            color: #e65100;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .fee-notice-amount {
+            font-size: 28px;
+            font-weight: bold;
+            color: #d84315;
+            margin-bottom: 5px;
+        }
+
+        .fee-notice-desc {
+            font-size: 13px;
+            color: #bf360c;
         }
 
         /* ========== スマホ対応（768px以下） - GitHub Pages用 ========== */
@@ -832,6 +905,22 @@ input[type="date"][readonly] {
                 width: 90%;
                 margin: 6px 0;
             }
+
+            /* ★スマホ用月額手数料 */
+            .fee-notice {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+            
+            .fee-notice-amount {
+                font-size: 24px;
+            }
+
+            .scroll-hint {
+                font-size: 13px;
+                padding: 10px;
+            }
         }
 
         /* タブレット対応（769px〜1024px） */
@@ -844,84 +933,6 @@ input[type="date"][readonly] {
                 font-size: 16px;
             }
         }
-
-    /* ★追加: 月額手数料の注意書き */
-.fee-notice {
-    background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
-    border: 3px solid #ff9800;
-    border-radius: 12px;
-    padding: 20px;
-    margin: 30px 0;
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
-}
-
-.fee-notice-icon {
-    font-size: 40px;
-    flex-shrink: 0;
-}
-
-.fee-notice-content {
-    flex: 1;
-}
-
-.fee-notice-title {
-    font-size: 14px;
-    color: #e65100;
-    font-weight: bold;
-    margin-bottom: 5px;
-}
-
-.fee-notice-amount {
-    font-size: 28px;
-    font-weight: bold;
-    color: #d84315;
-    margin-bottom: 5px;
-}
-
-.fee-notice-desc {
-    font-size: 13px;
-    color: #bf360c;
-}
-
-/* ★追加: 規約スクロール必須のスタイル */
-.terms-agreement.disabled {
-    opacity: 0.5;
-    pointer-events: none;
-}
-
-.terms-agreement.disabled label {
-    color: #999;
-}
-
-.scroll-hint {
-    text-align: center;
-    padding: 10px;
-    background-color: #fff3cd;
-    border-radius: 4px;
-    margin-bottom: 15px;
-    font-size: 14px;
-    color: #856404;
-    display: block;
-}
-
-.scroll-hint.hidden {
-    display: none;
-}
-
-@media (max-width: 768px) {
-    .fee-notice {
-        flex-direction: column;
-        text-align: center;
-        gap: 10px;
-    }
-    
-    .fee-notice-amount {
-        font-size: 24px;
-    }
-}
     </style>
 </head>
 <body>
@@ -946,6 +957,9 @@ input[type="date"][readonly] {
                 <p>別途、支払い管理システムより以下の件名でメールが送信されます。</p>
                 <div class="email-subject">【大田市場花き事業協同組合】決済方法登録URLのご案内</div>
                 <p>そのメールに記載のURLから、お支払い方法の登録をお願いいたします。</p>
+                <p style="color: #d84315; background: #fff3e0; padding: 10px; border-radius: 4px; margin-top: 10px; font-weight: bold;">
+                    💰 資格維持手数料：月額800円（税込）が毎月自動決済されます
+                </p>
                 <p style="color: #856404; background: #fff3cd; padding: 8px; border-radius: 4px; margin-top: 10px;">
                     ※お支払い登録が完了するまで、買出人章の発行ができません
                 </p>
@@ -1109,7 +1123,7 @@ input[type="date"][readonly] {
             <!-- 規約セクション -->
             <div class="terms-section">
                 <h2>📜 買出人章規約</h2>
-                <div class="terms-content">
+                <div class="terms-content" id="termsContent">
                     <h3>大田市場花き事業協同組合（ハナメセナ）</h3>
 
                     <section id="art1">
@@ -1166,11 +1180,13 @@ input[type="date"][readonly] {
                         <p>登録時にいただく個人および店舗情報は、大田市場花き事業協同組合、仲卸組合、資材関連団体で共有します。これらの情報は販売促進等の正当な業務目的以外には使用いたしません。</p>
                     </section>
                 </div>
+
                 <!-- ★追加: スクロール促進メッセージ -->
                 <div class="scroll-hint" id="scrollHint">
-                    ⬇️ 規約を最後までお読みください ⬇️
+                    ⬇️ 規約を最後までスクロールしてお読みください ⬇️
                 </div>
-                <div class="terms-agreement" id="termsAgreementBox">
+
+                <div class="terms-agreement disabled" id="termsAgreementBox">
                     <input type="checkbox" id="termsAgreement" name="termsAgreement" onchange="toggleSubmitButton()">
                     <label for="termsAgreement">上記の買出人章規約に同意します <span class="required">*必須</span></label>
                 </div>
@@ -1186,8 +1202,6 @@ input[type="date"][readonly] {
                 </div>
             </div>
 
-            <!-- 送信ボタン -->
-            
             <!-- 送信ボタン -->
             <div class="btn-container">
                 <button type="button" id="resetBtn" class="btn btn-secondary">リセット</button>
@@ -1241,43 +1255,35 @@ input[type="date"][readonly] {
             document.getElementById('date').value = dateString;
         });
 
-        // 規約同意チェックボックスの変更で送信ボタンの有効/無効を切り替え
+        // 送信ボタンの有効/無効を切り替え
         function toggleSubmitButton() {
             const checkbox = document.getElementById('termsAgreement');
             const submitBtn = document.getElementById('submitBtn');
-            const agreementBox = document.getElementById('termsAgreementBox');
+            const termsBox = document.getElementById('termsAgreementBox');
             
             if (checkbox.checked) {
                 submitBtn.disabled = false;
-                agreementBox.classList.add('checked');
+                termsBox.classList.add('checked');
             } else {
                 submitBtn.disabled = true;
-                agreementBox.classList.remove('checked');
+                termsBox.classList.remove('checked');
             }
         }
 
-        // 顔写真選択ハンドラー
+        // 顔写真選択
         function handlePhotoSelect(event) {
             const file = event.target.files[0];
-            if (!file) {
-                resetPhotoPreview();
-                return;
-            }
+            if (!file) return;
 
-            if (!file.type.startsWith('image/')) {
-                showMessage('画像ファイルを選択してください。', 'error');
-                event.target.value = '';
-                return;
-            }
-
-            if (file.size > 50 * 1024 * 1024) {
-                showMessage('ファイルサイズが50MBを超えています。', 'error');
+            // ファイルサイズチェック（10MB上限）
+            if (file.size > 10 * 1024 * 1024) {
+                alert('ファイルサイズは10MB以下にしてください。');
                 event.target.value = '';
                 return;
             }
 
             selectedPhotoFile = file;
-            
+
             const reader = new FileReader();
             reader.onload = function(e) {
                 document.getElementById('cropImage').src = e.target.result;
@@ -1286,111 +1292,96 @@ input[type="date"][readonly] {
             reader.readAsDataURL(file);
         }
 
-        // 公的書類選択ハンドラー
+        // 公的書類選択
         function handleDocumentSelect(event) {
             const file = event.target.files[0];
-            if (!file) {
-                resetDocumentPreview();
-                return;
-            }
+            if (!file) return;
 
-            const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/bmp', 'image/webp', 'application/pdf'];
-            if (!validTypes.includes(file.type)) {
-                showMessage('画像ファイル（JPEG, PNG, GIF等）またはPDFを選択してください。', 'error');
-                event.target.value = '';
-                return;
-            }
-
-            if (file.size > 50 * 1024 * 1024) {
-                showMessage('ファイルサイズが50MBを超えています。', 'error');
+            // ファイルサイズチェック（20MB上限）
+            if (file.size > 20 * 1024 * 1024) {
+                alert('ファイルサイズは20MB以下にしてください。');
                 event.target.value = '';
                 return;
             }
 
             selectedDocumentFile = file;
-            
+
             if (file.type === 'application/pdf') {
-                convertPdfToImage(file);
+                // PDF処理
+                processPdf(file);
             } else {
-                compressDocument(file);
+                // 画像処理
+                processImage(file);
             }
         }
 
-        // PDFを画像に変換
-        function convertPdfToImage(file) {
-            const preview = document.getElementById('documentPreview');
-            preview.innerHTML = '<div class="file-info">PDFを画像に変換中...</div>';
-            preview.style.display = 'block';
-            
+        function processPdf(file) {
             const reader = new FileReader();
-            reader.onload = function(e) {
-                const typedArray = new Uint8Array(e.target.result);
-                
-                pdfjsLib.getDocument(typedArray).promise.then(function(pdf) {
-                    pdf.getPage(1).then(function(page) {
-                        const viewport = page.getViewport({ scale: 1 });
-                        const scale = 1600 / viewport.width;
-                        const scaledViewport = page.getViewport({ scale: scale });
-                        
-                        const canvas = document.createElement('canvas');
-                        const context = canvas.getContext('2d');
-                        canvas.width = scaledViewport.width;
-                        canvas.height = scaledViewport.height;
-                        
-                        const renderContext = {
-                            canvasContext: context,
-                            viewport: scaledViewport
-                        };
-                        
-                        page.render(renderContext).promise.then(function() {
-                            canvas.toBlob(function(blob) {
-                                compressDocumentFromBlob(blob, file.name);
-                            }, 'image/jpeg', 0.85);
-                        }).catch(function(error) {
-                            console.error('PDFレンダリングエラー:', error);
-                            showMessage('PDFの変換中にエラーが発生しました。', 'error');
-                            resetDocumentPreview();
-                        });
-                    });
-                }).catch(function(error) {
-                    console.error('PDF読み込みエラー:', error);
-                    showMessage('PDFファイルの読み込みに失敗しました。', 'error');
-                    resetDocumentPreview();
-                });
+            reader.onload = async function(e) {
+                try {
+                    const typedArray = new Uint8Array(e.target.result);
+                    const pdf = await pdfjsLib.getDocument(typedArray).promise;
+                    const page = await pdf.getPage(1);
+                    
+                    const scale = 2;
+                    const viewport = page.getViewport({ scale: scale });
+                    
+                    const canvas = document.createElement('canvas');
+                    const context = canvas.getContext('2d');
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+                    
+                    await page.render({
+                        canvasContext: context,
+                        viewport: viewport
+                    }).promise;
+                    
+                    compressAndStoreDocument(canvas, file.name);
+                } catch (error) {
+                    console.error('PDF処理エラー:', error);
+                    alert('PDFの処理中にエラーが発生しました。');
+                }
             };
             reader.readAsArrayBuffer(file);
         }
 
-        function compressDocumentFromBlob(blob, originalFileName) {
+        function processImage(file) {
             const reader = new FileReader();
             reader.onload = function(e) {
                 const img = new Image();
                 img.onload = function() {
-                    compressDocumentImage(img, originalFileName);
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(blob);
-        }
-
-        function compressDocument(file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = new Image();
-                img.onload = function() {
-                    compressDocumentImage(img, file.name);
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    let width = img.width;
+                    let height = img.height;
+                    const maxSize = 1600;
+                    
+                    if (width > maxSize || height > maxSize) {
+                        if (width > height) {
+                            height = (height / width) * maxSize;
+                            width = maxSize;
+                        } else {
+                            width = (width / height) * maxSize;
+                            height = maxSize;
+                        }
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    compressAndStoreDocument(canvas, file.name);
                 };
                 img.src = e.target.result;
             };
             reader.readAsDataURL(file);
         }
 
-        function compressDocumentImage(img, fileName) {
-            const canvas = document.createElement('canvas');
+        function compressAndStoreDocument(canvas, fileName) {
             const ctx = canvas.getContext('2d');
-            
-            let width = img.width;
-            let height = img.height;
+            let width = canvas.width;
+            let height = canvas.height;
             const maxSize = 1600;
             
             if (width > maxSize || height > maxSize) {
@@ -1405,7 +1396,7 @@ input[type="date"][readonly] {
             
             canvas.width = width;
             canvas.height = height;
-            ctx.drawImage(img, 0, 0, width, height);
+            ctx.drawImage(canvas, 0, 0, width, height);
             
             let quality = 0.8;
             let dataUrl = canvas.toDataURL('image/jpeg', quality);
@@ -1699,12 +1690,15 @@ document.getElementById('email').addEventListener('blur', function(e) {
     value = value.replace(/－/g, '-');
     value = value.replace(/　/g, '');
     value = value.replace(/ /g, '');
-    this.value = value;
+    
+    if (this.value !== value) {
+        this.value = value;
+    }
 });
 
 
-// 郵便番号処理（改善版）
-let isComposing = false; // IME入力中フラグ
+// ========== 郵便番号入力 ========== //
+let isComposing = false;
 
 document.getElementById('postalCode').addEventListener('compositionstart', function() {
     isComposing = true;
@@ -1971,6 +1965,11 @@ document.getElementById('postalCode').addEventListener('blur', function() {
                     document.getElementById('termsAgreementBox').classList.remove('checked');
                     document.getElementById('submitBtn').disabled = true;
                     
+                    // 規約スクロール状態もリセット
+                    hasScrolledToBottom = false;
+                    document.getElementById('termsAgreementBox').classList.add('disabled');
+                    document.getElementById('scrollHint').classList.remove('hidden');
+                    
                     const today = new Date();
                     const dateString = today.getFullYear() + '-' + 
                                      String(today.getMonth() + 1).padStart(2, '0') + '-' + 
@@ -2035,6 +2034,11 @@ document.getElementById('postalCode').addEventListener('blur', function() {
                 document.getElementById('termsAgreement').checked = false;
                 document.getElementById('termsAgreementBox').classList.remove('checked');
                 document.getElementById('submitBtn').disabled = true;
+                
+                // 規約スクロール状態もリセット
+                hasScrolledToBottom = false;
+                document.getElementById('termsAgreementBox').classList.add('disabled');
+                document.getElementById('scrollHint').classList.remove('hidden');
                 
                 const today = new Date();
                 const dateString = today.getFullYear() + '-' + 
@@ -2122,39 +2126,42 @@ document.getElementById('postalCode').addEventListener('blur', function() {
             document.getElementById('message').style.display = 'none';
         }
 
-        // ========== 規約スクロール監視 ========== //
-const termsContent = document.querySelector('.terms-content');
-const termsAgreementBox = document.getElementById('termsAgreementBox');
-const termsCheckbox = document.getElementById('termsAgreement');
-const scrollHint = document.getElementById('scrollHint');
+        // ========== ★追加: 規約スクロール監視 ========== //
+        const termsContent = document.getElementById('termsContent');
+        const termsAgreementBox = document.getElementById('termsAgreementBox');
+        const termsCheckbox = document.getElementById('termsAgreement');
+        const scrollHint = document.getElementById('scrollHint');
 
-let hasScrolledToBottom = false;
+        let hasScrolledToBottom = false;
 
-termsContent.addEventListener('scroll', function() {
-    // スクロール位置が最後に近いかチェック（余裕を持たせて20px）
-    const isAtBottom = termsContent.scrollHeight - termsContent.scrollTop - termsContent.clientHeight < 20;
-    
-    if (isAtBottom && !hasScrolledToBottom) {
-        hasScrolledToBottom = true;
-        
-        // チェックボックスを有効化
-        termsAgreementBox.classList.remove('disabled');
-        
-        // ヒントを非表示
-        scrollHint.classList.add('hidden');
-        
-        console.log('規約を最後まで読みました');
-    }
-});
+        termsContent.addEventListener('scroll', function() {
+            // スクロール位置が最後に近いかチェック（余裕を持たせて30px）
+            const isAtBottom = termsContent.scrollHeight - termsContent.scrollTop - termsContent.clientHeight < 30;
+            
+            if (isAtBottom && !hasScrolledToBottom) {
+                hasScrolledToBottom = true;
+                
+                // チェックボックスを有効化
+                termsAgreementBox.classList.remove('disabled');
+                
+                // ヒントを非表示
+                scrollHint.classList.add('hidden');
+                
+                console.log('規約を最後まで読みました');
+            }
+        });
 
-// チェックボックスがdisabled状態でクリックされた時のメッセージ
-termsAgreementBox.addEventListener('click', function(e) {
-    if (termsAgreementBox.classList.contains('disabled')) {
-        e.preventDefault();
-        alert('規約を最後までスクロールしてお読みください。');
-        termsContent.scrollTop = termsContent.scrollHeight; // 規約欄にフォーカス
-    }
-});
+        // チェックボックスがdisabled状態でクリックされた時のメッセージ
+        termsAgreementBox.addEventListener('click', function(e) {
+            if (termsAgreementBox.classList.contains('disabled')) {
+                e.preventDefault();
+                e.stopPropagation();
+                alert('規約を最後までスクロールしてお読みください。');
+                termsContent.focus();
+                // 規約欄を少しスクロールして促す
+                termsContent.scrollTop += 50;
+            }
+        });
     </script>
 </body>
 </html>
