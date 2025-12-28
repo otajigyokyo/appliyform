@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>買出人章管理システム</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+    
+    h1 {
+      color: #667eea;
+      text-align: center;
+      margin-bottom: 10px;
+      font-size: 26px;
+    }
+    
+    .subtitle {
+      text-align: center;
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+    
+    /* ========== 検索セクション ========== */
+    .search-section {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      border: 2px solid #667eea;
+    }
+    
+    .search-section h2 {
+      font-size: 16px;
+      color: #333;
+      margin-bottom: 15px;
+    }
+    
+    .search-box {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    
+    .search-input {
+      flex: 1;
+      padding: 12px 15px;
+      border: 2px solid #ddd;
+      border-radius: 6px;
+      font-size: 16px;
+      transition: border-color 0.3s;
+    }
+    
+    .search-input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    
+    .search-input::placeholder {
+      color: #999;
+    }
+    
+    .btn-search {
+      padding: 12px 25px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+      white-space: nowrap;
+    }
+    
+    .btn-search:hover {
+      background: #5568d3;
+    }
+    
+    .btn-recent {
+      padding: 12px 20px;
+      background: #6c757d;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s;
+      white-space: nowrap;
+    }
+    
+    .btn-recent:hover {
+      background: #545b62;
+    }
+    
+    /* ========== 検索結果 ========== */
+    .search-results {
+      margin-top: 15px;
+    }
+    
+    .results-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+    
+    .results-count {
+      font-size: 14px;
+      color: #666;
+    }
+    
+    .results-list {
+      max-height: 350px;
+      overflow-y: auto;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+    }
+    
+    .result-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 15px;
+      border-bottom: 1px solid #f0f0f0;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    
+    .result-item:last-child {
+      border-bottom: none;
+    }
+    
+    .result-item:hover {
+      background-color: #f5f5f5;
+    }
+    
+    .result-item.selected {
+      background-color: #e8f0fe;
+      border-left: 4px solid #667eea;
+    }
+    
+    .result-radio {
+      margin-right: 12px;
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+    
+    .result-info {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 100px 1fr 1fr 80px;
+      gap: 10px;
+      align-items: center;
+    }
+    
+    .result-member-id {
+      font-weight: bold;
+      color: #667eea;
+      font-size: 14px;
+    }
+    
+    .result-store-name {
+      font-size: 14px;
+      color: #333;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    
+    .result-wearer-name {
+      font-size: 14px;
+      color: #555;
+    }
+    
+    .result-status {
+      font-size: 12px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      text-align: center;
+    }
+    
+    .status-active {
+      background: #d4edda;
+      color: #155724;
+    }
+    
+    .status-inactive {
+      background: #f8d7da;
+      color: #721c24;
+    }
+    
+    .status-pending {
+      background: #fff3cd;
+      color: #856404;
+    }
+    
+    /* ========== 選択中の会員 ========== */
+    .selected-member {
+      background: #e8f0fe;
+      border: 2px solid #667eea;
+      border-radius: 8px;
+      padding: 15px 20px;
+      margin: 20px 0;
+      display: none;
+    }
+    
+    .selected-member.show {
+      display: block;
+    }
+    
+    .selected-member h3 {
+      font-size: 14px;
+      color: #667eea;
+      margin-bottom: 10px;
+    }
+    
+    .selected-info {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      font-size: 15px;
+    }
+    
+    .selected-info span {
+      color: #333;
+    }
+    
+    .selected-info strong {
+      color: #667eea;
+    }
+    
+    /* ========== アクションボタン ========== */
+    .action-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-top: 20px;
+    }
+    
+    .btn {
+      padding: 15px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    
+    .btn-card {
+      background: #667eea;
+      color: white;
+    }
+    
+    .btn-card:hover:not(:disabled) {
+      background: #5568d3;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+    
+    .btn-application {
+      background: #28a745;
+      color: white;
+    }
+    
+    .btn-application:hover:not(:disabled) {
+      background: #218838;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+    }
+    
+    .btn-both {
+      background: #fd7e14;
+      color: white;
+      grid-column: 1 / -1;
+    }
+    
+    .btn-both:hover:not(:disabled) {
+      background: #e96b02;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(253, 126, 20, 0.3);
+    }
+    
+    .btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    /* ========== メッセージ ========== */
+    .message {
+      padding: 15px;
+      margin: 15px 0;
+      border-radius: 6px;
+      display: none;
+    }
+    
+    .message.success {
+      background: #d4edda;
+      border: 1px solid #c3e6cb;
+      color: #155724;
+    }
+    
+    .message.error {
+      background: #f8d7da;
+      border: 1px solid #f5c6cb;
+      color: #721c24;
+    }
+    
+    .message.info {
+      background: #d1ecf1;
+      border: 1px solid #bee5eb;
+      color: #0c5460;
+    }
+    
+    /* ========== ローディング ========== */
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 30px;
+    }
+    
+    .spinner {
+      display: inline-block;
+      width: 40px;
+      height: 40px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #667eea;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* ========== 結果リンク ========== */
+    .result-link {
+      display: block;
+      margin-top: 10px;
+      padding: 12px;
+      background: #e7f3ff;
+      border-radius: 6px;
+      text-align: center;
+    }
+    
+    .result-link a {
+      color: #0066cc;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 15px;
+    }
+    
+    .result-link a:hover {
+      text-decoration: underline;
+    }
+    
+    /* ========== 一括生成セクション ========== */
+    .batch-section {
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 2px solid #e0e0e0;
+    }
+    
+    .batch-section h3 {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 15px;
+    }
+    
+    .batch-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    
+    .btn-batch {
+      padding: 10px 20px;
+      background: #6c757d;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .btn-batch:hover {
+      background: #545b62;
+    }
+    
+    /* ========== 印刷方法ヘルプ ========== */
+    .help-box {
+      background: #fff3cd;
+      border: 1px solid #ffc107;
+      padding: 15px;
+      border-radius: 6px;
+      margin-top: 20px;
+      font-size: 13px;
+      color: #856404;
+    }
+    
+    .help-box strong {
+      display: block;
+      margin-bottom: 8px;
+    }
+    
+    /* ========== レスポンシブ ========== */
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+      
+      .container {
+        padding: 20px;
+      }
+      
+      .search-box {
+        flex-direction: column;
+      }
+      
+      .result-info {
+        grid-template-columns: 1fr;
+        gap: 5px;
+      }
+      
+      .action-buttons {
+        grid-template-columns: 1fr;
+      }
+      
+      .btn-both {
+        grid-column: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎫 買出人章管理システム</h1>
+    <div class="subtitle">会員検索・カード生成・申請書印刷</div>
+    
+    <!-- 検索セクション -->
+    <div class="search-section">
+      <h2>🔍 会員検索</h2>
+      <div class="search-box">
+        <input type="text" 
+               class="search-input" 
+               id="searchKeyword" 
+               placeholder="会員番号、店名、氏名で検索（例：K10032、銀座、山田）"
+               onkeypress="handleSearchKeypress(event)">
+        <button class="btn-search" onclick="searchMembers()">🔍 検索</button>
+        <button class="btn-recent" onclick="loadRecentMembers()">📋 最新20件</button>
+      </div>
+      
+      <!-- 検索結果 -->
+      <div class="search-results" id="searchResults" style="display: none;">
+        <div class="results-header">
+          <span class="results-count" id="resultsCount">0件</span>
+        </div>
+        <div class="results-list" id="resultsList">
+          <!-- 検索結果がここに入る -->
+        </div>
+      </div>
+    </div>
+    
+    <!-- 選択中の会員 -->
+    <div class="selected-member" id="selectedMember">
+      <h3>📌 選択中の会員</h3>
+      <div class="selected-info">
+        <span><strong>会員番号:</strong> <span id="selectedMemberId">-</span></span>
+        <span><strong>店名:</strong> <span id="selectedStoreName">-</span></span>
+        <span><strong>着用者:</strong> <span id="selectedWearerName">-</span></span>
+        <span><strong>ステータス:</strong> <span id="selectedStatus">-</span></span>
+      </div>
+    </div>
+    
+    <!-- アクションボタン -->
+    <div class="action-buttons">
+      <button class="btn btn-card" id="btnCard" onclick="generateCard()" disabled>
+        🎫 買出人章カード生成
+      </button>
+      <button class="btn btn-application" id="btnApplication" onclick="generateApplication()" disabled>
+        📋 申請書生成
+      </button>
+      <button class="btn btn-both" id="btnBoth" onclick="generateBoth()" disabled>
+        📦 申請書 ＋ カード 両方生成
+      </button>
+    </div>
+    
+    <!-- ローディング -->
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <div style="margin-top: 10px;">処理中...</div>
+    </div>
+    
+    <!-- メッセージ -->
+    <div class="message" id="message"></div>
+    
+    <!-- 印刷方法ヘルプ -->
+    <div class="help-box">
+      <strong>💾 PDF印刷方法：</strong>
+      1. 生成されたリンクをクリック<br>
+      2. 「ファイル」→「ダウンロード」→「PDF」を選択<br>
+      3. カード: B5縦で印刷（上部55mmにカード） / 申請書: A4縦で印刷
+    </div>
+    
+    <!-- 一括生成セクション -->
+    <div class="batch-section">
+      <h3>⚙️ 一括処理・テスト</h3>
+      <div class="batch-buttons">
+        <button class="btn-batch" onclick="generateTestCard()">🧪 テストカード生成</button>
+        <button class="btn-batch" onclick="generateAllCards()">📊 全カード一括生成</button>
+        <button class="btn-batch" onclick="generateAllApplications()">📊 全申請書一括生成</button>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // ★ GAS API URL（デプロイURLを設定）
+    const API_URL = 'https://script.google.com/macros/s/AKfycbwbbyZoRzhWu8Ft5xVvyI1LJc7_RLZaeLwVGapXnlYIIJBUSlgJXQTzofwuLl5nux43kg/exec';
+    
+    // 選択中の会員データ
+    let selectedMemberData = null;
+    
+    // ========== API呼び出し共通関数 ========== //
+    async function callApi(action, data = {}) {
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'text/plain',
+          },
+          body: JSON.stringify({ action, ...data })
+        });
+        return await response.json();
+      } catch (error) {
+        console.error('API呼び出しエラー:', error);
+        throw error;
+      }
+    }
+    
+    // ========== 検索機能 ========== //
+    
+    function handleSearchKeypress(event) {
+      if (event.key === 'Enter') {
+        searchMembers();
+      }
+    }
+    
+    async function searchMembers() {
+      const keyword = document.getElementById('searchKeyword').value.trim();
+      
+      if (!keyword) {
+        showMessage('検索キーワードを入力してください', 'error');
+        return;
+      }
+      
+      showLoading(true);
+      hideMessage();
+      
+      try {
+        const result = await callApi('searchMembers', { keyword });
+        showLoading(false);
+        
+        if (result.success) {
+          displaySearchResults(result.results, result.message);
+        } else {
+          showMessage('❌ ' + result.error, 'error');
+        }
+      } catch (error) {
+        showLoading(false);
+        showMessage('❌ エラー: ' + error.message, 'error');
+      }
+    }
+    
+    async function loadRecentMembers() {
+      showLoading(true);
+      hideMessage();
+      
+      try {
+        const result = await callApi('getRecentMembers', { count: 20 });
+        showLoading(false);
+        
+        if (result.success) {
+          displaySearchResults(result.results, result.message);
+        } else {
+          showMessage('❌ ' + result.error, 'error');
+        }
+      } catch (error) {
+        showLoading(false);
+        showMessage('❌ エラー: ' + error.message, 'error');
+      }
+    }
+    
+    function displaySearchResults(results, message) {
+      const resultsSection = document.getElementById('searchResults');
+      const resultsCount = document.getElementById('resultsCount');
+      const resultsList = document.getElementById('resultsList');
+      
+      resultsCount.textContent = message || `${results.length}件`;
+      
+      if (results.length === 0) {
+        resultsList.innerHTML = '<div style="padding: 20px; text-align: center; color: #666;">該当する会員が見つかりませんでした</div>';
+      } else {
+        let html = '';
+        results.forEach(function(member, index) {
+          const statusClass = getStatusClass(member.status);
+          const statusText = getStatusText(member.status);
+          
+          html += `
+            <div class="result-item" onclick="selectMember(${index})" data-index="${index}">
+              <input type="radio" name="member" class="result-radio">
+              <div class="result-info">
+                <span class="result-member-id">${escapeHtml(member.memberId)}</span>
+                <span class="result-store-name" title="${escapeHtml(member.storeName)}">${escapeHtml(member.storeName)}</span>
+                <span class="result-wearer-name">${escapeHtml(member.wearerName)}</span>
+                <span class="result-status ${statusClass}">${statusText}</span>
+              </div>
+            </div>
+          `;
+        });
+        resultsList.innerHTML = html;
+      }
+      
+      resultsSection.style.display = 'block';
+      
+      // 検索結果を保存
+      window.searchResults = results;
+      
+      // 選択をクリア
+      clearSelection();
+    }
+    
+    function selectMember(index) {
+      const results = window.searchResults;
+      if (!results || index >= results.length) return;
+      
+      const member = results[index];
+      selectedMemberData = member;
+      
+      // UI更新
+      document.querySelectorAll('.result-item').forEach(function(item, i) {
+        if (i === index) {
+          item.classList.add('selected');
+          item.querySelector('input[type="radio"]').checked = true;
+        } else {
+          item.classList.remove('selected');
+          item.querySelector('input[type="radio"]').checked = false;
+        }
+      });
+      
+      // 選択中の会員表示
+      document.getElementById('selectedMemberId').textContent = member.memberId;
+      document.getElementById('selectedStoreName').textContent = member.storeName;
+      document.getElementById('selectedWearerName').textContent = member.wearerName;
+      document.getElementById('selectedStatus').textContent = getStatusText(member.status);
+      document.getElementById('selectedMember').classList.add('show');
+      
+      // ボタン有効化
+      document.getElementById('btnCard').disabled = false;
+      document.getElementById('btnApplication').disabled = false;
+      document.getElementById('btnBoth').disabled = false;
+    }
+    
+    function clearSelection() {
+      selectedMemberData = null;
+      document.getElementById('selectedMember').classList.remove('show');
+      document.getElementById('btnCard').disabled = true;
+      document.getElementById('btnApplication').disabled = true;
+      document.getElementById('btnBoth').disabled = true;
+    }
+    
+    function getStatusClass(status) {
+      if (!status) return 'status-pending';
+      const s = status.toUpperCase();
+      if (s === 'ACTIVE') return 'status-active';
+      if (s === 'INACTIVE') return 'status-inactive';
+      return 'status-pending';
+    }
+    
+    function getStatusText(status) {
+      if (!status) return '未設定';
+      const s = status.toUpperCase();
+      if (s === 'ACTIVE') return '有効';
+      if (s === 'INACTIVE') return '無効';
+      return status;
+    }
+    
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+    
+    // ========== カード・申請書生成 ========== //
+    
+    async function generateCard() {
+      if (!selectedMemberData) {
+        showMessage('会員を選択してください', 'error');
+        return;
+      }
+      
+      showLoading(true);
+      hideMessage();
+      
+      try {
+        const result = await callApi('generateCardByRow', { rowNumber: selectedMemberData.rowNumber });
+        showLoading(false);
+        
+        if (result.success) {
+          showSuccessWithLink(
+            `✅ カード生成完了\n\n` +
+            `会員番号: ${result.memberId}\n` +
+            `店名: ${result.storeName}\n` +
+            `着用者: ${result.wearerName}`,
+            result.slideUrl,
+            '🎫 カードを開く'
+          );
+        } else {
+          showMessage('❌ エラー: ' + result.error, 'error');
+        }
+      } catch (error) {
+        showLoading(false);
+        showMessage('❌ エラー: ' + error.message, 'error');
+      }
+    }
+    
+    async function generateApplication() {
+      if (!selectedMemberData) {
+        showMessage('会員を選択してください', 'error');
+        return;
+      }
+      
+      showLoading(true);
+      hideMessage();
+      
+      try {
+        const result = await callApi('generateApplicationFormByRow', { rowNumber: selectedMemberData.rowNumber });
+        showLoading(false);
+        
+        if (result.success) {
+          showSuccessWithLink(
+            `✅ 申請書生成完了\n\n` +
+            `会員番号: ${result.memberId}\n` +
+            `店名: ${result.storeName}`,
+            result.slideUrl,
+            '📋 申請書を開く'
+          );
+        } else {
+          showMessage('❌ エラー: ' + result.error, 'error');
+        }
+      } catch (error) {
+        showLoading(false);
+        showMessage('❌ エラー: ' + error.message, 'error');
+      }
+    }
+    
+    async function generateBoth() {
+      if (!selectedMemberData) {
+        showMessage('会員を選択してください', 'error');
+        return;
+      }
+      
+      showLoading(true);
+      hideMessage();
+      
+      try {
+        const rowNumber = selectedMemberData.rowNumber;
+        
+        // 申請書とカードを並列で生成
+        const [appResult, cardResult] = await Promise.all([
+          callApi('generateApplicationFormByRow', { rowNumber }),
+          callApi('generateCardByRow', { rowNumber })
+        ]);
+        
+        showLoading(false);
+        
+        if (appResult.success && cardResult.success) {
+          showSuccessWithLinks(
+            `✅ 申請書＋カード生成完了\n\n会員番号: ${appResult.memberId}`,
+            [
+              { url: appResult.slideUrl, label: '📋 申請書を開く' },
+              { url: cardResult.slideUrl, label: '🎫 カードを開く' }
+            ]
+          );
+        } else {
+          const errors = [];
+          if (!appResult.success) errors.push('申請書: ' + appResult.error);
+          if (!cardResult.success) errors.push('カード: ' + cardResult.error);
+          showMessage('❌ エラー:\n' + errors.join('\n'), 'error');
+        }
+      } catch (error) {
+        showLoading(false);
+        showMessage('❌ エラー: ' + error.message, 'error');
+      }
+    }
+    
+    // ========== 一括処理 ========== //
+    
+    async function generateTestCard() {
+      showLoading(true);
+      hideMessage();
+      
+      try {
+        const result = await callApi('generateTestCard');
+        showLoading(false);
+        
+        if (result.success) {
+          showSuccessWithLink(
+            `✅ テストカード生成完了\n\n` +
+            `会員番号: ${result.memberId}\n` +
+            `店名: ${result.storeName}\n` +
+            `着用者: ${result.wearerName}`,
+            result.slideUrl,
+            '🎫 テストカードを開く'
+          );
+        } else {
+          showMessage('❌ エラー: ' + result.error, 'error');
+        }
+      } catch (error) {
+        showLoading(false);
+        showMessage('❌ エラー: ' + error.message, 'error');
+      }
+    }
+    
+    async function generateAllCards() {
+      if (!confirm('全データのカードを一括生成しますか？\n時間がかかる場合があります。')) {
+        return;
+      }
+      
+      showLoading(true);
+      hideMessage();
+      
+      try {
+        const result = await callApi('generateAllCards');
+        showLoading(false);
+        
+        if (result.success) {
+          showMessage(
+            `✅ 一括生成完了\n\n成功: ${result.successCount}件\nエラー: ${result.errorCount}件`,
+            'success'
+          );
+        } else {
+          showMessage('❌ エラー: ' + result.error, 'error');
+        }
+      } catch (error) {
+        showLoading(false);
+        showMessage('❌ エラー: ' + error.message, 'error');
+      }
+    }
+    
+    async function generateAllApplications() {
+      if (!confirm('全データの申請書を一括生成しますか？\n時間がかかる場合があります。')) {
+        return;
+      }
+      
+      showLoading(true);
+      hideMessage();
+      
+      try {
+        const result = await callApi('generateAllApplicationForms');
+        showLoading(false);
+        
+        if (result.success) {
+          showMessage(
+            `✅ 一括生成完了\n\n成功: ${result.successCount}件\nエラー: ${result.errorCount}件`,
+            'success'
+          );
+        } else {
+          showMessage('❌ エラー: ' + result.error, 'error');
+        }
+      } catch (error) {
+        showLoading(false);
+        showMessage('❌ エラー: ' + error.message, 'error');
+      }
+    }
+    
+    // ========== UI ヘルパー ========== //
+    
+    function showLoading(show) {
+      document.getElementById('loading').style.display = show ? 'block' : 'none';
+    }
+    
+    function showMessage(text, type) {
+      const messageEl = document.getElementById('message');
+      messageEl.textContent = text;
+      messageEl.className = 'message ' + type;
+      messageEl.style.display = 'block';
+    }
+    
+    function hideMessage() {
+      document.getElementById('message').style.display = 'none';
+    }
+    
+    function showSuccessWithLink(text, url, linkLabel) {
+      const messageEl = document.getElementById('message');
+      messageEl.innerHTML = '';
+      messageEl.className = 'message success';
+      
+      const textNode = document.createElement('div');
+      textNode.style.whiteSpace = 'pre-line';
+      textNode.textContent = text;
+      messageEl.appendChild(textNode);
+      
+      const link = document.createElement('div');
+      link.className = 'result-link';
+      link.innerHTML = `<a href="${url}" target="_blank">${linkLabel}</a>`;
+      messageEl.appendChild(link);
+      
+      messageEl.style.display = 'block';
+    }
+    
+    function showSuccessWithLinks(text, links) {
+      const messageEl = document.getElementById('message');
+      messageEl.innerHTML = '';
+      messageEl.className = 'message success';
+      
+      const textNode = document.createElement('div');
+      textNode.style.whiteSpace = 'pre-line';
+      textNode.textContent = text;
+      messageEl.appendChild(textNode);
+      
+      links.forEach(function(linkInfo) {
+        const link = document.createElement('div');
+        link.className = 'result-link';
+        link.innerHTML = `<a href="${linkInfo.url}" target="_blank">${linkInfo.label}</a>`;
+        messageEl.appendChild(link);
+      });
+      
+      messageEl.style.display = 'block';
+    }
+    
+    // ========== 初期化 ========== //
+    
+    window.onload = function() {
+      // 最新20件を自動ロード
+      loadRecentMembers();
+    };
+  </script>
+</body>
+</html>
