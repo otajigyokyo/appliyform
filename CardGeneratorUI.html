@@ -304,7 +304,7 @@
     /* ========== アクションボタン ========== */
     .action-buttons {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
       gap: 15px;
       margin-top: 20px;
     }
@@ -321,6 +321,17 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
+    }
+    
+    .btn-detail {
+      background: #17a2b8;
+      color: white;
+    }
+    
+    .btn-detail:hover:not(:disabled) {
+      background: #138496;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(23, 162, 184, 0.3);
     }
     
     .btn-card {
@@ -348,7 +359,6 @@
     .btn-both {
       background: #fd7e14;
       color: white;
-      grid-column: 1 / -1;
     }
     
     .btn-both:hover:not(:disabled) {
@@ -483,6 +493,12 @@
     }
     
     /* ========== レスポンシブ ========== */
+    @media (max-width: 900px) {
+      .action-buttons {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    
     @media (max-width: 768px) {
       body {
         padding: 10px;
@@ -529,10 +545,6 @@
       
       .action-buttons {
         grid-template-columns: 1fr;
-      }
-      
-      .btn-both {
-        grid-column: 1;
       }
     }
   </style>
@@ -591,14 +603,17 @@
     
     <!-- アクションボタン -->
     <div class="action-buttons">
+      <button class="btn btn-detail" id="btnDetail" onclick="openMemberDetail()" disabled>
+        👤 会員詳細
+      </button>
       <button class="btn btn-card" id="btnCard" onclick="generateCard()" disabled>
-        🎫 買出人章カード生成
+        🎫 カード生成
       </button>
       <button class="btn btn-application" id="btnApplication" onclick="generateApplication()" disabled>
         📋 申請書生成
       </button>
       <button class="btn btn-both" id="btnBoth" onclick="generateBoth()" disabled>
-        📦 申請書 ＋ カード 両方生成
+        📦 両方生成
       </button>
     </div>
     
@@ -633,6 +648,9 @@
   <script>
     // ★ GAS API URL（デプロイURLを設定）
     const API_URL = 'https://script.google.com/macros/s/AKfycbwbbyZoRzhWu8Ft5xVvyI1LJc7_RLZaeLwVGapXnlYIIJBUSlgJXQTzofwuLl5nux43kg/exec';
+    
+    // ★ MemberDetail.html のURL（GitHub Pages）
+    const MEMBER_DETAIL_URL = 'https://otajigyokyo.github.io/appliyform/MemberDetail.html';
     
     // 選択中の会員データ
     let selectedMemberData = null;
@@ -782,6 +800,7 @@
       document.getElementById('selectedMember').classList.add('show');
       
       // ボタン有効化
+      document.getElementById('btnDetail').disabled = false;
       document.getElementById('btnCard').disabled = false;
       document.getElementById('btnApplication').disabled = false;
       document.getElementById('btnBoth').disabled = false;
@@ -790,6 +809,7 @@
     function clearSelection() {
       selectedMemberData = null;
       document.getElementById('selectedMember').classList.remove('show');
+      document.getElementById('btnDetail').disabled = true;
       document.getElementById('btnCard').disabled = true;
       document.getElementById('btnApplication').disabled = true;
       document.getElementById('btnBoth').disabled = true;
@@ -844,6 +864,19 @@
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;');
+    }
+    
+    // ========== 会員詳細を別窓で開く ========== //
+    
+    function openMemberDetail() {
+      if (!selectedMemberData) {
+        showMessage('会員を選択してください', 'error');
+        return;
+      }
+      
+      // 会員詳細ページを別窓で開く
+      const url = `${MEMBER_DETAIL_URL}?row=${selectedMemberData.rowNumber}&member_id=${encodeURIComponent(selectedMemberData.memberId)}`;
+      window.open(url, '_blank', 'width=900,height=800,scrollbars=yes,resizable=yes');
     }
     
     // ========== カード・申請書生成 ========== //
