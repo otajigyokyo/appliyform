@@ -14,7 +14,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 10px;
+            padding: 20px;
             min-height: 100vh;
         }
         
@@ -44,54 +44,55 @@
             color: #666;
         }
         
-        /* カード */
+        /* カード - 横長対応 */
         .card {
             background: white;
             border-radius: 15px;
-            padding: 8vw;
+            padding: 30px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-            width: 98%;
-            max-width: 500px;
+            width: 100%;
+            max-width: 420px;
+            min-width: 280px;
             display: none;
         }
         
         .card.show { display: block; }
         
         .card h2 {
-            margin: 0 0 6vw 0;
+            margin: 0 0 20px 0;
             text-align: center;
-            font-size: min(20vw, 80px);
+            font-size: 48px;
             font-weight: bold;
         }
         
         .status-badge {
-            padding: 6vw;
+            padding: 25px;
             border-radius: 15px;
             text-align: center;
-            margin: 5vw 0;
+            margin: 20px 0;
         }
         
         .status-icon {
-            font-size: min(25vw, 100px);
+            font-size: 60px;
             display: block;
-            margin-bottom: 3vw;
+            margin-bottom: 10px;
         }
         
         .status-text {
-            font-size: min(12vw, 48px);
+            font-size: 36px;
             font-weight: bold;
         }
         
         .info-section {
-            margin-top: 5vw;
+            margin-top: 20px;
         }
         
         .info-row {
             display: flex;
             justify-content: space-between;
-            padding: 3vw 0;
+            padding: 12px 0;
             border-bottom: 1px solid #eee;
-            font-size: min(5vw, 18px);
+            font-size: 16px;
         }
         
         .info-row:last-child { border-bottom: none; }
@@ -99,12 +100,14 @@
         .label {
             color: #666;
             font-weight: 500;
+            flex-shrink: 0;
         }
         
         .value {
             color: #333;
             font-weight: bold;
             text-align: right;
+            word-break: break-all;
         }
         
         /* ステータス別スタイル */
@@ -137,17 +140,122 @@
             border-radius: 10px;
             text-align: center;
             display: none;
+            max-width: 420px;
+            width: 100%;
         }
         
         .error-message.show { display: block; }
         
-        .timestamp {
-            text-align: center;
-            margin-top: 5vw;
-            padding-top: 3vw;
-            border-top: 1px solid #eee;
-            font-size: min(3.5vw, 14px);
-            color: #999;
+        /* ========== レスポンシブ対応 ========== */
+        
+        /* スマホ縦向き（幅480px以下） */
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .card {
+                padding: 6vw;
+            }
+            
+            .card h2 {
+                font-size: 14vw;
+                margin-bottom: 5vw;
+            }
+            
+            .status-badge {
+                padding: 5vw;
+                margin: 4vw 0;
+            }
+            
+            .status-icon {
+                font-size: 18vw;
+                margin-bottom: 2vw;
+            }
+            
+            .status-text {
+                font-size: 10vw;
+            }
+            
+            .info-section {
+                margin-top: 4vw;
+            }
+            
+            .info-row {
+                padding: 3vw 0;
+                font-size: 4vw;
+            }
+        }
+        
+        /* タブレット・PC横向き（幅481px以上） */
+        @media (min-width: 481px) {
+            .card {
+                padding: 35px;
+            }
+            
+            .card h2 {
+                font-size: 52px;
+            }
+            
+            .status-icon {
+                font-size: 70px;
+            }
+            
+            .status-text {
+                font-size: 40px;
+            }
+            
+            .info-row {
+                font-size: 17px;
+                padding: 14px 0;
+            }
+        }
+        
+        /* 横長画面対応（アスペクト比が横長の場合） */
+        @media (min-aspect-ratio: 4/3) and (max-height: 600px) {
+            body {
+                padding: 15px;
+            }
+            
+            .card {
+                max-width: 380px;
+                padding: 20px 25px;
+            }
+            
+            .card h2 {
+                font-size: 36px;
+                margin-bottom: 12px;
+            }
+            
+            .status-badge {
+                padding: 15px;
+                margin: 12px 0;
+            }
+            
+            .status-icon {
+                font-size: 40px;
+                margin-bottom: 5px;
+            }
+            
+            .status-text {
+                font-size: 28px;
+            }
+            
+            .info-section {
+                margin-top: 12px;
+            }
+            
+            .info-row {
+                padding: 8px 0;
+                font-size: 14px;
+            }
+        }
+        
+        /* 非常に横長の画面（PCなど） */
+        @media (min-width: 800px) {
+            .card {
+                max-width: 450px;
+            }
         }
     </style>
 </head>
@@ -189,7 +297,7 @@
             </div>
         </div>
         
-        <div class="timestamp" id="timestamp"></div>
+        <!-- ★削除: 確認日時の重複表示を削除 -->
     </div>
 
     <script>
@@ -245,6 +353,49 @@
             errorEl.classList.add('show');
         }
         
+        // ★追加: 日時フォーマット関数（秒を削除）
+        function formatDateTime(dateTimeStr) {
+            if (!dateTimeStr || dateTimeStr === '-') return '-';
+            
+            try {
+                // 様々な形式に対応
+                let date;
+                
+                // 既に Date オブジェクトの場合
+                if (dateTimeStr instanceof Date) {
+                    date = dateTimeStr;
+                }
+                // "2025/12/29 20:43:10" 形式
+                else if (typeof dateTimeStr === 'string') {
+                    // 秒が含まれている場合は削除して返す
+                    const match = dateTimeStr.match(/^(\d{4}\/\d{2}\/\d{2}\s+\d{2}:\d{2})/);
+                    if (match) {
+                        return match[1];
+                    }
+                    
+                    // ISO形式などの場合
+                    date = new Date(dateTimeStr);
+                }
+                
+                // Dateオブジェクトから整形
+                if (date && !isNaN(date.getTime())) {
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const hours = String(date.getHours()).padStart(2, '0');
+                    const minutes = String(date.getMinutes()).padStart(2, '0');
+                    return `${year}/${month}/${day} ${hours}:${minutes}`;
+                }
+                
+                // パースできない場合はそのまま返す（ただし秒部分があれば削除）
+                return dateTimeStr.replace(/:\d{2}$/, '');
+                
+            } catch (e) {
+                console.error('日時フォーマットエラー:', e);
+                return dateTimeStr;
+            }
+        }
+        
         // 結果表示
         function showResult(data) {
             // ステータス設定
@@ -275,7 +426,9 @@
             document.getElementById('statusText').textContent = statusText;
             document.getElementById('storeName').textContent = data.store_name || '-';
             document.getElementById('representativeName').textContent = data.representative_name || '-';
-            document.getElementById('lastScan').textContent = data.last_scan_at || '-';
+            
+            // ★修正: 最終確認の表示（秒を削除）
+            document.getElementById('lastScan').textContent = formatDateTime(data.last_scan_at) || '-';
             
             // 有効期限
             if (data.expires_at) {
@@ -283,10 +436,10 @@
                 document.getElementById('expiresAt').textContent = data.expires_at;
             }
             
-            // タイムスタンプ
-            const now = new Date();
-            document.getElementById('timestamp').textContent = 
-                '確認日時: ' + now.toLocaleString('ja-JP');
+            // ★削除: 確認日時のタイムスタンプ表示を削除
+            // const now = new Date();
+            // document.getElementById('timestamp').textContent = 
+            //     '確認日時: ' + now.toLocaleString('ja-JP');
             
             cardEl.classList.add('show');
         }
