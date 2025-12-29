@@ -20,7 +20,7 @@
     }
     
     .container {
-      max-width: 900px;
+      max-width: 1050px;
       margin: 0 auto;
       background: white;
       border-radius: 12px;
@@ -133,11 +133,38 @@
       color: #666;
     }
     
+    /* ========== 列ヘッダー ========== */
+    .results-column-header {
+      display: grid;
+      grid-template-columns: 35px 85px 1fr 120px 55px 55px 60px;
+      gap: 8px;
+      padding: 10px 15px;
+      background: #667eea;
+      color: white;
+      font-size: 12px;
+      font-weight: bold;
+      border-radius: 6px 6px 0 0;
+    }
+    
+    .results-column-header span {
+      text-align: center;
+    }
+    
+    .results-column-header span:nth-child(2) {
+      text-align: left;
+    }
+    
+    .results-column-header span:nth-child(3),
+    .results-column-header span:nth-child(4) {
+      text-align: left;
+    }
+    
     .results-list {
       max-height: 350px;
       overflow-y: auto;
       border: 1px solid #e0e0e0;
-      border-radius: 6px;
+      border-top: none;
+      border-radius: 0 0 6px 6px;
     }
     
     .result-item {
@@ -167,13 +194,14 @@
       width: 18px;
       height: 18px;
       cursor: pointer;
+      flex-shrink: 0;
     }
     
     .result-info {
       flex: 1;
       display: grid;
-      grid-template-columns: 100px 1fr 1fr 80px;
-      gap: 10px;
+      grid-template-columns: 85px 1fr 120px 55px 55px 60px;
+      gap: 8px;
       align-items: center;
     }
     
@@ -218,6 +246,21 @@
       color: #856404;
     }
     
+    /* ========== 印刷回数 ========== */
+    .result-print-count {
+      font-size: 13px;
+      text-align: center;
+      font-weight: bold;
+    }
+    
+    .print-count-zero {
+      color: #ccc;
+    }
+    
+    .print-count-has {
+      color: #28a745;
+    }
+    
     /* ========== 選択中の会員 ========== */
     .selected-member {
       background: #e8f0fe;
@@ -251,6 +294,11 @@
     
     .selected-info strong {
       color: #667eea;
+    }
+    
+    .selected-print-count {
+      color: #28a745 !important;
+      font-weight: bold;
     }
     
     /* ========== アクションボタン ========== */
@@ -448,10 +496,36 @@
         flex-direction: column;
       }
       
+      .results-column-header {
+        display: none;
+      }
+      
       .result-info {
         grid-template-columns: 1fr;
         gap: 5px;
       }
+      
+      .result-item {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .result-radio {
+        margin-bottom: 8px;
+      }
+      
+      /* モバイル用ラベル表示 */
+      .result-info span::before {
+        font-weight: bold;
+        color: #667eea;
+        margin-right: 5px;
+      }
+      
+      .result-member-id::before { content: "会員ID: "; }
+      .result-store-name::before { content: "店名: "; }
+      .result-wearer-name::before { content: "氏名: "; }
+      .result-print-count.card-count::before { content: "カード: "; }
+      .result-print-count.app-count::before { content: "申請書: "; }
       
       .action-buttons {
         grid-template-columns: 1fr;
@@ -486,6 +560,16 @@
         <div class="results-header">
           <span class="results-count" id="resultsCount">0件</span>
         </div>
+        <!-- 列ヘッダー -->
+        <div class="results-column-header">
+          <span></span>
+          <span>会員ID</span>
+          <span>店名</span>
+          <span>氏名</span>
+          <span>カード</span>
+          <span>申請書</span>
+          <span>状態</span>
+        </div>
         <div class="results-list" id="resultsList">
           <!-- 検索結果がここに入る -->
         </div>
@@ -499,6 +583,8 @@
         <span><strong>会員番号:</strong> <span id="selectedMemberId">-</span></span>
         <span><strong>店名:</strong> <span id="selectedStoreName">-</span></span>
         <span><strong>着用者:</strong> <span id="selectedWearerName">-</span></span>
+        <span><strong>カード印刷:</strong> <span id="selectedCardCount" class="selected-print-count">0</span>回</span>
+        <span><strong>申請書印刷:</strong> <span id="selectedAppCount" class="selected-print-count">0</span>回</span>
         <span><strong>ステータス:</strong> <span id="selectedStatus">-</span></span>
       </div>
     </div>
@@ -636,6 +722,12 @@
           const statusClass = getStatusClass(member.status);
           const statusText = getStatusText(member.status);
           
+          // ★ 印刷回数の表示クラスを決定
+          const cardCount = member.cardPrintCount || 0;
+          const appCount = member.appPrintCount || 0;
+          const cardCountClass = cardCount > 0 ? 'print-count-has' : 'print-count-zero';
+          const appCountClass = appCount > 0 ? 'print-count-has' : 'print-count-zero';
+          
           html += `
             <div class="result-item" onclick="selectMember(${index})" data-index="${index}">
               <input type="radio" name="member" class="result-radio">
@@ -643,6 +735,8 @@
                 <span class="result-member-id">${escapeHtml(member.memberId)}</span>
                 <span class="result-store-name" title="${escapeHtml(member.storeName)}">${escapeHtml(member.storeName)}</span>
                 <span class="result-wearer-name">${escapeHtml(member.wearerName)}</span>
+                <span class="result-print-count card-count ${cardCountClass}">${cardCount}</span>
+                <span class="result-print-count app-count ${appCountClass}">${appCount}</span>
                 <span class="result-status ${statusClass}">${statusText}</span>
               </div>
             </div>
@@ -682,6 +776,8 @@
       document.getElementById('selectedMemberId').textContent = member.memberId;
       document.getElementById('selectedStoreName').textContent = member.storeName;
       document.getElementById('selectedWearerName').textContent = member.wearerName;
+      document.getElementById('selectedCardCount').textContent = member.cardPrintCount || 0;
+      document.getElementById('selectedAppCount').textContent = member.appPrintCount || 0;
       document.getElementById('selectedStatus').textContent = getStatusText(member.status);
       document.getElementById('selectedMember').classList.add('show');
       
@@ -697,6 +793,31 @@
       document.getElementById('btnCard').disabled = true;
       document.getElementById('btnApplication').disabled = true;
       document.getElementById('btnBoth').disabled = true;
+    }
+    
+    // ★ リスト内の印刷回数を更新する関数
+    function updateListPrintCount(index, cardCount, appCount) {
+      const resultItems = document.querySelectorAll('.result-item');
+      if (resultItems[index]) {
+        const cardEl = resultItems[index].querySelector('.card-count');
+        const appEl = resultItems[index].querySelector('.app-count');
+        
+        if (cardEl && cardCount !== undefined) {
+          cardEl.textContent = cardCount;
+          cardEl.className = 'result-print-count card-count ' + (cardCount > 0 ? 'print-count-has' : 'print-count-zero');
+        }
+        
+        if (appEl && appCount !== undefined) {
+          appEl.textContent = appCount;
+          appEl.className = 'result-print-count app-count ' + (appCount > 0 ? 'print-count-has' : 'print-count-zero');
+        }
+      }
+      
+      // 検索結果データも更新
+      if (window.searchResults && window.searchResults[index]) {
+        if (cardCount !== undefined) window.searchResults[index].cardPrintCount = cardCount;
+        if (appCount !== undefined) window.searchResults[index].appPrintCount = appCount;
+      }
     }
     
     function getStatusClass(status) {
@@ -741,11 +862,19 @@
         showLoading(false);
         
         if (result.success) {
+          // ★ 印刷回数を更新
+          const selectedIndex = Array.from(document.querySelectorAll('.result-item')).findIndex(item => item.classList.contains('selected'));
+          if (selectedIndex >= 0 && result.cardPrintCount !== undefined) {
+            updateListPrintCount(selectedIndex, result.cardPrintCount, undefined);
+            document.getElementById('selectedCardCount').textContent = result.cardPrintCount;
+          }
+          
           showSuccessWithLink(
             `✅ カード生成完了\n\n` +
             `会員番号: ${result.memberId}\n` +
             `店名: ${result.storeName}\n` +
-            `着用者: ${result.wearerName}`,
+            `着用者: ${result.wearerName}\n` +
+            `カード印刷回数: ${result.cardPrintCount || 1}回目`,
             result.slideUrl,
             '🎫 カードを開く'
           );
@@ -772,10 +901,18 @@
         showLoading(false);
         
         if (result.success) {
+          // ★ 印刷回数を更新
+          const selectedIndex = Array.from(document.querySelectorAll('.result-item')).findIndex(item => item.classList.contains('selected'));
+          if (selectedIndex >= 0 && result.appPrintCount !== undefined) {
+            updateListPrintCount(selectedIndex, undefined, result.appPrintCount);
+            document.getElementById('selectedAppCount').textContent = result.appPrintCount;
+          }
+          
           showSuccessWithLink(
             `✅ 申請書生成完了\n\n` +
             `会員番号: ${result.memberId}\n` +
-            `店名: ${result.storeName}`,
+            `店名: ${result.storeName}\n` +
+            `申請書印刷回数: ${result.appPrintCount || 1}回目`,
             result.slideUrl,
             '📋 申請書を開く'
           );
@@ -809,8 +946,20 @@
         showLoading(false);
         
         if (appResult.success && cardResult.success) {
+          // ★ 印刷回数を更新
+          const selectedIndex = Array.from(document.querySelectorAll('.result-item')).findIndex(item => item.classList.contains('selected'));
+          if (selectedIndex >= 0) {
+            updateListPrintCount(selectedIndex, cardResult.cardPrintCount, appResult.appPrintCount);
+            if (cardResult.cardPrintCount !== undefined) {
+              document.getElementById('selectedCardCount').textContent = cardResult.cardPrintCount;
+            }
+            if (appResult.appPrintCount !== undefined) {
+              document.getElementById('selectedAppCount').textContent = appResult.appPrintCount;
+            }
+          }
+          
           showSuccessWithLinks(
-            `✅ 申請書＋カード生成完了\n\n会員番号: ${appResult.memberId}`,
+            `✅ 申請書＋カード生成完了\n\n会員番号: ${appResult.memberId}\nカード印刷: ${cardResult.cardPrintCount || 1}回目 / 申請書印刷: ${appResult.appPrintCount || 1}回目`,
             [
               { url: appResult.slideUrl, label: '📋 申請書を開く' },
               { url: cardResult.slideUrl, label: '🎫 カードを開く' }
