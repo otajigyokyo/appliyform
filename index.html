@@ -1378,34 +1378,48 @@ input[type="date"][readonly] {
             reader.readAsDataURL(file);
         }
 
-        function compressAndStoreDocument(canvas, fileName) {
-            const ctx = canvas.getContext('2d');
-            let width = canvas.width;
-            let height = canvas.height;
+        function compressAndStoreDocument(sourceCanvas, fileName) {
+            // 元のcanvasサイズを取得
+            let srcWidth = sourceCanvas.width;
+            let srcHeight = sourceCanvas.height;
             const maxSize = 1600;
             
-            if (width > maxSize || height > maxSize) {
-                if (width > height) {
-                    height = (height / width) * maxSize;
-                    width = maxSize;
+            // 出力サイズを計算
+            let destWidth = srcWidth;
+            let destHeight = srcHeight;
+            
+            if (srcWidth > maxSize || srcHeight > maxSize) {
+                if (srcWidth > srcHeight) {
+                    destHeight = (srcHeight / srcWidth) * maxSize;
+                    destWidth = maxSize;
                 } else {
-                    width = (width / height) * maxSize;
-                    height = maxSize;
+                    destWidth = (srcWidth / srcHeight) * maxSize;
+                    destHeight = maxSize;
                 }
             }
             
-            canvas.width = width;
-            canvas.height = height;
-            ctx.drawImage(canvas, 0, 0, width, height);
+            // ★修正: 新しいcanvasを作成して描画（元のcanvasをクリアしない）
+            const outputCanvas = document.createElement('canvas');
+            outputCanvas.width = destWidth;
+            outputCanvas.height = destHeight;
+            const outputCtx = outputCanvas.getContext('2d');
             
+            // 白背景を塗る（PDFの透過部分対策）
+            outputCtx.fillStyle = '#FFFFFF';
+            outputCtx.fillRect(0, 0, destWidth, destHeight);
+            
+            // 元のcanvasから新しいcanvasに描画
+            outputCtx.drawImage(sourceCanvas, 0, 0, srcWidth, srcHeight, 0, 0, destWidth, destHeight);
+            
+            // JPEG圧縮
             let quality = 0.8;
-            let dataUrl = canvas.toDataURL('image/jpeg', quality);
+            let dataUrl = outputCanvas.toDataURL('image/jpeg', quality);
             let size = dataUrl.length * 0.75;
             
             const targetSize = 500 * 1024;
             while (size > targetSize && quality > 0.5) {
                 quality -= 0.1;
-                dataUrl = canvas.toDataURL('image/jpeg', quality);
+                dataUrl = outputCanvas.toDataURL('image/jpeg', quality);
                 size = dataUrl.length * 0.75;
             }
             
@@ -1421,7 +1435,7 @@ input[type="date"][readonly] {
                 <div class="file-info">
                     <strong>元ファイル:</strong> ${fileName}<br>
                     <strong>処理:</strong> ${fileType}<br>
-                    <strong>サイズ:</strong> ${Math.floor(width)} × ${Math.floor(height)} px<br>
+                    <strong>サイズ:</strong> ${Math.floor(destWidth)} × ${Math.floor(destHeight)} px<br>
                     <strong>容量:</strong> ${sizeKB} KB ${compressionInfo}
                 </div>
                 <img src="${dataUrl}" style="margin-top: 10px; max-width: 300px; border: 1px solid #ddd;">
