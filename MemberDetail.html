@@ -575,7 +575,6 @@
         
         const response = await fetch(API_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             action: 'getMemberDetail',
             ...params
@@ -683,7 +682,6 @@
       try {
         const response = await fetch(API_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             action: 'generateCardByRow',
             rowNumber: memberData.rowNumber
@@ -719,7 +717,6 @@
       try {
         const response = await fetch(API_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             action: 'generateApplicationFormByRow',
             rowNumber: memberData.rowNumber
