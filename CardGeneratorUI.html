@@ -38,8 +38,55 @@
     .subtitle {
       text-align: center;
       color: #666;
-      margin-bottom: 30px;
+      margin-bottom: 15px;
       font-size: 14px;
+    }
+    
+    /* ========== ナビゲーションリンク ========== */
+    .nav-links {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 25px;
+      flex-wrap: wrap;
+    }
+    
+    .nav-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      text-decoration: none;
+      border-radius: 25px;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.3s;
+      box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    }
+    
+    .nav-link:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+    
+    .nav-link.email {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      box-shadow: 0 2px 8px rgba(245, 87, 108, 0.3);
+    }
+    
+    .nav-link.email:hover {
+      box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4);
+    }
+    
+    .nav-link.form {
+      background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+      box-shadow: 0 2px 8px rgba(17, 153, 142, 0.3);
+    }
+    
+    .nav-link.form:hover {
+      box-shadow: 0 4px 15px rgba(17, 153, 142, 0.4);
     }
     
     /* ========== 検索セクション ========== */
@@ -546,6 +593,11 @@
       .action-buttons {
         grid-template-columns: 1fr;
       }
+      
+      .nav-links {
+        flex-direction: column;
+        align-items: center;
+      }
     }
   </style>
 </head>
@@ -553,6 +605,12 @@
   <div class="container">
     <h1>🎫 買出人章管理システム</h1>
     <div class="subtitle">会員検索・カード生成・申請書印刷</div>
+    
+    <!-- ★ナビゲーションリンク追加 -->
+    <div class="nav-links">
+      <a href="EmailSender.html" class="nav-link email">📧 メール送信システム</a>
+      <a href="index.html" class="nav-link form" target="_blank">📝 申請フォームを開く</a>
+    </div>
     
     <!-- 検索セクション -->
     <div class="search-section">
@@ -698,7 +756,7 @@
         if (result.success) {
           displaySearchResults(result.results, result.message);
         } else {
-          showMessage('❌ ' + result.error, 'error');
+          showMessage('❌ 検索エラー: ' + result.error, 'error');
         }
       } catch (error) {
         showLoading(false);
@@ -715,9 +773,9 @@
         showLoading(false);
         
         if (result.success) {
-          displaySearchResults(result.results, result.message);
+          displaySearchResults(result.results, '最新20件を表示');
         } else {
-          showMessage('❌ ' + result.error, 'error');
+          showMessage('❌ エラー: ' + result.error, 'error');
         }
       } catch (error) {
         showLoading(false);
@@ -726,117 +784,96 @@
     }
     
     function displaySearchResults(results, message) {
-      const resultsSection = document.getElementById('searchResults');
-      const resultsCount = document.getElementById('resultsCount');
-      const resultsList = document.getElementById('resultsList');
+      const container = document.getElementById('searchResults');
+      const listEl = document.getElementById('resultsList');
+      const countEl = document.getElementById('resultsCount');
       
-      resultsCount.textContent = message || `${results.length}件`;
+      container.style.display = 'block';
+      countEl.textContent = message || `${results.length}件`;
       
-      if (results.length === 0) {
-        resultsList.innerHTML = '<div style="padding: 20px; text-align: center; color: #666;">該当する会員が見つかりませんでした</div>';
-      } else {
-        let html = '';
-        results.forEach(function(member, index) {
-          const statusClass = getStatusClass(member.status);
-          const statusText = getStatusText(member.status);
-          
-          // ★ 印刷回数の表示クラスを決定
-          const cardCount = member.cardPrintCount || 0;
-          const appCount = member.appPrintCount || 0;
-          const cardCountClass = cardCount > 0 ? 'print-count-has' : 'print-count-zero';
-          const appCountClass = appCount > 0 ? 'print-count-has' : 'print-count-zero';
-          
-          html += `
-            <div class="result-item" onclick="selectMember(${index})" data-index="${index}">
-              <input type="radio" name="member" class="result-radio">
-              <div class="result-info">
-                <span class="result-member-id">${escapeHtml(member.memberId)}</span>
-                <span class="result-store-name" title="${escapeHtml(member.storeName)}">${escapeHtml(member.storeName)}</span>
-                <span class="result-wearer-name">${escapeHtml(member.wearerName)}</span>
-                <span class="result-print-count card-count ${cardCountClass}">${cardCount}</span>
-                <span class="result-print-count app-count ${appCountClass}">${appCount}</span>
-                <span class="result-status ${statusClass}">${statusText}</span>
-              </div>
-            </div>
-          `;
-        });
-        resultsList.innerHTML = html;
+      if (!results || results.length === 0) {
+        listEl.innerHTML = '<div style="padding: 20px; text-align: center; color: #666;">該当する会員が見つかりませんでした</div>';
+        return;
       }
       
-      resultsSection.style.display = 'block';
+      listEl.innerHTML = results.map((member, index) => {
+        const cardCount = member.cardPrintCount || 0;
+        const appCount = member.appPrintCount || 0;
+        const cardClass = cardCount > 0 ? 'print-count-has' : 'print-count-zero';
+        const appClass = appCount > 0 ? 'print-count-has' : 'print-count-zero';
+        
+        return `
+          <div class="result-item" onclick="selectMember(${index}, this)" data-index="${index}">
+            <input type="radio" name="memberSelect" class="result-radio" onclick="event.stopPropagation()">
+            <div class="result-info">
+              <span class="result-member-id">${escapeHtml(member.memberId)}</span>
+              <span class="result-store-name">${escapeHtml(member.storeName)}</span>
+              <span class="result-wearer-name">${escapeHtml(member.wearerName || member.representativeName)}</span>
+              <span class="result-print-count card-count ${cardClass}">${cardCount}</span>
+              <span class="result-print-count app-count ${appClass}">${appCount}</span>
+              <span class="result-status ${getStatusClass(member.status)}">${getStatusText(member.status)}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
       
-      // 検索結果を保存
-      window.searchResults = results;
+      // データを保存
+      window.searchResultsData = results;
       
-      // 選択をクリア
-      clearSelection();
+      // 選択状態をリセット
+      selectedMemberData = null;
+      document.getElementById('selectedMember').classList.remove('show');
+      setButtonsEnabled(false);
     }
     
-    function selectMember(index) {
-      const results = window.searchResults;
-      if (!results || index >= results.length) return;
+    function selectMember(index, element) {
+      // 選択スタイルをリセット
+      document.querySelectorAll('.result-item').forEach(item => item.classList.remove('selected'));
+      element.classList.add('selected');
+      element.querySelector('.result-radio').checked = true;
       
-      const member = results[index];
+      // データを取得
+      const member = window.searchResultsData[index];
       selectedMemberData = member;
       
-      // UI更新
-      document.querySelectorAll('.result-item').forEach(function(item, i) {
-        if (i === index) {
-          item.classList.add('selected');
-          item.querySelector('input[type="radio"]').checked = true;
-        } else {
-          item.classList.remove('selected');
-          item.querySelector('input[type="radio"]').checked = false;
-        }
-      });
-      
-      // 選択中の会員表示
-      document.getElementById('selectedMemberId').textContent = member.memberId;
-      document.getElementById('selectedStoreName').textContent = member.storeName;
-      document.getElementById('selectedWearerName').textContent = member.wearerName;
+      // 選択中の会員表示を更新
+      document.getElementById('selectedMemberId').textContent = member.memberId || '-';
+      document.getElementById('selectedStoreName').textContent = member.storeName || '-';
+      document.getElementById('selectedWearerName').textContent = member.wearerName || member.representativeName || '-';
       document.getElementById('selectedCardCount').textContent = member.cardPrintCount || 0;
       document.getElementById('selectedAppCount').textContent = member.appPrintCount || 0;
       document.getElementById('selectedStatus').textContent = getStatusText(member.status);
       document.getElementById('selectedMember').classList.add('show');
       
-      // ボタン有効化
-      document.getElementById('btnDetail').disabled = false;
-      document.getElementById('btnCard').disabled = false;
-      document.getElementById('btnApplication').disabled = false;
-      document.getElementById('btnBoth').disabled = false;
+      // ボタンを有効化
+      setButtonsEnabled(true);
     }
     
-    function clearSelection() {
-      selectedMemberData = null;
-      document.getElementById('selectedMember').classList.remove('show');
-      document.getElementById('btnDetail').disabled = true;
-      document.getElementById('btnCard').disabled = true;
-      document.getElementById('btnApplication').disabled = true;
-      document.getElementById('btnBoth').disabled = true;
+    function setButtonsEnabled(enabled) {
+      document.getElementById('btnDetail').disabled = !enabled;
+      document.getElementById('btnCard').disabled = !enabled;
+      document.getElementById('btnApplication').disabled = !enabled;
+      document.getElementById('btnBoth').disabled = !enabled;
     }
     
-    // ★ リスト内の印刷回数を更新する関数
+    // 印刷回数表示を更新
     function updateListPrintCount(index, cardCount, appCount) {
-      const resultItems = document.querySelectorAll('.result-item');
-      if (resultItems[index]) {
-        const cardEl = resultItems[index].querySelector('.card-count');
-        const appEl = resultItems[index].querySelector('.app-count');
-        
-        if (cardEl && cardCount !== undefined) {
-          cardEl.textContent = cardCount;
-          cardEl.className = 'result-print-count card-count ' + (cardCount > 0 ? 'print-count-has' : 'print-count-zero');
+      const items = document.querySelectorAll('.result-item');
+      if (items[index]) {
+        if (cardCount !== undefined) {
+          const cardEl = items[index].querySelector('.card-count');
+          if (cardEl) {
+            cardEl.textContent = cardCount;
+            cardEl.className = 'result-print-count card-count ' + (cardCount > 0 ? 'print-count-has' : 'print-count-zero');
+          }
         }
-        
-        if (appEl && appCount !== undefined) {
-          appEl.textContent = appCount;
-          appEl.className = 'result-print-count app-count ' + (appCount > 0 ? 'print-count-has' : 'print-count-zero');
+        if (appCount !== undefined) {
+          const appEl = items[index].querySelector('.app-count');
+          if (appEl) {
+            appEl.textContent = appCount;
+            appEl.className = 'result-print-count app-count ' + (appCount > 0 ? 'print-count-has' : 'print-count-zero');
+          }
         }
-      }
-      
-      // 検索結果データも更新
-      if (window.searchResults && window.searchResults[index]) {
-        if (cardCount !== undefined) window.searchResults[index].cardPrintCount = cardCount;
-        if (appCount !== undefined) window.searchResults[index].appPrintCount = appCount;
       }
     }
     
