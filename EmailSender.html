@@ -1,0 +1,1254 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>メール送信 - 買出人章管理システム</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    /* ヘッダー */
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+      color: white;
+    }
+    
+    .header h1 {
+      font-size: 28px;
+      margin-bottom: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    
+    .header p {
+      opacity: 0.9;
+    }
+    
+    /* ナビゲーション */
+    .nav-tabs {
+      display: flex;
+      gap: 5px;
+      margin-bottom: 20px;
+    }
+    
+    .nav-tab {
+      padding: 12px 24px;
+      background: rgba(255,255,255,0.2);
+      border: none;
+      border-radius: 8px 8px 0 0;
+      color: white;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .nav-tab.active {
+      background: white;
+      color: #667eea;
+      font-weight: bold;
+    }
+    
+    .nav-tab:hover:not(.active) {
+      background: rgba(255,255,255,0.3);
+    }
+    
+    /* メインカード */
+    .card {
+      background: white;
+      border-radius: 0 12px 12px 12px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      padding: 25px;
+      display: none;
+    }
+    
+    .card.active {
+      display: block;
+    }
+    
+    /* セクションタイトル */
+    .section-title {
+      font-size: 18px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #667eea;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    /* 2カラムレイアウト */
+    .two-column {
+      display: grid;
+      grid-template-columns: 350px 1fr;
+      gap: 25px;
+    }
+    
+    /* 宛先選択パネル */
+    .recipient-panel {
+      background: #f8f9fa;
+      border-radius: 10px;
+      padding: 20px;
+      max-height: 600px;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .filter-section {
+      margin-bottom: 15px;
+    }
+    
+    .filter-section label {
+      display: block;
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 5px;
+    }
+    
+    .filter-section select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    
+    .recipient-list {
+      flex: 1;
+      overflow-y: auto;
+      border: 1px solid #e9ecef;
+      border-radius: 8px;
+      background: white;
+    }
+    
+    .recipient-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-bottom: 1px solid #e9ecef;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    .recipient-item:hover {
+      background: #f0f4ff;
+    }
+    
+    .recipient-item:last-child {
+      border-bottom: none;
+    }
+    
+    .recipient-item input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+    
+    .recipient-info {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .recipient-name {
+      font-weight: 500;
+      font-size: 14px;
+      color: #333;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .recipient-detail {
+      font-size: 12px;
+      color: #666;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .recipient-status {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: bold;
+    }
+    
+    .status-active {
+      background: #d4edda;
+      color: #155724;
+    }
+    
+    .status-inactive {
+      background: #f8d7da;
+      color: #721c24;
+    }
+    
+    .selection-controls {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    
+    .selection-controls button {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid #ddd;
+      background: white;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .selection-controls button:hover {
+      background: #667eea;
+      color: white;
+      border-color: #667eea;
+    }
+    
+    .selected-count {
+      text-align: center;
+      padding: 10px;
+      background: #e3f2fd;
+      border-radius: 6px;
+      margin-top: 10px;
+      font-size: 14px;
+      color: #1976d2;
+      font-weight: 500;
+    }
+    
+    /* メール作成パネル */
+    .compose-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    
+    .form-group label {
+      font-size: 14px;
+      font-weight: 500;
+      color: #333;
+    }
+    
+    .form-group .hint {
+      font-size: 12px;
+      color: #888;
+      font-weight: normal;
+    }
+    
+    .template-row {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .template-row select {
+      flex: 1;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    
+    .template-row button {
+      padding: 12px 20px;
+      background: #28a745;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+    
+    .template-row button:hover {
+      background: #218838;
+    }
+    
+    input[type="text"], textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+    }
+    
+    input[type="text"]:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    textarea {
+      min-height: 250px;
+      resize: vertical;
+      line-height: 1.6;
+    }
+    
+    /* 差し込みタグ */
+    .merge-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      padding: 10px;
+      background: #fff9e6;
+      border-radius: 8px;
+      border: 1px solid #ffc107;
+    }
+    
+    .merge-tags span {
+      font-size: 12px;
+      color: #856404;
+      margin-right: 5px;
+    }
+    
+    .merge-tag {
+      padding: 4px 10px;
+      background: white;
+      border: 1px solid #ffc107;
+      border-radius: 15px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .merge-tag:hover {
+      background: #ffc107;
+      color: white;
+    }
+    
+    /* オプション */
+    .options {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+    
+    .options label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    
+    .options input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+    }
+    
+    /* 送信ボタン */
+    .send-actions {
+      display: flex;
+      gap: 15px;
+      margin-top: 10px;
+    }
+    
+    .btn {
+      padding: 15px 30px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      flex: 1;
+    }
+    
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+    
+    .btn-secondary {
+      background: #6c757d;
+      color: white;
+    }
+    
+    .btn-secondary:hover {
+      background: #5a6268;
+    }
+    
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    
+    /* テンプレート管理 */
+    .template-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .template-card {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 15px 20px;
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 10px;
+      transition: all 0.2s;
+    }
+    
+    .template-card:hover {
+      border-color: #667eea;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    .template-card-info {
+      flex: 1;
+    }
+    
+    .template-card-name {
+      font-weight: bold;
+      font-size: 16px;
+      color: #333;
+      margin-bottom: 5px;
+    }
+    
+    .template-card-subject {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 5px;
+    }
+    
+    .template-card-date {
+      font-size: 12px;
+      color: #999;
+    }
+    
+    .template-card-actions {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .template-card-actions button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .btn-edit {
+      background: #17a2b8;
+      color: white;
+    }
+    
+    .btn-edit:hover {
+      background: #138496;
+    }
+    
+    .btn-delete {
+      background: #dc3545;
+      color: white;
+    }
+    
+    .btn-delete:hover {
+      background: #c82333;
+    }
+    
+    /* テンプレート編集モーダル */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .modal-overlay.active {
+      display: flex;
+    }
+    
+    .modal {
+      background: white;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 700px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    
+    .modal-header {
+      padding: 20px 25px;
+      border-bottom: 1px solid #e9ecef;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .modal-header h2 {
+      font-size: 20px;
+      color: #333;
+    }
+    
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #666;
+    }
+    
+    .modal-body {
+      padding: 25px;
+    }
+    
+    .modal-footer {
+      padding: 20px 25px;
+      border-top: 1px solid #e9ecef;
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+    
+    /* プレビューモーダル */
+    .preview-content {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 8px;
+      white-space: pre-wrap;
+      font-family: inherit;
+      line-height: 1.6;
+    }
+    
+    /* ローディング */
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+    
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid #e9ecef;
+      border-top-color: #667eea;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 15px;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* 通知 */
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 15px 25px;
+      border-radius: 8px;
+      color: white;
+      font-weight: 500;
+      z-index: 2000;
+      transform: translateX(120%);
+      transition: transform 0.3s;
+    }
+    
+    .notification.show {
+      transform: translateX(0);
+    }
+    
+    .notification.success {
+      background: #28a745;
+    }
+    
+    .notification.error {
+      background: #dc3545;
+    }
+    
+    /* 戻るリンク */
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      color: white;
+      text-decoration: none;
+      font-size: 14px;
+      margin-bottom: 15px;
+      opacity: 0.9;
+    }
+    
+    .back-link:hover {
+      opacity: 1;
+      text-decoration: underline;
+    }
+    
+    /* レスポンシブ */
+    @media (max-width: 900px) {
+      .two-column {
+        grid-template-columns: 1fr;
+      }
+      
+      .recipient-panel {
+        max-height: 300px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- 戻るリンク -->
+    <a href="CardGeneratorUI.html" class="back-link">← 会員管理画面に戻る</a>
+    
+    <!-- ヘッダー -->
+    <div class="header">
+      <h1>📧 メール送信システム</h1>
+      <p>会員へのメール送信・テンプレート管理</p>
+    </div>
+    
+    <!-- タブナビゲーション -->
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="switchTab('compose')">✉️ メール作成</button>
+      <button class="nav-tab" onclick="switchTab('templates')">📝 テンプレート管理</button>
+    </div>
+    
+    <!-- メール作成タブ -->
+    <div id="tab-compose" class="card active">
+      <div class="two-column">
+        <!-- 左: 宛先選択 -->
+        <div class="recipient-panel">
+          <div class="section-title">👥 宛先選択</div>
+          
+          <div class="filter-section">
+            <label>ステータスで絞り込み</label>
+            <select id="status-filter" onchange="loadMembers()">
+              <option value="ALL">すべての会員</option>
+              <option value="ACTIVE">有効な会員のみ</option>
+              <option value="INACTIVE">無効な会員のみ</option>
+            </select>
+          </div>
+          
+          <div class="recipient-list" id="recipient-list">
+            <div class="loading">
+              <div class="spinner"></div>
+              <div>会員リストを読み込み中...</div>
+            </div>
+          </div>
+          
+          <div class="selection-controls">
+            <button onclick="selectAll()">全選択</button>
+            <button onclick="deselectAll()">全解除</button>
+          </div>
+          
+          <div class="selected-count">
+            <span id="selected-count">0</span> 件選択中
+          </div>
+        </div>
+        
+        <!-- 右: メール作成 -->
+        <div class="compose-panel">
+          <div class="section-title">📝 メール内容</div>
+          
+          <!-- テンプレート選択 -->
+          <div class="form-group">
+            <label>テンプレート</label>
+            <div class="template-row">
+              <select id="template-select">
+                <option value="">-- テンプレートを選択 --</option>
+              </select>
+              <button onclick="applyTemplate()">📥 挿入</button>
+            </div>
+          </div>
+          
+          <!-- 件名 -->
+          <div class="form-group">
+            <label>件名 <span class="hint">※必須</span></label>
+            <input type="text" id="email-subject" placeholder="メールの件名を入力">
+          </div>
+          
+          <!-- 差し込みタグ -->
+          <div class="merge-tags">
+            <span>📌 差し込みタグ（クリックで挿入）:</span>
+            <button class="merge-tag" onclick="insertTag('{会員番号}')">{会員番号}</button>
+            <button class="merge-tag" onclick="insertTag('{店名}')">{店名}</button>
+            <button class="merge-tag" onclick="insertTag('{代表者名}')">{代表者名}</button>
+            <button class="merge-tag" onclick="insertTag('{着用者名}')">{着用者名}</button>
+            <button class="merge-tag" onclick="insertTag('{有効期限}')">{有効期限}</button>
+          </div>
+          
+          <!-- 本文 -->
+          <div class="form-group">
+            <label>本文 <span class="hint">※必須</span></label>
+            <textarea id="email-body" placeholder="メールの本文を入力"></textarea>
+          </div>
+          
+          <!-- オプション -->
+          <div class="options">
+            <label>
+              <input type="checkbox" id="bcc-admin" checked>
+              管理者にBCCで送信（送信履歴として）
+            </label>
+          </div>
+          
+          <!-- 送信ボタン -->
+          <div class="send-actions">
+            <button class="btn btn-secondary" onclick="previewEmail()">👁️ プレビュー</button>
+            <button class="btn btn-primary" id="btn-send" onclick="sendEmail()">
+              📤 メール送信
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- テンプレート管理タブ -->
+    <div id="tab-templates" class="card">
+      <div class="section-title" style="justify-content: space-between;">
+        <span>📝 テンプレート一覧</span>
+        <button class="btn btn-primary" style="padding: 10px 20px; font-size: 14px;" onclick="openTemplateModal()">
+          ➕ 新規作成
+        </button>
+      </div>
+      
+      <div class="template-list" id="template-list">
+        <div class="loading">
+          <div class="spinner"></div>
+          <div>テンプレートを読み込み中...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- テンプレート編集モーダル -->
+  <div class="modal-overlay" id="template-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modal-title">テンプレート編集</h2>
+        <button class="modal-close" onclick="closeTemplateModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="edit-template-id">
+        
+        <div class="form-group" style="margin-bottom: 15px;">
+          <label>テンプレート名</label>
+          <input type="text" id="edit-template-name" placeholder="例: 【基本】買出人章発行のお知らせ">
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 15px;">
+          <label>件名</label>
+          <input type="text" id="edit-template-subject" placeholder="メールの件名">
+        </div>
+        
+        <div class="merge-tags" style="margin-bottom: 15px;">
+          <span>📌 差し込みタグ:</span>
+          <button class="merge-tag" onclick="insertTagToModal('{会員番号}')">{会員番号}</button>
+          <button class="merge-tag" onclick="insertTagToModal('{店名}')">{店名}</button>
+          <button class="merge-tag" onclick="insertTagToModal('{代表者名}')">{代表者名}</button>
+          <button class="merge-tag" onclick="insertTagToModal('{着用者名}')">{着用者名}</button>
+          <button class="merge-tag" onclick="insertTagToModal('{有効期限}')">{有効期限}</button>
+        </div>
+        
+        <div class="form-group">
+          <label>本文</label>
+          <textarea id="edit-template-body" style="min-height: 200px;" placeholder="メールの本文"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeTemplateModal()">キャンセル</button>
+        <button class="btn btn-primary" onclick="saveTemplate()">💾 保存</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- プレビューモーダル -->
+  <div class="modal-overlay" id="preview-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>📧 メールプレビュー</h2>
+        <button class="modal-close" onclick="closePreviewModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group" style="margin-bottom: 15px;">
+          <label>宛先（最初の1件のプレビュー）</label>
+          <div id="preview-to" style="padding: 10px; background: #f8f9fa; border-radius: 6px;"></div>
+        </div>
+        <div class="form-group" style="margin-bottom: 15px;">
+          <label>件名</label>
+          <div id="preview-subject" style="padding: 10px; background: #f8f9fa; border-radius: 6px; font-weight: bold;"></div>
+        </div>
+        <div class="form-group">
+          <label>本文</label>
+          <div id="preview-body" class="preview-content"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closePreviewModal()">閉じる</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 通知 -->
+  <div class="notification" id="notification"></div>
+  
+  <script>
+    // API設定
+    const API_URL = 'https://script.google.com/macros/s/AKfycbwbbyZoRzhWu8Ft5xVvyI1LJc7_RLZaeLwVGapXnlYIIJBUSlgJXQTzofwuLl5nux43kg/exec';
+    
+    // データ保持
+    let members = [];
+    let templates = [];
+    let selectedMembers = new Set();
+    
+    // 初期化
+    document.addEventListener('DOMContentLoaded', () => {
+      loadMembers();
+      loadTemplates();
+    });
+    
+    // タブ切り替え
+    function switchTab(tabName) {
+      document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.card').forEach(card => card.classList.remove('active'));
+      
+      document.querySelector(`.nav-tab[onclick="switchTab('${tabName}')"]`).classList.add('active');
+      document.getElementById(`tab-${tabName}`).classList.add('active');
+    }
+    
+    // 会員リスト読み込み
+    async function loadMembers() {
+      const status = document.getElementById('status-filter').value;
+      const listEl = document.getElementById('recipient-list');
+      
+      listEl.innerHTML = '<div class="loading"><div class="spinner"></div><div>読み込み中...</div></div>';
+      
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            action: 'getMembersByStatus',
+            status: status
+          })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          members = result.members;
+          renderMemberList();
+        } else {
+          listEl.innerHTML = '<div class="loading">読み込みエラー</div>';
+        }
+      } catch (error) {
+        listEl.innerHTML = '<div class="loading">読み込みエラー: ' + error.message + '</div>';
+      }
+    }
+    
+    // 会員リスト描画
+    function renderMemberList() {
+      const listEl = document.getElementById('recipient-list');
+      
+      if (members.length === 0) {
+        listEl.innerHTML = '<div class="loading">会員が見つかりません</div>';
+        return;
+      }
+      
+      listEl.innerHTML = members.map(member => `
+        <label class="recipient-item">
+          <input type="checkbox" 
+                 value="${member.rowNumber}" 
+                 ${selectedMembers.has(member.rowNumber) ? 'checked' : ''}
+                 onchange="toggleMember(${member.rowNumber})">
+          <div class="recipient-info">
+            <div class="recipient-name">${escapeHtml(member.storeName)} - ${escapeHtml(member.wearerName || member.representativeName)}</div>
+            <div class="recipient-detail">${escapeHtml(member.memberId)} | ${escapeHtml(member.email)}</div>
+          </div>
+          <span class="recipient-status ${member.status === 'ACTIVE' ? 'status-active' : 'status-inactive'}">
+            ${member.status === 'ACTIVE' ? '有効' : '無効'}
+          </span>
+        </label>
+      `).join('');
+      
+      updateSelectedCount();
+    }
+    
+    // 会員選択トグル
+    function toggleMember(rowNumber) {
+      if (selectedMembers.has(rowNumber)) {
+        selectedMembers.delete(rowNumber);
+      } else {
+        selectedMembers.add(rowNumber);
+      }
+      updateSelectedCount();
+    }
+    
+    // 全選択
+    function selectAll() {
+      members.forEach(m => selectedMembers.add(m.rowNumber));
+      renderMemberList();
+    }
+    
+    // 全解除
+    function deselectAll() {
+      selectedMembers.clear();
+      renderMemberList();
+    }
+    
+    // 選択数更新
+    function updateSelectedCount() {
+      document.getElementById('selected-count').textContent = selectedMembers.size;
+    }
+    
+    // テンプレート読み込み
+    async function loadTemplates() {
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'getEmailTemplates' })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          templates = result.templates;
+          renderTemplateSelect();
+          renderTemplateList();
+        }
+      } catch (error) {
+        console.error('テンプレート読み込みエラー:', error);
+      }
+    }
+    
+    // テンプレート選択肢描画
+    function renderTemplateSelect() {
+      const selectEl = document.getElementById('template-select');
+      selectEl.innerHTML = '<option value="">-- テンプレートを選択 --</option>' +
+        templates.map(t => `<option value="${t.id}">${escapeHtml(t.name)}</option>`).join('');
+    }
+    
+    // テンプレート一覧描画
+    function renderTemplateList() {
+      const listEl = document.getElementById('template-list');
+      
+      if (templates.length === 0) {
+        listEl.innerHTML = '<div class="loading">テンプレートがありません</div>';
+        return;
+      }
+      
+      listEl.innerHTML = templates.map(t => `
+        <div class="template-card">
+          <div class="template-card-info">
+            <div class="template-card-name">${escapeHtml(t.name)}</div>
+            <div class="template-card-subject">件名: ${escapeHtml(t.subject)}</div>
+            <div class="template-card-date">更新: ${t.updatedAt}</div>
+          </div>
+          <div class="template-card-actions">
+            <button class="btn-edit" onclick="editTemplate('${t.id}')">✏️ 編集</button>
+            <button class="btn-delete" onclick="deleteTemplate('${t.id}')">🗑️ 削除</button>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    // テンプレート適用
+    function applyTemplate() {
+      const templateId = document.getElementById('template-select').value;
+      if (!templateId) {
+        showNotification('テンプレートを選択してください', 'error');
+        return;
+      }
+      
+      const template = templates.find(t => t.id === templateId);
+      if (template) {
+        document.getElementById('email-subject').value = template.subject;
+        document.getElementById('email-body').value = template.body;
+        showNotification('テンプレートを挿入しました', 'success');
+      }
+    }
+    
+    // 差し込みタグ挿入
+    function insertTag(tag) {
+      const textarea = document.getElementById('email-body');
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const text = textarea.value;
+      textarea.value = text.substring(0, start) + tag + text.substring(end);
+      textarea.focus();
+      textarea.selectionStart = textarea.selectionEnd = start + tag.length;
+    }
+    
+    // モーダル用タグ挿入
+    function insertTagToModal(tag) {
+      const textarea = document.getElementById('edit-template-body');
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const text = textarea.value;
+      textarea.value = text.substring(0, start) + tag + text.substring(end);
+      textarea.focus();
+      textarea.selectionStart = textarea.selectionEnd = start + tag.length;
+    }
+    
+    // プレビュー
+    function previewEmail() {
+      if (selectedMembers.size === 0) {
+        showNotification('宛先を選択してください', 'error');
+        return;
+      }
+      
+      const subject = document.getElementById('email-subject').value;
+      const body = document.getElementById('email-body').value;
+      
+      if (!subject || !body) {
+        showNotification('件名と本文を入力してください', 'error');
+        return;
+      }
+      
+      // 最初の選択会員でプレビュー
+      const firstRowNumber = Array.from(selectedMembers)[0];
+      const member = members.find(m => m.rowNumber === firstRowNumber);
+      
+      if (member) {
+        const previewSubject = replaceVariables(subject, member);
+        const previewBody = replaceVariables(body, member);
+        
+        document.getElementById('preview-to').textContent = `${member.storeName} <${member.email}>`;
+        document.getElementById('preview-subject').textContent = previewSubject;
+        document.getElementById('preview-body').textContent = previewBody;
+        
+        document.getElementById('preview-modal').classList.add('active');
+      }
+    }
+    
+    // 変数置換（プレビュー用）
+    function replaceVariables(text, member) {
+      return text
+        .replace(/\{会員番号\}/g, member.memberId || '')
+        .replace(/\{店名\}/g, member.storeName || '')
+        .replace(/\{代表者名\}/g, member.representativeName || '')
+        .replace(/\{着用者名\}/g, member.wearerName || '')
+        .replace(/\{有効期限\}/g, member.expiresAt || '')
+        .replace(/\{ステータス\}/g, member.status || '');
+    }
+    
+    // メール送信
+    async function sendEmail() {
+      if (selectedMembers.size === 0) {
+        showNotification('宛先を選択してください', 'error');
+        return;
+      }
+      
+      const subject = document.getElementById('email-subject').value;
+      const body = document.getElementById('email-body').value;
+      const bccToAdmin = document.getElementById('bcc-admin').checked;
+      
+      if (!subject || !body) {
+        showNotification('件名と本文を入力してください', 'error');
+        return;
+      }
+      
+      if (!confirm(`${selectedMembers.size}件の宛先にメールを送信します。よろしいですか？`)) {
+        return;
+      }
+      
+      const btn = document.getElementById('btn-send');
+      btn.disabled = true;
+      btn.innerHTML = '📤 送信中...';
+      
+      try {
+        const recipients = Array.from(selectedMembers).map(rowNumber => {
+          const member = members.find(m => m.rowNumber === rowNumber);
+          return {
+            rowNumber: rowNumber,
+            email: member ? member.email : ''
+          };
+        });
+        
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            action: 'sendBulkEmail',
+            recipients: recipients,
+            subject: subject,
+            body: body,
+            bccToAdmin: bccToAdmin
+          })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          showNotification(result.message, 'success');
+          deselectAll();
+        } else {
+          showNotification('送信エラー: ' + result.error, 'error');
+        }
+      } catch (error) {
+        showNotification('送信エラー: ' + error.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '📤 メール送信';
+      }
+    }
+    
+    // テンプレートモーダル
+    function openTemplateModal(id = null) {
+      document.getElementById('modal-title').textContent = id ? 'テンプレート編集' : '新規テンプレート作成';
+      
+      if (id) {
+        const template = templates.find(t => t.id === id);
+        if (template) {
+          document.getElementById('edit-template-id').value = template.id;
+          document.getElementById('edit-template-name').value = template.name;
+          document.getElementById('edit-template-subject').value = template.subject;
+          document.getElementById('edit-template-body').value = template.body;
+        }
+      } else {
+        document.getElementById('edit-template-id').value = '';
+        document.getElementById('edit-template-name').value = '';
+        document.getElementById('edit-template-subject').value = '';
+        document.getElementById('edit-template-body').value = '';
+      }
+      
+      document.getElementById('template-modal').classList.add('active');
+    }
+    
+    function closeTemplateModal() {
+      document.getElementById('template-modal').classList.remove('active');
+    }
+    
+    function editTemplate(id) {
+      openTemplateModal(id);
+    }
+    
+    // テンプレート保存
+    async function saveTemplate() {
+      const id = document.getElementById('edit-template-id').value;
+      const name = document.getElementById('edit-template-name').value;
+      const subject = document.getElementById('edit-template-subject').value;
+      const body = document.getElementById('edit-template-body').value;
+      
+      if (!name || !subject || !body) {
+        showNotification('すべての項目を入力してください', 'error');
+        return;
+      }
+      
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            action: 'saveEmailTemplate',
+            id: id || null,
+            name: name,
+            subject: subject,
+            body: body
+          })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          showNotification(result.message, 'success');
+          closeTemplateModal();
+          loadTemplates();
+        } else {
+          showNotification('保存エラー: ' + result.error, 'error');
+        }
+      } catch (error) {
+        showNotification('保存エラー: ' + error.message, 'error');
+      }
+    }
+    
+    // テンプレート削除
+    async function deleteTemplate(id) {
+      if (!confirm('このテンプレートを削除しますか？')) {
+        return;
+      }
+      
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            action: 'deleteEmailTemplate',
+            id: id
+          })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          showNotification(result.message, 'success');
+          loadTemplates();
+        } else {
+          showNotification('削除エラー: ' + result.error, 'error');
+        }
+      } catch (error) {
+        showNotification('削除エラー: ' + error.message, 'error');
+      }
+    }
+    
+    function closePreviewModal() {
+      document.getElementById('preview-modal').classList.remove('active');
+    }
+    
+    // 通知表示
+    function showNotification(message, type) {
+      const el = document.getElementById('notification');
+      el.textContent = message;
+      el.className = 'notification ' + type + ' show';
+      
+      setTimeout(() => {
+        el.classList.remove('show');
+      }, 3000);
+    }
+    
+    // HTMLエスケープ
+    function escapeHtml(text) {
+      if (!text) return '';
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+  </script>
+</body>
+</html>
