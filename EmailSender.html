@@ -1034,12 +1034,21 @@
         errorDiv.classList.remove('show');
         
         try {
+            // IPアドレスを取得
+            let clientIP = '';
+            try {
+                const ipResponse = await fetch('https://api.ipify.org?format=json');
+                const ipData = await ipResponse.json();
+                clientIP = ipData.ip;
+            } catch (e) { }
+            
             const response = await fetch(API_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain' },
                 body: JSON.stringify({
                     action: 'verifyAdminPassword',
-                    password: password
+                    password: password,
+                    clientIP: clientIP
                 })
             });
             
