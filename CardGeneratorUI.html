@@ -1440,9 +1440,17 @@ function logout() {
     
     // ========== 初期化 ========== //
     
-    window.onload = function() {
+    function initializePage() {
       // 最新20件を自動ロード
       loadRecentMembers();
+    }
+    
+    window.onload = function() {
+      // 認証チェック
+      if (!checkAuthentication()) {
+        return; // 認証されていない場合は初期化を中止
+      }
+      initializePage();
     };
   </script>
 </body>
