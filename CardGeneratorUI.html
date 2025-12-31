@@ -722,6 +722,25 @@
   </style>
 </head>
 <body>
+
+<!-- パスワード認証オーバーレイ -->
+<div id="authOverlay" class="auth-overlay">
+    <div class="auth-modal">
+        <div class="auth-icon">🔐</div>
+        <h2>管理者認証</h2>
+        <p class="auth-subtitle">管理画面にアクセスするにはパスワードが必要です</p>
+        
+        <form id="authForm" onsubmit="return handleAuthSubmit(event)">
+            <input type="password" id="authPassword" placeholder="パスワードを入力" autocomplete="current-password" required>
+            <button type="submit" class="auth-btn" id="authSubmitBtn">🔓 ログイン</button>
+        </form>
+        
+        <div id="authError" class="auth-error"></div>
+        
+        <p class="auth-hint">※ パスワードを忘れた場合は管理者に連絡してください</p>
+    </div>
+</div>
+  
   <div class="container">
     <h1>🎫 買出人章管理システム</h1>
     <div class="subtitle">会員検索・カード生成・申請書印刷</div>
@@ -824,6 +843,123 @@
   </div>
   
   <script>
+
+// ========== パスワード認証システム ========== //
+
+const AUTH_STORAGE_KEY = 'ota_admin_auth';
+const AUTH_EXPIRY_HOURS = 24;
+
+function checkAuthentication() {
+    const authData = localStorage.getItem(AUTH_STORAGE_KEY);
+    
+    if (!authData) {
+        showAuthModal();
+        return false;
+    }
+    
+    try {
+        const { token, expiresAt } = JSON.parse(authData);
+        
+        if (Date.now() > expiresAt) {
+            localStorage.removeItem(AUTH_STORAGE_KEY);
+            showAuthModal();
+            return false;
+        }
+        
+        hideAuthModal();
+        return true;
+        
+    } catch (e) {
+        localStorage.removeItem(AUTH_STORAGE_KEY);
+        showAuthModal();
+        return false;
+    }
+}
+
+function showAuthModal() {
+    document.getElementById('authOverlay').classList.remove('hidden');
+    document.getElementById('authPassword').focus();
+    document.body.style.overflow = 'hidden';
+}
+
+function hideAuthModal() {
+    document.getElementById('authOverlay').classList.add('hidden');
+    document.body.style.overflow = '';
+}
+
+async function handleAuthSubmit(event) {
+    event.preventDefault();
+    
+    const password = document.getElementById('authPassword').value;
+    const submitBtn = document.getElementById('authSubmitBtn');
+    const errorDiv = document.getElementById('authError');
+    
+    if (!password) {
+        showAuthError('パスワードを入力してください');
+        return false;
+    }
+    
+    submitBtn.disabled = true;
+    submitBtn.textContent = '🔄 認証中...';
+    errorDiv.classList.remove('show');
+    
+    try {
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'verifyAdminPassword',
+                password: password
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            const authData = {
+                token: result.token,
+                expiresAt: result.expiresAt
+            };
+            localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authData));
+            
+            hideAuthModal();
+            
+            if (typeof initializePage === 'function') {
+                initializePage();
+            }
+            
+        } else {
+            showAuthError(result.error || 'パスワードが正しくありません');
+        }
+        
+    } catch (error) {
+        console.error('認証エラー:', error);
+        showAuthError('認証中にエラーが発生しました。再度お試しください。');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = '🔓 ログイン';
+    }
+    
+    return false;
+}
+
+function showAuthError(message) {
+    const errorDiv = document.getElementById('authError');
+    errorDiv.textContent = message;
+    errorDiv.classList.add('show');
+    
+    const passwordInput = document.getElementById('authPassword');
+    passwordInput.style.animation = 'none';
+    passwordInput.offsetHeight;
+    passwordInput.style.animation = 'shake 0.5s';
+    passwordInput.select();
+}
+
+function logout() {
+    localStorage.removeItem(AUTH_STORAGE_KEY);
+    showAuthModal();
+}
+    
     // ★ GAS API URL（デプロイURLを設定）
     const API_URL = 'https://script.google.com/macros/s/AKfycbwbbyZoRzhWu8Ft5xVvyI1LJc7_RLZaeLwVGapXnlYIIJBUSlgJXQTzofwuLl5nux43kg/exec';
     
