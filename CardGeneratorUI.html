@@ -804,7 +804,7 @@
         
         return `
           <div class="result-item" onclick="selectMember(${index}, this)" data-index="${index}">
-            <input type="radio" name="memberSelect" class="result-radio" onclick="event.stopPropagation()">
+            <input type="radio" name="memberSelect" class="result-radio" onclick="event.stopPropagation(); selectMember(${index}, this.closest('.result-item'))">
             <div class="result-info">
               <span class="result-member-id">${escapeHtml(member.memberId)}</span>
               <span class="result-store-name">${escapeHtml(member.storeName)}</span>
