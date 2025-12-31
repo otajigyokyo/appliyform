@@ -904,12 +904,21 @@ async function handleAuthSubmit(event) {
     errorDiv.classList.remove('show');
     
     try {
+        // IPアドレスを取得
+        let clientIP = '';
+        try {
+            const ipResponse = await fetch('https://api.ipify.org?format=json');
+            const ipData = await ipResponse.json();
+            clientIP = ipData.ip;
+        } catch (e) { }
+        
         const response = await fetch(API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain' },
             body: JSON.stringify({
                 action: 'verifyAdminPassword',
-                password: password
+                password: password,
+                clientIP: clientIP
             })
         });
         
@@ -959,6 +968,25 @@ function logout() {
     localStorage.removeItem(AUTH_STORAGE_KEY);
     showAuthModal();
 }
+
+    // ========== IPアドレス取得 ========== //
+    let cachedClientIP = null;
+    
+    async function getClientIP() {
+      if (cachedClientIP) return cachedClientIP;
+      try {
+        const response = await fetch('https://api.ipify.org?format=json', { timeout: 3000 });
+        const data = await response.json();
+        cachedClientIP = data.ip;
+        return data.ip;
+      } catch (e) {
+        console.log('IP取得スキップ');
+        return '';
+      }
+    }
+    
+    // 起動時にIPを取得（キャッシュ）
+    getClientIP();
     
     // ★ GAS API URL（デプロイURLを設定）
     const API_URL = 'https://script.google.com/macros/s/AKfycbwbbyZoRzhWu8Ft5xVvyI1LJc7_RLZaeLwVGapXnlYIIJBUSlgJXQTzofwuLl5nux43kg/exec';
@@ -972,12 +1000,13 @@ function logout() {
     // ========== API呼び出し共通関数 ========== //
     async function callApi(action, data = {}) {
       try {
+        const clientIP = await getClientIP();
         const response = await fetch(API_URL, {
           method: 'POST',
           headers: {
             'Content-Type': 'text/plain',
           },
-          body: JSON.stringify({ action, ...data })
+          body: JSON.stringify({ action, clientIP, ...data })
         });
         return await response.json();
       } catch (error) {
