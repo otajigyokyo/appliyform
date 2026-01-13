@@ -690,8 +690,8 @@
         
         const result = await response.json();
         
-        if (result.success && result.fileUrl) {
-          window.open(result.fileUrl, '_blank');
+        if (result.success && result.slideUrl) {
+          window.open(result.slideUrl, '_blank');
           // 印刷回数を更新
           const count = parseInt(document.getElementById('card-print-count').textContent) + 1;
           document.getElementById('card-print-count').textContent = count;
