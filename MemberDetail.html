@@ -671,7 +671,8 @@
       document.getElementById('error-message').textContent = message;
     }
     
-    // カード生成
+
+// カード生成
     async function generateCard() {
       if (!memberData || !memberData.rowNumber) return;
       
@@ -690,6 +691,10 @@
         
         const result = await response.json();
         
+        // ★ デバッグ用: 実際のレスポンスを確認
+        console.log('API Response:', result);
+        alert('レスポンス: ' + JSON.stringify(result));
+        
         if (result.success && result.slideUrl) {
           window.open(result.slideUrl, '_blank');
           // 印刷回数を更新
@@ -705,6 +710,7 @@
         btn.textContent = '🎫 カード生成';
       }
     }
+    
     
     // 申請書生成
     async function generateApp() {
