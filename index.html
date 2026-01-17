@@ -110,6 +110,11 @@
             flex: 1;
         }
 
+        /* 郵便番号グループ（PC時は固定幅、スマホ時は100%） */
+        .postal-code-group {
+            flex: 0 0 200px !important;
+        }
+
         textarea.form-control {
             resize: vertical;
             min-height: 100px;
@@ -789,6 +794,12 @@
             .form-row .form-group {
                 width: 100%;
             }
+
+            /* スマホ時は郵便番号も100%幅 */
+            .postal-code-group {
+                flex: 1 1 100% !important;
+                width: 100% !important;
+            }
             
             .btn {
                 width: 100%;
@@ -1080,7 +1091,7 @@
 
             <!-- 郵便番号・住所 -->
             <div class="form-row">
-                <div class="form-group" style="flex: 0 0 200px;">
+                <div class="form-group postal-code-group">
                     <label for="postalCode">郵便番号 <span class="required">*必須</span></label>
                     <input type="text" id="postalCode" name="postalCode" class="form-control" placeholder="000-0000" required inputmode="numeric" pattern="[0-9-]*">
                 </div>
