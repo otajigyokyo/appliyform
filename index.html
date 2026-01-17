@@ -345,6 +345,54 @@
             margin: 5px 0;
         }
 
+        /* ★ 今後の流れセクション */
+        .success-flow-section {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .success-flow-section h4 {
+            color: #856404;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .success-flow-section ol {
+            margin: 0;
+            padding-left: 20px;
+            color: #856404;
+        }
+
+        .success-flow-section li {
+            margin: 12px 0;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .success-flow-section li strong {
+            display: block;
+            color: #6c5700;
+            margin-bottom: 3px;
+        }
+
+        .success-flow-section li span {
+            font-size: 13px;
+        }
+
+        .success-flow-section .warning-text {
+            color: #d32f2f;
+            font-weight: bold;
+        }
+
+        .success-flow-section .note-text {
+            color: #666;
+            font-size: 12px;
+        }
+
         .success-close-btn {
             background: #4285f4;
             color: white;
@@ -949,6 +997,14 @@
                 font-size: 13px;
             }
 
+            .success-flow-section h4 {
+                font-size: 14px;
+            }
+
+            .success-flow-section li {
+                font-size: 13px;
+            }
+
             .success-close-btn {
                 font-size: 16px;
                 padding: 12px 30px;
@@ -1011,11 +1067,11 @@
         </div>
     </div>
 
-    <!-- 成功メッセージオーバーレイ -->
+    <!-- ★ 成功メッセージオーバーレイ（修正版） -->
     <div class="success-overlay" id="successOverlay">
         <div class="success-content">
             <div class="success-icon">✅</div>
-            <div class="success-title">登録が完了しました</div>
+            <div class="success-title">登録情報を送信しました</div>
             <div class="success-member-id" id="successMemberId"></div>
             
             <div class="success-payment-notice">
@@ -1029,6 +1085,32 @@
                 <p style="color: #856404; background: #fff3cd; padding: 8px; border-radius: 4px; margin-top: 10px;">
                     ※お支払い登録が完了するまで、買出人章の発行ができません
                 </p>
+            </div>
+
+            <!-- ★ 今後の流れセクション追加 -->
+            <div class="success-flow-section">
+                <h4>📅 今後の流れ</h4>
+                <ol>
+                    <li>
+                        <strong>1. お支払い方法の登録</strong>
+                        <span>上記の案内メールからクレジットカードまたは口座振替をご登録ください。</span>
+                    </li>
+                    <li>
+                        <strong>2. 審査（5営業日程度）</strong>
+                        <span>ご提出いただいた書類を確認させていただきます。</span><br>
+                        <span class="warning-text">書類不備、審査否認の場合はご連絡いたします。</span>
+                    </li>
+                    <li>
+                        <strong>3. 買出人章の発行</strong>
+                        <span>1・2完了後、通常10日後には買出人章が出来上がります。</span><br>
+                        <strong style="color: #155724;">当組合窓口まで引き取りにお越しください。</strong><br>
+                        <span class="note-text">※出来上がりのお知らせはしておりません</span>
+                    </li>
+                    <li>
+                        <strong>4. 月額手数料</strong>
+                        <span>資格維持手数料: 月額800円（毎月自動決済）</span>
+                    </li>
+                </ol>
             </div>
             
             <button class="success-close-btn" onclick="closeSuccessOverlay()">閉じる</button>
