@@ -66,23 +66,41 @@
       flex: 1;
     }
     
+    /* ヘッダー内の項目スタイル */
+    .header-item {
+      margin-bottom: 8px;
+    }
+    
+    .header-item:last-child {
+      margin-bottom: 0;
+    }
+    
+    .header-label {
+      font-size: 11px;
+      color: #6c757d;
+      font-weight: 500;
+      margin-bottom: 2px;
+    }
+    
+    .header-row {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 10px;
+    }
+    
+    .member-id-box {
+      display: inline-block;
+    }
+    
     .member-id {
       font-size: 28px;
       font-weight: bold;
       color: #667eea;
-      margin-bottom: 5px;
     }
     
-    .store-name {
-      font-size: 22px;
-      font-weight: bold;
-      color: #333;
-      margin-bottom: 3px;
-    }
-    
-    .wearer-name {
-      font-size: 18px;
-      color: #666;
+    .status-box {
+      display: inline-block;
     }
     
     .status-badge {
@@ -91,7 +109,6 @@
       border-radius: 20px;
       font-size: 14px;
       font-weight: bold;
-      margin-left: 10px;
     }
     
     .status-active {
@@ -110,6 +127,25 @@
       background: #fff3cd;
       color: #856404;
       border: 1px solid #ffc107;
+    }
+    
+    .store-name {
+      font-size: 22px;
+      font-weight: bold;
+      color: #333;
+    }
+    
+    .wearer-name {
+      font-size: 18px;
+      color: #333;
+      font-weight: 500;
+    }
+    
+    .furigana {
+      font-size: 12px;
+      color: #888;
+      font-weight: normal;
+      margin-left: 8px;
     }
     
     /* セクション */
@@ -159,6 +195,12 @@
       font-size: 16px;
       color: #333;
       font-weight: 500;
+    }
+    
+    .info-value .furigana {
+      display: block;
+      margin-left: 0;
+      margin-top: 2px;
     }
     
     .info-value.expires {
@@ -395,6 +437,11 @@
         text-align: center;
       }
       
+      .header-row {
+        flex-direction: column;
+        gap: 8px;
+      }
+      
       .member-id {
         font-size: 24px;
       }
@@ -437,12 +484,30 @@
           <div id="photo-placeholder" class="photo-placeholder">📷会員写真</div>
         </div>
         <div class="member-info">
-          <div>
-            <span id="member-id" class="member-id">K10000</span>
-            <span id="status-badge" class="status-badge status-active">有効</span>
+          <!-- 買出人番号とステータス -->
+          <div class="header-row">
+            <div class="member-id-box">
+              <div class="header-label">買出人番号</div>
+              <span id="member-id" class="member-id">K10000</span>
+            </div>
+            <div class="status-box">
+              <div class="header-label">会員ステータス</div>
+              <span id="status-badge" class="status-badge status-active">有効</span>
+            </div>
           </div>
-          <div id="store-name" class="store-name">店名</div>
-          <div id="wearer-name" class="wearer-name">着用者名</div>
+          <!-- 店名 -->
+          <div class="header-item">
+            <div class="header-label">店名</div>
+            <div id="store-name" class="store-name">店名</div>
+          </div>
+          <!-- 着用者氏名 -->
+          <div class="header-item">
+            <div class="header-label">買出人章着用者氏名</div>
+            <div class="wearer-name">
+              <span id="wearer-name">着用者名</span>
+              <span id="wearer-name-kana" class="furigana"></span>
+            </div>
+          </div>
         </div>
       </div>
       
@@ -451,8 +516,11 @@
         <div class="section-title">📋 基本情報</div>
         <div class="info-grid">
           <div class="info-item">
-            <div class="info-label">代表者名</div>
-            <div id="representative-name" class="info-value">-</div>
+            <div class="info-label">代表者氏名</div>
+            <div id="representative-name" class="info-value">
+              <span id="rep-name">-</span>
+              <span id="rep-name-kana" class="furigana"></span>
+            </div>
           </div>
           <div class="info-item">
             <div class="info-label">業種</div>
@@ -602,7 +670,12 @@
       // ヘッダー情報
       document.getElementById('member-id').textContent = member.memberId || '-';
       document.getElementById('store-name').textContent = member.storeName || '-';
+      
+      // 着用者氏名（ふりがな付き）
       document.getElementById('wearer-name').textContent = member.wearerName || '-';
+      if (member.wearerNameKana) {
+        document.getElementById('wearer-name-kana').textContent = '（' + member.wearerNameKana + '）';
+      }
       
       // ステータスバッジ
       const statusBadge = document.getElementById('status-badge');
@@ -640,7 +713,12 @@
       }
       
       // 基本情報
-      document.getElementById('representative-name').textContent = member.representativeName || '-';
+      // 代表者氏名（ふりがな付き）
+      document.getElementById('rep-name').textContent = member.representativeName || '-';
+      if (member.representativeNameKana) {
+        document.getElementById('rep-name-kana').textContent = '（' + member.representativeNameKana + '）';
+      }
+      
       document.getElementById('business-type').textContent = member.businessType || '-';
       document.getElementById('address').textContent = member.address || '-';
       document.getElementById('phone').textContent = member.phone || '-';
@@ -672,7 +750,7 @@
     }
     
 
-// カード生成
+    // カード生成
     async function generateCard() {
       if (!memberData || !memberData.rowNumber) return;
       
