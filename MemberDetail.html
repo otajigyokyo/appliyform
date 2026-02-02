@@ -594,6 +594,27 @@
           </a>
         </div>
       </div>
+
+      <!-- ★★★ ここから追加 ★★★ -->
+      <!-- 公的書類プレビュー -->
+      <div class="section" id="documentPreviewSection" style="display: none;">
+        <div class="section-title">📄 公的書類プレビュー</div>
+        <div style="text-align: center; margin: 20px 0;">
+          <iframe id="documentPreview" 
+                  style="width: 100%; height: 600px; border: 2px solid #e9ecef; border-radius: 12px; background: #f8f9fa;"
+                  src="">
+          </iframe>
+        </div>
+        <div style="text-align: center; margin-top: 15px; display: flex; gap: 10px; justify-content: center;">
+          <button onclick="openDocumentNewTab()" class="btn" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+            🔗 新しいタブで開く
+          </button>
+          <button onclick="printDocument()" class="btn" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
+            🖨️ 印刷
+          </button>
+        </div>
+      </div>
+      <!-- ★★★ ここまで追加 ★★★ -->
       
       <!-- QRコード -->
       <div class="section">
@@ -706,10 +727,22 @@
       }
       
       // 公的書類リンク
+      /*
       const docLink = document.getElementById('document-link');
       if (member.documentUrl) {
         docLink.href = member.documentUrl;
         docLink.classList.remove('disabled');
+      }
+      */
+      
+      // 公的書類リンク ★★★ この部分を置き換え ★★★
+      const docLink = document.getElementById('document-link');
+      if (member.documentUrl) {
+        docLink.href = member.documentUrl;
+        docLink.classList.remove('disabled');
+        
+        // ★ プレビューセクションを表示
+        displayDocumentPreview(member.documentUrl);
       }
       
       // 基本情報
@@ -824,6 +857,56 @@
         btn.textContent = '📋 申請書生成';
       }
     }
+
+        // ★★★ ここから追加 ★★★
+    // 公的書類のプレビューを表示
+    let currentDocumentUrl = '';
+    
+    function displayDocumentPreview(documentUrl) {
+      if (!documentUrl) return;
+      
+      currentDocumentUrl = documentUrl;
+      
+      // Google DriveのプレビューURL（/view → /preview に変換）
+      const previewUrl = documentUrl.replace('/view', '/preview');
+      
+      // iframeにセット
+      document.getElementById('documentPreview').src = previewUrl;
+      
+      // セクションを表示
+      document.getElementById('documentPreviewSection').style.display = 'block';
+    }
+    
+    // 新しいタブで開く
+    function openDocumentNewTab() {
+      if (currentDocumentUrl) {
+        window.open(currentDocumentUrl, '_blank');
+      } else {
+        alert('公的書類が登録されていません');
+      }
+    }
+    
+    // 印刷ダイアログを表示
+    function printDocument() {
+      if (currentDocumentUrl) {
+        // 新しいウィンドウで開いて印刷ダイアログを表示
+        const printWindow = window.open(currentDocumentUrl, '_blank');
+        
+        if (printWindow) {
+          // ウィンドウが読み込まれたら印刷ダイアログを表示
+          printWindow.onload = function() {
+            setTimeout(() => {
+              printWindow.print();
+            }, 1000);
+          };
+        } else {
+          alert('ポップアップブロックを解除してください');
+        }
+      } else {
+        alert('公的書類が登録されていません');
+      }
+    }
+    // ★★★ ここまで追加 ★★★
   </script>
 </body>
 </html>
