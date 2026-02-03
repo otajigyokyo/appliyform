@@ -1147,6 +1147,7 @@
         
         if (result.success) {
           members = result.members;
+          members.sort((a, b) => b.rowNumber - a.rowNumber);  // 追加
           renderMemberList();
         } else {
           listEl.innerHTML = '<div class="loading">読み込みエラー</div>';
