@@ -722,6 +722,13 @@
     font-size: 12px;
     margin-top: 20px;
 }
+    /* チェックボックススタイル */
+    .print-checkbox {
+      width: 18px;
+      height: 18px;
+      cursor: default;
+      accent-color: #28a745;
+    }
   </style>
 </head>
 <body>
@@ -795,8 +802,8 @@
         <span><strong>会員番号:</strong> <span id="selectedMemberId">-</span></span>
         <span><strong>店名:</strong> <span id="selectedStoreName">-</span></span>
         <span><strong>着用者:</strong> <span id="selectedWearerName">-</span></span>
-        <span><strong>カード印刷:</strong> <span id="selectedCardCount" class="selected-print-count">0</span>回</span>
-        <span><strong>申請書印刷:</strong> <span id="selectedAppCount" class="selected-print-count">0</span>回</span>
+        <span><strong>カード:</strong> <span id="selectedCardCount" class="selected-print-count">0</span>回</span>
+        <span><strong>申請書:</strong> <span id="selectedAppCount" class="selected-print-count">0</span>回</span>
         <span><strong>ステータス:</strong> <span id="selectedStatus">-</span></span>
       </div>
     </div>
@@ -1087,9 +1094,9 @@ function logout() {
       listEl.innerHTML = results.map((member, index) => {
         const cardCount = member.cardPrintCount || 0;
         const appCount = member.appPrintCount || 0;
-        const cardClass = cardCount > 0 ? 'print-count-has' : 'print-count-zero';
-        const appClass = appCount > 0 ? 'print-count-has' : 'print-count-zero';
-        
+//        const cardClass = cardCount > 0 ? 'print-count-has' : 'print-count-zero';
+//        const appClass = appCount > 0 ? 'print-count-has' : 'print-count-zero';
+/* 消去        
         return `
           <div class="result-item" onclick="selectMember(${index}, this)" data-index="${index}">
             <input type="radio" name="memberSelect" class="result-radio" onclick="event.stopPropagation(); selectMember(${index}, this.closest('.result-item'))">
@@ -1103,6 +1110,23 @@ function logout() {
             </div>
           </div>
         `;
+*/
+        const cardCount = member.cardPrintCount || 0;
+        const appCount = member.appPrintCount || 0;
+
+        return `
+        <div class="result-item" onclick="selectMember(${index}, this)" data-index="${index}">
+          <input type="radio" name="memberSelect" class="result-radio" onclick="event.stopPropagation(); selectMember(${index}, this.closest('.result-item'))">
+          <div class="result-info">
+            <span class="result-member-id">${escapeHtml(member.memberId)}</span>
+            <span class="result-store-name">${escapeHtml(member.storeName)}</span>
+            <span class="result-wearer-name">${escapeHtml(member.wearerName || member.representativeName)}</span>
+            <span class="result-print-count card-count"><input type="checkbox" class="print-checkbox" ${cardCount > 0 ? 'checked' : ''} disabled></span>
+            <span class="result-print-count app-count"><input type="checkbox" class="print-checkbox" ${appCount > 0 ? 'checked' : ''} disabled></span>
+            <span class="result-status ${getStatusClass(member.status)}">${getStatusText(member.status)}</span>
+          </div>
+        </div>
+      `;
       }).join('');
       
       // データを保存
@@ -1128,8 +1152,10 @@ function logout() {
       document.getElementById('selectedMemberId').textContent = member.memberId || '-';
       document.getElementById('selectedStoreName').textContent = member.storeName || '-';
       document.getElementById('selectedWearerName').textContent = member.wearerName || member.representativeName || '-';
-      document.getElementById('selectedCardCount').textContent = member.cardPrintCount || 0;
-      document.getElementById('selectedAppCount').textContent = member.appPrintCount || 0;
+//      document.getElementById('selectedCardCount').textContent = member.cardPrintCount || 0;
+//      document.getElementById('selectedAppCount').textContent = member.appPrintCount || 0;
+      document.getElementById('selectedCardCheck').checked = (member.cardPrintCount || 0) > 0;
+      document.getElementById('selectedAppCheck').checked = (member.appPrintCount || 0) > 0;
       document.getElementById('selectedStatus').textContent = getStatusText(member.status);
       document.getElementById('selectedMember').classList.add('show');
       
@@ -1145,6 +1171,7 @@ function logout() {
     }
     
     // 印刷回数表示を更新
+/* 削除    
     function updateListPrintCount(index, cardCount, appCount) {
       const items = document.querySelectorAll('.result-item');
       if (items[index]) {
@@ -1164,6 +1191,20 @@ function logout() {
         }
       }
     }
+*/
+function updateListPrintCount(index, cardCount, appCount) {
+  const items = document.querySelectorAll('.result-item');
+  if (items[index]) {
+    if (cardCount !== undefined) {
+      const cardCb = items[index].querySelector('.card-count .print-checkbox');
+      if (cardCb) cardCb.checked = cardCount > 0;
+    }
+    if (appCount !== undefined) {
+      const appCb = items[index].querySelector('.app-count .print-checkbox');
+      if (appCb) appCb.checked = appCount > 0;
+    }
+  }
+}
     
     function getStatusClass(status) {
       if (!status) return 'status-pending';
@@ -1224,7 +1265,8 @@ function logout() {
           const selectedIndex = Array.from(document.querySelectorAll('.result-item')).findIndex(item => item.classList.contains('selected'));
           if (selectedIndex >= 0 && result.cardPrintCount !== undefined) {
             updateListPrintCount(selectedIndex, result.cardPrintCount, undefined);
-            document.getElementById('selectedCardCount').textContent = result.cardPrintCount;
+//削除            document.getElementById('selectedCardCount').textContent = result.cardPrintCount;
+            document.getElementById('selectedCardCheck').checked = true;
           }
           
           showSuccessWithLink(
@@ -1263,7 +1305,8 @@ function logout() {
           const selectedIndex = Array.from(document.querySelectorAll('.result-item')).findIndex(item => item.classList.contains('selected'));
           if (selectedIndex >= 0 && result.appPrintCount !== undefined) {
             updateListPrintCount(selectedIndex, undefined, result.appPrintCount);
-            document.getElementById('selectedAppCount').textContent = result.appPrintCount;
+//            document.getElementById('selectedAppCount').textContent = result.appPrintCount;
+            document.getElementById('selectedAppCheck').checked = true;
           }
           
           showSuccessWithLink(
@@ -1308,12 +1351,21 @@ function logout() {
           const selectedIndex = Array.from(document.querySelectorAll('.result-item')).findIndex(item => item.classList.contains('selected'));
           if (selectedIndex >= 0) {
             updateListPrintCount(selectedIndex, cardResult.cardPrintCount, appResult.appPrintCount);
+/* 削除    
             if (cardResult.cardPrintCount !== undefined) {
               document.getElementById('selectedCardCount').textContent = cardResult.cardPrintCount;
             }
             if (appResult.appPrintCount !== undefined) {
               document.getElementById('selectedAppCount').textContent = appResult.appPrintCount;
             }
+  */
+            // 変更後
+if (cardResult.cardPrintCount !== undefined) {
+  document.getElementById('selectedCardCheck').checked = true;
+}
+if (appResult.appPrintCount !== undefined) {
+  document.getElementById('selectedAppCheck').checked = true;
+}
           }
           
           showSuccessWithLinks(
