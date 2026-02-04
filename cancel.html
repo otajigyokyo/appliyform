@@ -334,10 +334,9 @@
 </div>
 
 <script>
-  // ★ GASデプロイURL（スクリーンショットのURLから取得）
-  const API_URL = 'https://script.google.com/macros/s/AKfycbwbbyZoRzhWu8Ft5xVv-wul15nux43kg_1d2eJ50FcLIQZssIK1JoIbBES09_Rar1Q7VNDBzvJQ6_UaH__d7YUqipW/exec';
+  // ★ 正しいGASデプロイURL
+  const API_URL = 'https://script.google.com/macros/s/AKfycbwbbyZoRzhWu8Ft5xVvyI1LJc7_RLZaeLwVGapXnlYIIJBUSlgJXQTzofwuLl5nux43kg/exec';
 
-  // ========== 初期化 ========== //
   document.addEventListener('DOMContentLoaded', function() {
     const params = new URLSearchParams(window.location.search);
     const cancelToken = params.get('cancel_token');
@@ -347,7 +346,6 @@
     }
   });
 
-  // ========== 画面切り替え ========== //
   function showStep(step) {
     document.getElementById('step1').classList.add('hidden');
     document.getElementById('step2').classList.add('hidden');
@@ -367,21 +365,16 @@
     area.innerHTML = '';
   }
 
-  // ========== GAS API呼び出し（CORS対応版） ========== //
-  // ★ Content-Type を text/plain にすることでプリフライトリクエストを回避
-  // GAS側の e.postData.contents は Content-Type に関係なく JSON を取得可能
+  // ★ CORS対応: text/plain でプリフライトを回避
   async function callGasApi(data) {
     const response = await fetch(API_URL, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'text/plain;charset=utf-8'
-      },
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify(data)
     });
     return await response.json();
   }
 
-  // ========== Step1: フォーム送信 ========== //
   async function handleSubmit(e) {
     e.preventDefault();
     clearMessage();
@@ -421,7 +414,6 @@
     return false;
   }
 
-  // ========== Step3: 解約確認（トークン検証） ========== //
   async function confirmCancel(token) {
     try {
       const result = await callGasApi({
