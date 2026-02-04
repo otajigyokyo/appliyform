@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>買出人章 解約申請</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎫</text></svg>">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+      width: 100%;
+      max-width: 520px;
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+      color: #fff;
+      padding: 28px 32px;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .header p {
+      font-size: 13px;
+      opacity: 0.85;
+    }
+
+    .body {
+      padding: 32px;
+    }
+
+    .notice {
+      background: #fff3cd;
+      border-left: 4px solid #ffc107;
+      padding: 14px 16px;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 24px;
+      font-size: 13px;
+      color: #856404;
+      line-height: 1.6;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 6px;
+    }
+
+    .form-group label .required {
+      color: #e74c3c;
+      font-size: 12px;
+      margin-left: 4px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 15px;
+      font-family: inherit;
+      transition: border-color 0.2s;
+      outline: none;
+    }
+
+    .form-group input:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102,126,234,0.15);
+    }
+
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+      color: #fff;
+    }
+
+    .btn-danger:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 15px rgba(231,76,60,0.4);
+    }
+
+    .btn-danger:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    /* ローディング */
+    .spinner {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 3px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* メッセージ */
+    .message {
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      line-height: 1.6;
+      display: none;
+    }
+
+    .message.success {
+      background: #d4edda;
+      border: 1px solid #c3e6cb;
+      color: #155724;
+      display: block;
+    }
+
+    .message.error {
+      background: #f8d7da;
+      border: 1px solid #f5c6cb;
+      color: #721c24;
+      display: block;
+    }
+
+    .message.info {
+      background: #d1ecf1;
+      border: 1px solid #bee5eb;
+      color: #0c5460;
+      display: block;
+    }
+
+    /* 確認画面 */
+    .confirm-icon {
+      text-align: center;
+      font-size: 64px;
+      margin: 20px 0;
+    }
+
+    .confirm-text {
+      text-align: center;
+      font-size: 15px;
+      color: #333;
+      line-height: 1.8;
+      margin-bottom: 24px;
+    }
+
+    .confirm-text strong {
+      color: #e74c3c;
+    }
+
+    /* 完了画面 */
+    .result-card {
+      text-align: center;
+      padding: 20px 0;
+    }
+
+    .result-card .icon {
+      font-size: 72px;
+      margin-bottom: 16px;
+    }
+
+    .result-card h2 {
+      font-size: 20px;
+      color: #333;
+      margin-bottom: 12px;
+    }
+
+    .result-card p {
+      font-size: 14px;
+      color: #666;
+      line-height: 1.8;
+    }
+
+    .step-info {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 20px;
+      text-align: left;
+    }
+
+    .step-info h3 {
+      font-size: 14px;
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .step-info ol {
+      padding-left: 20px;
+      font-size: 13px;
+      color: #555;
+      line-height: 1.8;
+    }
+
+    .footer-note {
+      text-align: center;
+      font-size: 12px;
+      color: #999;
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid #eee;
+    }
+
+    /* 非表示 */
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <!-- ========== ヘッダー ========== -->
+  <div class="header">
+    <h1>🎫 買出人章 解約申請</h1>
+    <p>大田市場花き事業協同組合</p>
+  </div>
+
+  <div class="body">
+    <!-- ========== メッセージ表示 ========== -->
+    <div id="messageArea" class="message"></div>
+
+    <!-- ========== Step1: 入力フォーム ========== -->
+    <div id="step1">
+      <div class="notice">
+        解約をご希望の方は、下記に登録情報をご入力ください。<br>
+        ご登録のメールアドレスに解約確認メールをお送りします。
+      </div>
+
+      <form id="cancelForm" onsubmit="return handleSubmit(event)">
+        <div class="form-group">
+          <label>店名<span class="required">（必須）</span></label>
+          <input type="text" id="storeName" placeholder="例：東京フラワー" required>
+        </div>
+
+        <div class="form-group">
+          <label>登録メールアドレス<span class="required">（必須）</span></label>
+          <input type="email" id="email" placeholder="例：example@mail.com" required>
+        </div>
+
+        <button type="submit" id="submitBtn" class="btn btn-danger">
+          解約確認メールを送信
+        </button>
+      </form>
+
+      <div class="footer-note">
+        ※ 登録されている情報と一致しない場合、メールは送信されません。
+      </div>
+    </div>
+
+    <!-- ========== Step2: メール送信完了 ========== -->
+    <div id="step2" class="hidden">
+      <div class="result-card">
+        <div class="icon">📧</div>
+        <h2>確認メールを送信しました</h2>
+        <p>
+          ご登録のメールアドレスに解約確認メールをお送りしました。<br>
+          メール内のURLをクリックして、解約申請を完了してください。
+        </p>
+      </div>
+
+      <div class="step-info">
+        <h3>📋 この後の流れ</h3>
+        <ol>
+          <li>受信したメール内の確認URLをクリック</li>
+          <li>解約申請が受け付けられます</li>
+          <li>事務局で決済停止処理を行い、解約完了となります</li>
+        </ol>
+      </div>
+
+      <div class="footer-note">
+        ※ メールが届かない場合は迷惑メールフォルダをご確認ください。<br>
+        ※ 確認URLの有効期限は24時間です。
+      </div>
+    </div>
+
+    <!-- ========== Step3: 解約確認（URLクリック後） ========== -->
+    <div id="step3" class="hidden">
+      <div id="confirmLoading">
+        <div class="result-card">
+          <div class="icon">⏳</div>
+          <h2>解約申請を処理中...</h2>
+          <p>少々お待ちください。</p>
+        </div>
+      </div>
+
+      <div id="confirmSuccess" class="hidden">
+        <div class="result-card">
+          <div class="icon">✅</div>
+          <h2>解約申請を受け付けました</h2>
+          <p>
+            解約申請が正常に受け付けられました。<br>
+            事務局にて決済停止手続きを行い、<br>
+            完了次第ご連絡いたします。
+          </p>
+        </div>
+
+        <div class="step-info">
+          <h3>📋 今後の流れ</h3>
+          <ol>
+            <li>事務局で決済停止処理を行います</li>
+            <li>解約完了のメールをお送りします</li>
+            <li>買出人章は事務局にご返却ください</li>
+          </ol>
+        </div>
+
+        <div class="footer-note">
+          ご不明な点は事務局までお問い合わせください。<br>
+          電話: 03-5492-4065
+        </div>
+      </div>
+
+      <div id="confirmError" class="hidden">
+        <div class="result-card">
+          <div class="icon">⚠️</div>
+          <h2>エラーが発生しました</h2>
+          <p id="confirmErrorMessage">解約申請の処理に失敗しました。</p>
+        </div>
+        <div class="footer-note">
+          問題が解決しない場合は、事務局までお問い合わせください。<br>
+          電話: 03-5492-4065
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // ★★★ ここにGASデプロイURLを設定してください ★★★
+  const API_URL = 'YOUR_GAS_WEBAPP_URL_HERE';
+
+  // ========== 初期化 ========== //
+  document.addEventListener('DOMContentLoaded', function() {
+    const params = new URLSearchParams(window.location.search);
+    const cancelToken = params.get('cancel_token');
+
+    if (cancelToken) {
+      // 解約確認モード（メール内URLクリック時）
+      showStep(3);
+      confirmCancel(cancelToken);
+    }
+  });
+
+  // ========== 画面切り替え ========== //
+  function showStep(step) {
+    document.getElementById('step1').classList.add('hidden');
+    document.getElementById('step2').classList.add('hidden');
+    document.getElementById('step3').classList.add('hidden');
+    document.getElementById('step' + step).classList.remove('hidden');
+  }
+
+  function showMessage(type, text) {
+    const area = document.getElementById('messageArea');
+    area.className = 'message ' + type;
+    area.innerHTML = text;
+  }
+
+  function clearMessage() {
+    const area = document.getElementById('messageArea');
+    area.className = 'message';
+    area.innerHTML = '';
+  }
+
+  // ========== Step1: フォーム送信 ========== //
+  async function handleSubmit(e) {
+    e.preventDefault();
+    clearMessage();
+
+    const storeName = document.getElementById('storeName').value.trim();
+    const email = document.getElementById('email').value.trim();
+
+    if (!storeName || !email) {
+      showMessage('error', '店名とメールアドレスを入力してください。');
+      return false;
+    }
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>送信中...';
+
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'requestCancel',
+          storeName: storeName,
+          email: email
+        })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        showStep(2);
+      } else {
+        showMessage('error', result.error || '処理に失敗しました。入力内容をご確認ください。');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      showMessage('error', '通信エラーが発生しました。時間をおいてお試しください。');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '解約確認メールを送信';
+    }
+
+    return false;
+  }
+
+  // ========== Step3: 解約確認（トークン検証） ========== //
+  async function confirmCancel(token) {
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'confirmCancel',
+          cancelToken: token
+        })
+      });
+
+      const result = await response.json();
+
+      document.getElementById('confirmLoading').classList.add('hidden');
+
+      if (result.success) {
+        document.getElementById('confirmSuccess').classList.remove('hidden');
+      } else {
+        document.getElementById('confirmError').classList.remove('hidden');
+        document.getElementById('confirmErrorMessage').textContent = 
+          result.error || '解約申請の処理に失敗しました。';
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      document.getElementById('confirmLoading').classList.add('hidden');
+      document.getElementById('confirmError').classList.remove('hidden');
+      document.getElementById('confirmErrorMessage').textContent = 
+        '通信エラーが発生しました。時間をおいてお試しください。';
+    }
+  }
+</script>
+
+</body>
+</html>
