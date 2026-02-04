@@ -1111,9 +1111,6 @@ function logout() {
           </div>
         `;
 */
-        const cardCount = member.cardPrintCount || 0;
-        const appCount = member.appPrintCount || 0;
-
         return `
         <div class="result-item" onclick="selectMember(${index}, this)" data-index="${index}">
           <input type="radio" name="memberSelect" class="result-radio" onclick="event.stopPropagation(); selectMember(${index}, this.closest('.result-item'))">
