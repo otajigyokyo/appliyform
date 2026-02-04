@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>買出人章 解約申請</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎫</text></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📋</text></svg>">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -92,6 +92,12 @@
     .form-group input:focus {
       border-color: #667eea;
       box-shadow: 0 0 0 3px rgba(102,126,234,0.15);
+    }
+
+    .form-group .hint {
+      font-size: 13px;
+      color: #888;
+      margin-top: 6px;
     }
 
     .btn {
@@ -220,7 +226,7 @@
 
 <div class="container">
   <div class="header">
-    <h1>🎫 買出人章 解約申請</h1>
+    <h1>買出人章 解約申請</h1>
     <p>大田市場花き事業協同組合</p>
   </div>
 
@@ -235,6 +241,12 @@
       </div>
 
       <form id="cancelForm" onsubmit="return handleSubmit(event)">
+        <div class="form-group">
+          <label>会員番号<span class="required">（必須）</span></label>
+          <input type="text" id="memberId" placeholder="例：K10008" required>
+          <div class="hint">買出人章に記載されている番号を入力してください</div>
+        </div>
+
         <div class="form-group">
           <label>店名<span class="required">（必須）</span></label>
           <input type="text" id="storeName" placeholder="例：東京フラワー" required>
@@ -267,7 +279,7 @@
       </div>
 
       <div class="step-info">
-        <h3>📋 この後の流れ</h3>
+        <h3>この後の流れ</h3>
         <ol>
           <li>受信したメール内の確認URLをクリック</li>
           <li>解約申請が受け付けられます</li>
@@ -303,7 +315,7 @@
         </div>
 
         <div class="step-info">
-          <h3>📋 今後の流れ</h3>
+          <h3>今後の流れ</h3>
           <ol>
             <li>事務局で決済停止処理を行います</li>
             <li>解約完了のメールをお送りします</li>
@@ -334,7 +346,6 @@
 </div>
 
 <script>
-  // ★ 正しいGASデプロイURL
   const API_URL = 'https://script.google.com/macros/s/AKfycbwbbyZoRzhWu8Ft5xVvyI1LJc7_RLZaeLwVGapXnlYIIJBUSlgJXQTzofwuLl5nux43kg/exec';
 
   document.addEventListener('DOMContentLoaded', function() {
@@ -365,7 +376,6 @@
     area.innerHTML = '';
   }
 
-  // ★ CORS対応: text/plain でプリフライトを回避
   async function callGasApi(data) {
     const response = await fetch(API_URL, {
       method: 'POST',
@@ -379,11 +389,12 @@
     e.preventDefault();
     clearMessage();
 
+    const memberId = document.getElementById('memberId').value.trim();
     const storeName = document.getElementById('storeName').value.trim();
     const email = document.getElementById('email').value.trim();
 
-    if (!storeName || !email) {
-      showMessage('error', '店名とメールアドレスを入力してください。');
+    if (!memberId || !storeName || !email) {
+      showMessage('error', '全ての項目を入力してください。');
       return false;
     }
 
@@ -394,6 +405,7 @@
     try {
       const result = await callGasApi({
         action: 'requestCancel',
+        memberId: memberId,
         storeName: storeName,
         email: email
       });
