@@ -23,67 +23,67 @@
       border-radius: 16px;
       box-shadow: 0 20px 60px rgba(0,0,0,0.15);
       width: 100%;
-      max-width: 520px;
+      max-width: 700px;
       overflow: hidden;
     }
 
     .header {
       background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
       color: #fff;
-      padding: 28px 32px;
+      padding: 36px 40px;
       text-align: center;
     }
 
     .header h1 {
-      font-size: 22px;
+      font-size: 28px;
       font-weight: 700;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
     }
 
     .header p {
-      font-size: 13px;
+      font-size: 15px;
       opacity: 0.85;
     }
 
     .body {
-      padding: 32px;
+      padding: 40px;
     }
 
     .notice {
       background: #fff3cd;
       border-left: 4px solid #ffc107;
-      padding: 14px 16px;
+      padding: 18px 20px;
       border-radius: 0 8px 8px 0;
-      margin-bottom: 24px;
-      font-size: 13px;
+      margin-bottom: 28px;
+      font-size: 15px;
       color: #856404;
-      line-height: 1.6;
+      line-height: 1.7;
     }
 
     .form-group {
-      margin-bottom: 20px;
+      margin-bottom: 24px;
     }
 
     .form-group label {
       display: block;
-      font-size: 14px;
+      font-size: 16px;
       font-weight: 600;
       color: #333;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
     }
 
     .form-group label .required {
       color: #e74c3c;
-      font-size: 12px;
+      font-size: 13px;
       margin-left: 4px;
     }
 
     .form-group input {
       width: 100%;
-      padding: 12px 14px;
+      padding: 14px 16px;
       border: 2px solid #e0e0e0;
       border-radius: 8px;
-      font-size: 15px;
+      font-size: 16px;
       font-family: inherit;
       transition: border-color 0.2s;
       outline: none;
@@ -97,10 +97,10 @@
     .btn {
       display: block;
       width: 100%;
-      padding: 14px;
+      padding: 16px;
       border: none;
       border-radius: 8px;
-      font-size: 16px;
+      font-size: 18px;
       font-weight: 700;
       font-family: inherit;
       cursor: pointer;
@@ -124,11 +124,10 @@
       box-shadow: none;
     }
 
-    /* ローディング */
     .spinner {
       display: inline-block;
-      width: 18px;
-      height: 18px;
+      width: 20px;
+      height: 20px;
       border: 3px solid rgba(255,255,255,0.3);
       border-top-color: #fff;
       border-radius: 50%;
@@ -139,12 +138,11 @@
 
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* メッセージ */
     .message {
-      padding: 16px;
+      padding: 18px;
       border-radius: 8px;
-      margin-bottom: 20px;
-      font-size: 14px;
+      margin-bottom: 24px;
+      font-size: 15px;
       line-height: 1.6;
       display: none;
     }
@@ -163,51 +161,24 @@
       display: block;
     }
 
-    .message.info {
-      background: #d1ecf1;
-      border: 1px solid #bee5eb;
-      color: #0c5460;
-      display: block;
-    }
-
-    /* 確認画面 */
-    .confirm-icon {
-      text-align: center;
-      font-size: 64px;
-      margin: 20px 0;
-    }
-
-    .confirm-text {
-      text-align: center;
-      font-size: 15px;
-      color: #333;
-      line-height: 1.8;
-      margin-bottom: 24px;
-    }
-
-    .confirm-text strong {
-      color: #e74c3c;
-    }
-
-    /* 完了画面 */
     .result-card {
       text-align: center;
-      padding: 20px 0;
+      padding: 24px 0;
     }
 
     .result-card .icon {
-      font-size: 72px;
-      margin-bottom: 16px;
+      font-size: 80px;
+      margin-bottom: 20px;
     }
 
     .result-card h2 {
-      font-size: 20px;
+      font-size: 24px;
       color: #333;
-      margin-bottom: 12px;
+      margin-bottom: 16px;
     }
 
     .result-card p {
-      font-size: 14px;
+      font-size: 16px;
       color: #666;
       line-height: 1.8;
     }
@@ -215,51 +186,48 @@
     .step-info {
       background: #f8f9fa;
       border-radius: 8px;
-      padding: 16px;
-      margin-top: 20px;
+      padding: 20px;
+      margin-top: 24px;
       text-align: left;
     }
 
     .step-info h3 {
-      font-size: 14px;
+      font-size: 16px;
       color: #333;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
     }
 
     .step-info ol {
-      padding-left: 20px;
-      font-size: 13px;
+      padding-left: 22px;
+      font-size: 15px;
       color: #555;
-      line-height: 1.8;
+      line-height: 2;
     }
 
     .footer-note {
       text-align: center;
-      font-size: 12px;
+      font-size: 13px;
       color: #999;
-      margin-top: 20px;
-      padding-top: 16px;
+      margin-top: 24px;
+      padding-top: 18px;
       border-top: 1px solid #eee;
     }
 
-    /* 非表示 */
     .hidden { display: none !important; }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <!-- ========== ヘッダー ========== -->
   <div class="header">
     <h1>🎫 買出人章 解約申請</h1>
     <p>大田市場花き事業協同組合</p>
   </div>
 
   <div class="body">
-    <!-- ========== メッセージ表示 ========== -->
     <div id="messageArea" class="message"></div>
 
-    <!-- ========== Step1: 入力フォーム ========== -->
+    <!-- Step1: 入力フォーム -->
     <div id="step1">
       <div class="notice">
         解約をご希望の方は、下記に登録情報をご入力ください。<br>
@@ -287,7 +255,7 @@
       </div>
     </div>
 
-    <!-- ========== Step2: メール送信完了 ========== -->
+    <!-- Step2: メール送信完了 -->
     <div id="step2" class="hidden">
       <div class="result-card">
         <div class="icon">📧</div>
@@ -313,7 +281,7 @@
       </div>
     </div>
 
-    <!-- ========== Step3: 解約確認（URLクリック後） ========== -->
+    <!-- Step3: 解約確認（URLクリック後） -->
     <div id="step3" class="hidden">
       <div id="confirmLoading">
         <div class="result-card">
@@ -366,16 +334,14 @@
 </div>
 
 <script>
-  // ★★★ ここにGASデプロイURLを設定してください ★★★
-  const API_URL = 'https://script.google.com/macros/s/AKfycbwbbyZoRzhWu8Ft5xVvyI1LJc7_RLZaeLwVGapXnlYIIJBUSlgJXQTzofwuLl5nux43kg/exec';
+  // ★ GASデプロイURL（スクリーンショットのURLから取得）
+  const API_URL = 'https://script.google.com/macros/s/AKfycbwbbyZoRzhWu8Ft5xVv-wul15nux43kg_1d2eJ50FcLIQZssIK1JoIbBES09_Rar1Q7VNDBzvJQ6_UaH__d7YUqipW/exec';
 
   // ========== 初期化 ========== //
   document.addEventListener('DOMContentLoaded', function() {
     const params = new URLSearchParams(window.location.search);
     const cancelToken = params.get('cancel_token');
-
     if (cancelToken) {
-      // 解約確認モード（メール内URLクリック時）
       showStep(3);
       confirmCancel(cancelToken);
     }
@@ -401,6 +367,20 @@
     area.innerHTML = '';
   }
 
+  // ========== GAS API呼び出し（CORS対応版） ========== //
+  // ★ Content-Type を text/plain にすることでプリフライトリクエストを回避
+  // GAS側の e.postData.contents は Content-Type に関係なく JSON を取得可能
+  async function callGasApi(data) {
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8'
+      },
+      body: JSON.stringify(data)
+    });
+    return await response.json();
+  }
+
   // ========== Step1: フォーム送信 ========== //
   async function handleSubmit(e) {
     e.preventDefault();
@@ -419,17 +399,11 @@
     btn.innerHTML = '<span class="spinner"></span>送信中...';
 
     try {
-      const response = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'requestCancel',
-          storeName: storeName,
-          email: email
-        })
+      const result = await callGasApi({
+        action: 'requestCancel',
+        storeName: storeName,
+        email: email
       });
-
-      const result = await response.json();
 
       if (result.success) {
         showStep(2);
@@ -450,16 +424,10 @@
   // ========== Step3: 解約確認（トークン検証） ========== //
   async function confirmCancel(token) {
     try {
-      const response = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'confirmCancel',
-          cancelToken: token
-        })
+      const result = await callGasApi({
+        action: 'confirmCancel',
+        cancelToken: token
       });
-
-      const result = await response.json();
 
       document.getElementById('confirmLoading').classList.add('hidden');
 
@@ -467,14 +435,14 @@
         document.getElementById('confirmSuccess').classList.remove('hidden');
       } else {
         document.getElementById('confirmError').classList.remove('hidden');
-        document.getElementById('confirmErrorMessage').textContent = 
+        document.getElementById('confirmErrorMessage').textContent =
           result.error || '解約申請の処理に失敗しました。';
       }
     } catch (error) {
       console.error('Error:', error);
       document.getElementById('confirmLoading').classList.add('hidden');
       document.getElementById('confirmError').classList.remove('hidden');
-      document.getElementById('confirmErrorMessage').textContent = 
+      document.getElementById('confirmErrorMessage').textContent =
         '通信エラーが発生しました。時間をおいてお試しください。';
     }
   }
