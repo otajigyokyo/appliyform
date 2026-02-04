@@ -721,6 +721,65 @@
       cursor: default;
       accent-color: #28a745;
     }
+
+    /* ========== ★ 解約ステータスバッジ ========== */
+    .cancel-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 700;
+      margin-left: 6px;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+    .cancel-badge.cancel-mail {
+      background: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffc107;
+    }
+    .cancel-badge.cancel-pending {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+      animation: cancelBlink 1.5s ease-in-out infinite;
+    }
+    .cancel-badge.cancel-done {
+      background: #e2e3e5;
+      color: #383d41;
+      border: 1px solid #d6d8db;
+      text-decoration: line-through;
+    }
+    @keyframes cancelBlink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    /* 選択中の会員セクション用の大きめバッジ */
+    .cancel-badge-lg {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 700;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+    .cancel-badge-lg.cancel-mail {
+      background: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffc107;
+    }
+    .cancel-badge-lg.cancel-pending {
+      background: #f8d7da;
+      color: #721c24;
+      border: 2px solid #dc3545;
+      animation: cancelBlink 1.5s ease-in-out infinite;
+    }
+    .cancel-badge-lg.cancel-done {
+      background: #e2e3e5;
+      color: #383d41;
+      border: 1px solid #d6d8db;
+    }
   </style>
 </head>
 <body>
@@ -797,6 +856,7 @@
         <span><strong>カード:</strong> <input type="checkbox" id="selectedCardCheck" class="print-checkbox" onclick="toggleSelectedPrintStatus('card', this)"></span>
         <span><strong>申請書:</strong> <input type="checkbox" id="selectedAppCheck" class="print-checkbox" onclick="toggleSelectedPrintStatus('app', this)"></span>
         <span><strong>ステータス:</strong> <span id="selectedStatus">-</span></span>
+        <span id="selectedCancelStatusArea"></span>
       </div>
     </div>
     
@@ -1017,6 +1077,32 @@ function logout() {
       }
     }
     
+    // ========== ★ 解約ステータス バッジ生成 ========== //
+    
+    function getCancelBadge(cancelStatus) {
+      if (!cancelStatus) return '';
+      if (cancelStatus === '解約メール送信') {
+        return '<span class="cancel-badge cancel-mail">解約メール送信</span>';
+      }
+      if (cancelStatus === '解約申請中') {
+        return '<span class="cancel-badge cancel-pending">解約申請中</span>';
+      }
+      if (cancelStatus === '解約済み') {
+        return '<span class="cancel-badge cancel-done">解約済み</span>';
+      }
+      return '';
+    }
+    
+    function getCancelBadgeLg(cancelStatus) {
+      if (!cancelStatus) return '';
+      var cls = '';
+      if (cancelStatus === '解約メール送信') cls = 'cancel-mail';
+      else if (cancelStatus === '解約申請中') cls = 'cancel-pending';
+      else if (cancelStatus === '解約済み') cls = 'cancel-done';
+      else return '';
+      return '<span class="cancel-badge-lg ' + cls + '">' + escapeHtml(cancelStatus) + '</span>';
+    }
+    
     // ========== 検索機能 ========== //
     
     function handleSearchKeypress(event) {
@@ -1086,29 +1172,16 @@ function logout() {
       listEl.innerHTML = results.map((member, index) => {
         const cardCount = member.cardPrintCount || 0;
         const appCount = member.appPrintCount || 0;
-//        const cardClass = cardCount > 0 ? 'print-count-has' : 'print-count-zero';
-//        const appClass = appCount > 0 ? 'print-count-has' : 'print-count-zero';
-/* 消去        
-        return `
-          <div class="result-item" onclick="selectMember(${index}, this)" data-index="${index}">
-            <input type="radio" name="memberSelect" class="result-radio" onclick="event.stopPropagation(); selectMember(${index}, this.closest('.result-item'))">
-            <div class="result-info">
-              <span class="result-member-id">${escapeHtml(member.memberId)}</span>
-              <span class="result-store-name">${escapeHtml(member.storeName)}</span>
-              <span class="result-wearer-name">${escapeHtml(member.wearerName || member.representativeName)}</span>
-              <span class="result-print-count card-count ${cardClass}">${cardCount}</span>
-              <span class="result-print-count app-count ${appClass}">${appCount}</span>
-              <span class="result-status ${getStatusClass(member.status)}">${getStatusText(member.status)}</span>
-            </div>
-          </div>
-        `;
-*/
+        // ★ 解約ステータスを取得
+        const cancelStatus = member.cancelStatus || '';
+        const cancelBadgeHtml = getCancelBadge(cancelStatus);
+
         return `
         <div class="result-item" onclick="selectMember(${index}, this)" data-index="${index}">
           <input type="radio" name="memberSelect" class="result-radio" onclick="event.stopPropagation(); selectMember(${index}, this.closest('.result-item'))">
           <div class="result-info">
             <span class="result-member-id">${escapeHtml(member.memberId)}</span>
-            <span class="result-store-name">${escapeHtml(member.storeName)}</span>
+            <span class="result-store-name">${escapeHtml(member.storeName)}${cancelBadgeHtml}</span>
             <span class="result-wearer-name">${escapeHtml(member.wearerName || member.representativeName)}</span>
             <span class="result-print-count card-count"><input type="checkbox" class="print-checkbox" ${cardCount > 0 ? 'checked' : ''} onclick="event.stopPropagation(); togglePrintStatus(${index}, 'card', this)"></span>
             <span class="result-print-count app-count"><input type="checkbox" class="print-checkbox" ${appCount > 0 ? 'checked' : ''} onclick="event.stopPropagation(); togglePrintStatus(${index}, 'app', this)"></span>
@@ -1144,6 +1217,11 @@ function logout() {
       document.getElementById('selectedCardCheck').checked = (member.cardPrintCount || 0) > 0;
       document.getElementById('selectedAppCheck').checked = (member.appPrintCount || 0) > 0;
       document.getElementById('selectedStatus').textContent = getStatusText(member.status);
+      
+      // ★ 解約ステータス表示
+      const cancelStatus = member.cancelStatus || '';
+      document.getElementById('selectedCancelStatusArea').innerHTML = getCancelBadgeLg(cancelStatus);
+      
       document.getElementById('selectedMember').classList.add('show');
       
       // ボタンを有効化
@@ -1158,27 +1236,6 @@ function logout() {
     }
     
     // 印刷回数表示を更新
-/* 削除    
-    function updateListPrintCount(index, cardCount, appCount) {
-      const items = document.querySelectorAll('.result-item');
-      if (items[index]) {
-        if (cardCount !== undefined) {
-          const cardEl = items[index].querySelector('.card-count');
-          if (cardEl) {
-            cardEl.textContent = cardCount;
-            cardEl.className = 'result-print-count card-count ' + (cardCount > 0 ? 'print-count-has' : 'print-count-zero');
-          }
-        }
-        if (appCount !== undefined) {
-          const appEl = items[index].querySelector('.app-count');
-          if (appEl) {
-            appEl.textContent = appCount;
-            appEl.className = 'result-print-count app-count ' + (appCount > 0 ? 'print-count-has' : 'print-count-zero');
-          }
-        }
-      }
-    }
-*/
 function updateListPrintCount(index, cardCount, appCount) {
   const items = document.querySelectorAll('.result-item');
   if (items[index]) {
@@ -1252,7 +1309,6 @@ function updateListPrintCount(index, cardCount, appCount) {
           const selectedIndex = Array.from(document.querySelectorAll('.result-item')).findIndex(item => item.classList.contains('selected'));
           if (selectedIndex >= 0 && result.cardPrintCount !== undefined) {
             updateListPrintCount(selectedIndex, result.cardPrintCount, undefined);
-//削除            document.getElementById('selectedCardCount').textContent = result.cardPrintCount;
             document.getElementById('selectedCardCheck').checked = true;
           }
           
@@ -1292,7 +1348,6 @@ function updateListPrintCount(index, cardCount, appCount) {
           const selectedIndex = Array.from(document.querySelectorAll('.result-item')).findIndex(item => item.classList.contains('selected'));
           if (selectedIndex >= 0 && result.appPrintCount !== undefined) {
             updateListPrintCount(selectedIndex, undefined, result.appPrintCount);
-//            document.getElementById('selectedAppCount').textContent = result.appPrintCount;
             document.getElementById('selectedAppCheck').checked = true;
           }
           
@@ -1338,21 +1393,12 @@ function updateListPrintCount(index, cardCount, appCount) {
           const selectedIndex = Array.from(document.querySelectorAll('.result-item')).findIndex(item => item.classList.contains('selected'));
           if (selectedIndex >= 0) {
             updateListPrintCount(selectedIndex, cardResult.cardPrintCount, appResult.appPrintCount);
-/* 削除    
             if (cardResult.cardPrintCount !== undefined) {
-              document.getElementById('selectedCardCount').textContent = cardResult.cardPrintCount;
+              document.getElementById('selectedCardCheck').checked = true;
             }
             if (appResult.appPrintCount !== undefined) {
-              document.getElementById('selectedAppCount').textContent = appResult.appPrintCount;
+              document.getElementById('selectedAppCheck').checked = true;
             }
-  */
-            // 変更後
-if (cardResult.cardPrintCount !== undefined) {
-  document.getElementById('selectedCardCheck').checked = true;
-}
-if (appResult.appPrintCount !== undefined) {
-  document.getElementById('selectedAppCheck').checked = true;
-}
           }
           
           showSuccessWithLinks(
