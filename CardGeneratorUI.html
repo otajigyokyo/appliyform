@@ -303,14 +303,6 @@
       font-weight: bold;
     }
     
-    .print-count-zero {
-      color: #ccc;
-    }
-    
-    .print-count-has {
-      color: #28a745;
-    }
-    
     /* ========== 選択中の会員 ========== */
     .selected-member {
       background: #e8f0fe;
@@ -802,8 +794,8 @@
         <span><strong>会員番号:</strong> <span id="selectedMemberId">-</span></span>
         <span><strong>店名:</strong> <span id="selectedStoreName">-</span></span>
         <span><strong>着用者:</strong> <span id="selectedWearerName">-</span></span>
-        <span><strong>カード:</strong> <span id="selectedCardCount" class="selected-print-count">0</span>回</span>
-        <span><strong>申請書:</strong> <span id="selectedAppCount" class="selected-print-count">0</span>回</span>
+        <span><strong>カード:</strong> <input type="checkbox" id="selectedCardCheck" class="print-checkbox" onclick="toggleSelectedPrintStatus('card', this)"></span>
+        <span><strong>申請書:</strong> <input type="checkbox" id="selectedAppCheck" class="print-checkbox" onclick="toggleSelectedPrintStatus('app', this)"></span>
         <span><strong>ステータス:</strong> <span id="selectedStatus">-</span></span>
       </div>
     </div>
@@ -1118,8 +1110,8 @@ function logout() {
             <span class="result-member-id">${escapeHtml(member.memberId)}</span>
             <span class="result-store-name">${escapeHtml(member.storeName)}</span>
             <span class="result-wearer-name">${escapeHtml(member.wearerName || member.representativeName)}</span>
-            <span class="result-print-count card-count"><input type="checkbox" class="print-checkbox" ${cardCount > 0 ? 'checked' : ''} disabled></span>
-            <span class="result-print-count app-count"><input type="checkbox" class="print-checkbox" ${appCount > 0 ? 'checked' : ''} disabled></span>
+            <span class="result-print-count card-count"><input type="checkbox" class="print-checkbox" ${cardCount > 0 ? 'checked' : ''} onclick="event.stopPropagation(); togglePrintStatus(${index}, 'card', this)"></span>
+            <span class="result-print-count app-count"><input type="checkbox" class="print-checkbox" ${appCount > 0 ? 'checked' : ''} onclick="event.stopPropagation(); togglePrintStatus(${index}, 'app', this)"></span>
             <span class="result-status ${getStatusClass(member.status)}">${getStatusText(member.status)}</span>
           </div>
         </div>
@@ -1149,8 +1141,6 @@ function logout() {
       document.getElementById('selectedMemberId').textContent = member.memberId || '-';
       document.getElementById('selectedStoreName').textContent = member.storeName || '-';
       document.getElementById('selectedWearerName').textContent = member.wearerName || member.representativeName || '-';
-//      document.getElementById('selectedCardCount').textContent = member.cardPrintCount || 0;
-//      document.getElementById('selectedAppCount').textContent = member.appPrintCount || 0;
       document.getElementById('selectedCardCheck').checked = (member.cardPrintCount || 0) > 0;
       document.getElementById('selectedAppCheck').checked = (member.appPrintCount || 0) > 0;
       document.getElementById('selectedStatus').textContent = getStatusText(member.status);
@@ -1533,6 +1523,67 @@ if (appResult.appPrintCount !== undefined) {
       }
       initializePage();
     };
+
+    // ========== チェックボックスでの印刷状態切り替え ========== //
+
+async function togglePrintStatus(index, type, checkbox) {
+  const member = window.searchResultsData[index];
+  if (!member) return;
+
+  const newValue = checkbox.checked ? 1 : 0;
+
+  try {
+    const result = await callApi('updatePrintStatus', {
+      rowNumber: member.rowNumber,
+      type: type,
+      value: newValue
+    });
+
+    if (result.success) {
+      // ローカルデータも更新
+      if (type === 'card') {
+        member.cardPrintCount = newValue;
+      } else {
+        member.appPrintCount = newValue;
+      }
+
+      // 選択中の会員の表示も同期
+      if (selectedMemberData && selectedMemberData.rowNumber === member.rowNumber) {
+        if (type === 'card') {
+          document.getElementById('selectedCardCheck').checked = checkbox.checked;
+        } else {
+          document.getElementById('selectedAppCheck').checked = checkbox.checked;
+        }
+      }
+    } else {
+      // 失敗時はチェックを戻す
+      checkbox.checked = !checkbox.checked;
+      showMessage('❌ 更新失敗: ' + result.error, 'error');
+    }
+  } catch (error) {
+    checkbox.checked = !checkbox.checked;
+    showMessage('❌ エラー: ' + error.message, 'error');
+  }
+}
+
+function toggleSelectedPrintStatus(type, checkbox) {
+  if (!selectedMemberData) return;
+
+  const index = window.searchResultsData.findIndex(m => m.rowNumber === selectedMemberData.rowNumber);
+  if (index >= 0) {
+    // 一覧側のチェックボックスも同期
+    const items = document.querySelectorAll('.result-item');
+    const selector = type === 'card' ? '.card-count .print-checkbox' : '.app-count .print-checkbox';
+    const listCheckbox = items[index]?.querySelector(selector);
+    if (listCheckbox) listCheckbox.checked = checkbox.checked;
+  }
+
+  togglePrintStatus(
+    index >= 0 ? index : 0,
+    type,
+    checkbox
+  );
+}
   </script>
 </body>
 </html>
