@@ -1912,9 +1912,7 @@ async function completeCancelAction() {
   document.getElementById('btnDeficiency').disabled = !enabled;  // ★ 追加
 }
 
-❌ 未修正3: モーダル＋送信処理の関数がない
-openDeficiencyModal、closeDeficiencyModal、sendDeficiency の3関数がスクリプト内に存在しません。completeCancelAction 関数の後あたりに以下を追加してください：
-javascript// ========== 不備連絡モーダル ========== //
+// ========== 不備連絡モーダル ========== //
 
 function openDeficiencyModal() {
   if (!selectedMemberData) {
