@@ -596,24 +596,37 @@
       </div>
 
       <!-- ★★★ ここから追加 ★★★ -->
-      <!-- 公的書類プレビュー -->
-      <div class="section" id="documentPreviewSection" style="display: none;">
-        <div class="section-title">📄 公的書類プレビュー</div>
-        <div style="text-align: center; margin: 20px 0;">
-          <iframe id="documentPreview" 
-                  style="width: 100%; height: 600px; border: 2px solid #e9ecef; border-radius: 12px; background: #f8f9fa;"
-                  src="">
-          </iframe>
-        </div>
-        <div style="text-align: center; margin-top: 15px; display: flex; gap: 10px; justify-content: center;">
-          <button onclick="openDocumentNewTab()" class="btn" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
-            🔗 新しいタブで開く
-          </button>
-          <button onclick="printDocument()" class="btn" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
-            🖨️ 印刷
-          </button>
-        </div>
-      </div>
+<!-- 公的書類プレビュー（複数対応） -->
+<div class="section" id="documentPreviewSection" style="display: none;">
+  <div class="section-title">📄 公的書類プレビュー</div>
+  
+  <!-- 書類タブ -->
+  <div id="docTabs" style="display: flex; gap: 5px; margin-bottom: 10px; flex-wrap: wrap;"></div>
+  
+  <!-- プレビューエリア -->
+  <div style="text-align: center; margin: 10px 0;">
+    <iframe id="documentPreview" 
+            style="width: 100%; height: 600px; border: 2px solid #e9ecef; border-radius: 12px; background: #f8f9fa;"
+            src="">
+    </iframe>
+  </div>
+  
+  <!-- 書類情報 -->
+  <div id="docInfo" style="text-align: center; font-size: 13px; color: #666; margin: 8px 0;"></div>
+  
+  <!-- アクションボタン -->
+  <div style="text-align: center; margin-top: 10px; display: flex; gap: 10px; justify-content: center;">
+    <button onclick="openDocumentNewTab()" class="btn" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+      🔗 新しいタブで開く
+    </button>
+    <button onclick="printDocument()" class="btn" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
+      🖨️ 印刷
+    </button>
+    <button onclick="openAllDocuments()" id="btnOpenAll" class="btn" style="background: #28a745; color: white; display: none;">
+      📂 全書類を開く
+    </button>
+  </div>
+</div>
       <!-- ★★★ ここまで追加 ★★★ -->
       
       <!-- QRコード -->
@@ -742,7 +755,7 @@
         docLink.classList.remove('disabled');
         
         // ★ プレビューセクションを表示
-        displayDocumentPreview(member.documentUrl);
+        displayDocumentPreview(member.documentUrl, member.documentUrls);
       }
       
       // 基本情報
@@ -860,31 +873,106 @@
 
         // ★★★ ここから追加 ★★★
     // 公的書類のプレビューを表示
-    let currentDocumentUrl = '';
-    
-    function displayDocumentPreview(documentUrl) {
-      if (!documentUrl) return;
-      
-      currentDocumentUrl = documentUrl;
-      
-      // Google DriveのプレビューURL（/view → /preview に変換）
-      const previewUrl = documentUrl.replace('/view', '/preview');
-      
-      // iframeにセット
-      document.getElementById('documentPreview').src = previewUrl;
-      
-      // セクションを表示
-      document.getElementById('documentPreviewSection').style.display = 'block';
+// ========== 公的書類プレビュー（複数対応） ========== //
+let currentDocumentUrl = '';
+let allDocumentUrls = [];
+let currentDocIndex = 0;
+
+function displayDocumentPreview(documentUrl, documentUrls) {
+  // 複数書類がある場合
+  if (documentUrls && documentUrls.length > 0) {
+    allDocumentUrls = documentUrls;
+  } else if (documentUrl) {
+    allDocumentUrls = [{ name: '公的書類', url: documentUrl }];
+  } else {
+    return;
+  }
+
+  // タブを生成
+  const tabsEl = document.getElementById('docTabs');
+  if (allDocumentUrls.length > 1) {
+    tabsEl.innerHTML = allDocumentUrls.map((doc, i) => {
+      const shortName = doc.name.replace(/^公的書類_\d+_/, '').replace(/\.[^.]+$/, '');
+      return `<button onclick="switchDoc(${i})" id="docTab${i}" 
+                style="padding: 8px 16px; border: 2px solid ${i === 0 ? '#667eea' : '#ddd'}; 
+                       background: ${i === 0 ? '#667eea' : 'white'}; 
+                       color: ${i === 0 ? 'white' : '#333'}; 
+                       border-radius: 20px; cursor: pointer; font-size: 13px; transition: all 0.2s;">
+                📄 書類${i + 1}: ${shortName || '書類' + (i + 1)}
+              </button>`;
+    }).join('');
+    tabsEl.style.display = 'flex';
+
+    // 「全書類を開く」ボタン表示
+    document.getElementById('btnOpenAll').style.display = 'inline-flex';
+  } else {
+    tabsEl.style.display = 'none';
+    document.getElementById('btnOpenAll').style.display = 'none';
+  }
+
+  // 最初の書類を表示
+  switchDoc(0);
+
+  // セクション表示
+  document.getElementById('documentPreviewSection').style.display = 'block';
+}
+
+function switchDoc(index) {
+  if (index < 0 || index >= allDocumentUrls.length) return;
+  
+  currentDocIndex = index;
+  const doc = allDocumentUrls[index];
+  currentDocumentUrl = doc.url;
+  
+  // iframe更新
+  const previewUrl = doc.url.replace('/view', '/preview');
+  document.getElementById('documentPreview').src = previewUrl;
+  
+  // 書類情報表示
+  const infoEl = document.getElementById('docInfo');
+  const sizeText = doc.size ? ` (${(doc.size / 1024).toFixed(0)} KB)` : '';
+  infoEl.textContent = `${doc.name}${sizeText} ― ${index + 1} / ${allDocumentUrls.length} 件`;
+  
+  // タブのスタイル更新
+  allDocumentUrls.forEach((_, i) => {
+    const tab = document.getElementById('docTab' + i);
+    if (tab) {
+      tab.style.background = i === index ? '#667eea' : 'white';
+      tab.style.color = i === index ? 'white' : '#333';
+      tab.style.borderColor = i === index ? '#667eea' : '#ddd';
     }
-    
-    // 新しいタブで開く
-    function openDocumentNewTab() {
-      if (currentDocumentUrl) {
-        window.open(currentDocumentUrl, '_blank');
-      } else {
-        alert('公的書類が登録されていません');
-      }
+  });
+}
+
+function openDocumentNewTab() {
+  if (currentDocumentUrl) {
+    window.open(currentDocumentUrl, '_blank');
+  } else {
+    alert('公的書類が登録されていません');
+  }
+}
+
+function openAllDocuments() {
+  allDocumentUrls.forEach(doc => {
+    window.open(doc.url, '_blank');
+  });
+}
+
+function printDocument() {
+  if (currentDocumentUrl) {
+    const printWindow = window.open(currentDocumentUrl, '_blank');
+    if (printWindow) {
+      printWindow.onload = function() {
+        setTimeout(() => { printWindow.print(); }, 1000);
+      };
+    } else {
+      alert('ポップアップブロックを解除してください');
     }
+  } else {
+    alert('公的書類が登録されていません');
+  }
+}
+
     
     // 印刷ダイアログを表示
     function printDocument() {
