@@ -806,6 +806,141 @@
       transform: none;
       box-shadow: none;
     }
+
+      ★ 以下を既存の .cancel-badge 系CSSの後に追加してください
+
+  .deficiency-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+  .deficiency-badge.def-notified {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffc107;
+    animation: blink 1.5s ease-in-out infinite;
+  }
+  .deficiency-badge.def-resubmitted {
+    background: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #17a2b8;
+  }
+
+  .btn-deficiency {
+    background: #ff9800;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .btn-deficiency:hover {
+    background: #f57c00;
+  }
+
+  .deficiency-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .deficiency-modal {
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px;
+    width: 90%;
+    max-width: 480px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  }
+
+  .deficiency-modal h3 {
+    font-size: 18px;
+    margin-bottom: 16px;
+    color: #333;
+  }
+
+  .deficiency-modal .form-group {
+    margin-bottom: 16px;
+  }
+
+  .deficiency-modal label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 6px;
+  }
+
+  .deficiency-modal select,
+  .deficiency-modal textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+  }
+
+  .deficiency-modal textarea {
+    height: 80px;
+    resize: vertical;
+  }
+
+  .deficiency-modal .modal-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+  }
+
+  .deficiency-modal .btn-cancel {
+    padding: 10px 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #fff;
+    color: #666;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  .deficiency-modal .btn-send {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    background: #ff9800;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .deficiency-modal .btn-send:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+  }
+
+  .deficiency-modal .member-summary {
+    background: #f5f5f5;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 16px;
+    font-size: 13px;
+  }
+
+  .deficiency-modal .member-summary strong {
+    color: #333;
+  }
   </style>
 </head>
 <body>
@@ -1133,6 +1268,17 @@ function logout() {
       }
       return html;
     }
+
+    function getDeficiencyBadge(defStatus) {
+      if (!defStatus) return '';
+      if (defStatus === '不備連絡済み') {
+        return '<span class="deficiency-badge def-notified">不備連絡済み</span>';
+      }
+      if (defStatus === '再提出済み') {
+      return '<span class="deficiency-badge def-resubmitted">再提出済み</span>';
+      }
+    return '';
+    }
     
     // ========== 検索機能 ========== //
     
@@ -1206,6 +1352,9 @@ function logout() {
         // ★ 解約ステータスを取得
         const cancelStatus = member.cancelStatus || '';
         const cancelBadgeHtml = getCancelBadge(cancelStatus);
+        // ★ 不備ステータスを取得 ← この2行を追加
+        const deficiencyStatus = member.deficiencyStatus || '';
+        const deficiencyBadgeHtml = getDeficiencyBadge(deficiencyStatus);
 
         return `
         <div class="result-item" onclick="selectMember(${index}, this)" data-index="${index}">
