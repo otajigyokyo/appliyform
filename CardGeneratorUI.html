@@ -1036,6 +1036,13 @@
         📦 両方生成
       </button>
     </div>
+
+    <!-- ★ 不備連絡ボタン -->
+    <div style="margin-top: 10px; text-align: right;">
+      <button class="btn-deficiency" id="btnDeficiency" onclick="openDeficiencyModal()" disabled>
+        ⚠️ 不備連絡
+      </button>
+    </div>
     
     <!-- ローディング -->
     <div class="loading" id="loading">
@@ -1361,7 +1368,7 @@ function logout() {
           <input type="radio" name="memberSelect" class="result-radio" onclick="event.stopPropagation(); selectMember(${index}, this.closest('.result-item'))">
           <div class="result-info">
             <span class="result-member-id">${escapeHtml(member.memberId)}</span>
-            <span class="result-store-name">${escapeHtml(member.storeName)}${cancelBadgeHtml}</span>
+            <span class="result-store-name">${escapeHtml(member.storeName)}${cancelBadgeHtml}${deficiencyBadgeHtml}</span>
             <span class="result-wearer-name">${escapeHtml(member.wearerName || member.representativeName)}</span>
             <span class="result-print-count card-count"><input type="checkbox" class="print-checkbox" ${cardCount > 0 ? 'checked' : ''} onclick="event.stopPropagation(); togglePrintStatus(${index}, 'card', this)"></span>
             <span class="result-print-count app-count"><input type="checkbox" class="print-checkbox" ${appCount > 0 ? 'checked' : ''} onclick="event.stopPropagation(); togglePrintStatus(${index}, 'app', this)"></span>
@@ -1413,6 +1420,7 @@ function logout() {
       document.getElementById('btnCard').disabled = !enabled;
       document.getElementById('btnApplication').disabled = !enabled;
       document.getElementById('btnBoth').disabled = !enabled;
+      document.getElementById('btnDeficiency').disabled = !enabled;  // ★ 追加
     }
     
     // 印刷回数表示を更新
@@ -1893,6 +1901,126 @@ async function completeCancelAction() {
       btn.disabled = false;
       btn.textContent = '✔ 解約済みにする';
     }
+  }
+}
+
+    function setButtonsEnabled(enabled) {
+  document.getElementById('btnDetail').disabled = !enabled;
+  document.getElementById('btnCard').disabled = !enabled;
+  document.getElementById('btnApplication').disabled = !enabled;
+  document.getElementById('btnBoth').disabled = !enabled;
+  document.getElementById('btnDeficiency').disabled = !enabled;  // ★ 追加
+}
+
+❌ 未修正3: モーダル＋送信処理の関数がない
+openDeficiencyModal、closeDeficiencyModal、sendDeficiency の3関数がスクリプト内に存在しません。completeCancelAction 関数の後あたりに以下を追加してください：
+javascript// ========== 不備連絡モーダル ========== //
+
+function openDeficiencyModal() {
+  if (!selectedMemberData) {
+    alert('会員を選択してください');
+    return;
+  }
+
+  const member = selectedMemberData;
+  const overlay = document.createElement('div');
+  overlay.className = 'deficiency-modal-overlay';
+  overlay.id = 'deficiencyModalOverlay';
+  overlay.innerHTML = `
+    <div class="deficiency-modal">
+      <h3>⚠️ 書類不備連絡</h3>
+      <div class="member-summary">
+        <strong>${escapeHtml(member.memberId)}</strong> - 
+        ${escapeHtml(member.storeName)} / 
+        ${escapeHtml(member.wearerName || member.representativeName)}<br>
+        📧 ${escapeHtml(member.email || '未登録')}
+      </div>
+      
+      <div class="form-group">
+        <label>不備の種類</label>
+        <select id="deficiencyType">
+          <option value="both">顔写真 + 公的書類（両方）</option>
+          <option value="photo">顔写真のみ</option>
+          <option value="doc">公的書類のみ</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label>不備の詳細（任意 ※メール本文に記載されます）</label>
+        <textarea id="deficiencyNote" placeholder="例: 写真がぼやけています、書類の有効期限が切れています等"></textarea>
+      </div>
+      
+      <div class="modal-buttons">
+        <button class="btn-cancel" onclick="closeDeficiencyModal()">キャンセル</button>
+        <button class="btn-send" id="btnSendDeficiency" onclick="sendDeficiency()">
+          📧 不備連絡メールを送信
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+  
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) closeDeficiencyModal();
+  });
+}
+
+function closeDeficiencyModal() {
+  const overlay = document.getElementById('deficiencyModalOverlay');
+  if (overlay) overlay.remove();
+}
+
+async function sendDeficiency() {
+  if (!selectedMemberData) return;
+
+  const btn = document.getElementById('btnSendDeficiency');
+  btn.disabled = true;
+  btn.textContent = '送信中...';
+
+  try {
+    const result = await callApi('sendDeficiencyNotice', {
+      memberId: selectedMemberData.memberId,
+      deficiencyType: document.getElementById('deficiencyType').value,
+      deficiencyNote: document.getElementById('deficiencyNote').value
+    });
+
+    if (result.success) {
+      alert('不備連絡メールを送信しました。\n送信先: ' + result.email);
+      closeDeficiencyModal();
+      
+      // ローカルデータ更新
+      selectedMemberData.deficiencyStatus = '不備連絡済み';
+      
+      // 選択中の表示更新
+      document.getElementById('selectedCancelStatusArea').innerHTML =
+        getCancelBadgeLg(selectedMemberData.cancelStatus || '') +
+        getDeficiencyBadge('不備連絡済み');
+      
+      // 一覧側のバッジ更新
+      const index = window.searchResultsData.findIndex(m => m.rowNumber === selectedMemberData.rowNumber);
+      if (index >= 0) {
+        window.searchResultsData[index].deficiencyStatus = '不備連絡済み';
+        const items = document.querySelectorAll('.result-item');
+        if (items[index]) {
+          const storeNameEl = items[index].querySelector('.result-store-name');
+          if (storeNameEl) {
+            storeNameEl.innerHTML =
+              escapeHtml(selectedMemberData.storeName) +
+              getCancelBadge(selectedMemberData.cancelStatus || '') +
+              getDeficiencyBadge('不備連絡済み');
+          }
+        }
+      }
+    } else {
+      alert('送信エラー: ' + (result.error || '不明なエラー'));
+    }
+  } catch (error) {
+    console.error('不備連絡エラー:', error);
+    alert('通信エラーが発生しました。');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '📧 不備連絡メールを送信';
   }
 }
   </script>
