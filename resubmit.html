@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>書類再提出 | 大田市場花き部 買出人章</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Helvetica Neue', 'Hiragino Kaku Gothic ProN', 'メイリオ', sans-serif;
+      background: #f5f5f5;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .header {
+      text-align: center;
+      padding: 30px 0 20px;
+    }
+
+    .header h1 {
+      font-size: 20px;
+      color: #2c5530;
+      margin-bottom: 5px;
+    }
+
+    .header p {
+      font-size: 13px;
+      color: #888;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+
+    .card h2 {
+      font-size: 16px;
+      color: #2c5530;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #e8f0e8;
+    }
+
+    .member-info {
+      background: #f8faf8;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .member-info .info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      font-size: 14px;
+    }
+
+    .member-info .info-row .label {
+      color: #888;
+      font-weight: 500;
+    }
+
+    .member-info .info-row .value {
+      font-weight: 600;
+      color: #333;
+    }
+
+    .notice-box {
+      background: #fff8e1;
+      border-left: 4px solid #ffa726;
+      border-radius: 0 8px 8px 0;
+      padding: 14px 16px;
+      margin-bottom: 20px;
+      font-size: 13px;
+      color: #6d4c00;
+    }
+
+    .notice-box strong {
+      display: block;
+      margin-bottom: 4px;
+      color: #e65100;
+    }
+
+    .upload-section {
+      margin-bottom: 20px;
+    }
+
+    .upload-section h3 {
+      font-size: 14px;
+      color: #555;
+      margin-bottom: 10px;
+    }
+
+    .upload-area {
+      border: 2px dashed #ccc;
+      border-radius: 10px;
+      padding: 28px 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: #fafafa;
+      position: relative;
+    }
+
+    .upload-area:hover {
+      border-color: #2c5530;
+      background: #f0f7f0;
+    }
+
+    .upload-area.has-file {
+      border-color: #4caf50;
+      border-style: solid;
+      background: #f0f9f0;
+    }
+
+    .upload-area .icon {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+
+    .upload-area p {
+      font-size: 13px;
+      color: #888;
+    }
+
+    .upload-area .file-name {
+      font-size: 13px;
+      color: #2c5530;
+      font-weight: 600;
+      margin-top: 6px;
+      word-break: break-all;
+    }
+
+    .upload-area input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .preview-container {
+      margin-top: 12px;
+      text-align: center;
+    }
+
+    .preview-container img {
+      max-width: 200px;
+      max-height: 200px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+    }
+
+    .guidelines {
+      font-size: 12px;
+      color: #888;
+      margin-top: 8px;
+      padding-left: 16px;
+    }
+
+    .guidelines li {
+      margin-bottom: 3px;
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 16px;
+      background: #2c5530;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-submit:hover {
+      background: #1e3d22;
+    }
+
+    .btn-submit:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .message {
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      display: none;
+    }
+
+    .message.error {
+      display: block;
+      background: #fdecea;
+      color: #b71c1c;
+      border: 1px solid #f5c6cb;
+    }
+
+    .message.success {
+      display: block;
+      background: #e8f5e9;
+      color: #1b5e20;
+      border: 1px solid #c8e6c9;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 3px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* 完了画面 */
+    .result-screen {
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    .result-screen .icon {
+      font-size: 56px;
+      margin-bottom: 16px;
+    }
+
+    .result-screen h2 {
+      font-size: 20px;
+      color: #2c5530;
+      margin-bottom: 12px;
+    }
+
+    .result-screen p {
+      font-size: 14px;
+      color: #666;
+      line-height: 1.8;
+    }
+
+    /* エラー画面 */
+    .error-screen {
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    .error-screen .icon {
+      font-size: 56px;
+      margin-bottom: 16px;
+    }
+
+    .error-screen h2 {
+      font-size: 20px;
+      color: #b71c1c;
+      margin-bottom: 12px;
+    }
+
+    .error-screen p {
+      font-size: 14px;
+      color: #666;
+    }
+
+    /* ロック画面 */
+    .locked-screen {
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    .locked-screen .icon {
+      font-size: 56px;
+      margin-bottom: 16px;
+    }
+
+    .locked-screen h2 {
+      font-size: 18px;
+      color: #6d4c00;
+      margin-bottom: 12px;
+    }
+
+    .locked-screen p {
+      font-size: 14px;
+      color: #666;
+      line-height: 1.8;
+    }
+
+    .hidden { display: none !important; }
+
+    .footer-note {
+      text-align: center;
+      padding: 20px;
+      font-size: 12px;
+      color: #aaa;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>📋 書類再提出フォーム</h1>
+    <p>大田市場花き部 事業協同組合</p>
+  </div>
+
+  <!-- ========== ローディング画面 ========== -->
+  <div id="screenLoading" class="card">
+    <div style="text-align:center; padding: 40px 0;">
+      <div class="spinner" style="width:36px; height:36px; border-width:4px; border-color:rgba(44,85,48,0.2); border-top-color:#2c5530;"></div>
+      <p style="margin-top:16px; color:#888;">会員情報を確認しています...</p>
+    </div>
+  </div>
+
+  <!-- ========== エラー画面（無効なURL等） ========== -->
+  <div id="screenError" class="card hidden">
+    <div class="error-screen">
+      <div class="icon">⚠️</div>
+      <h2>アクセスできません</h2>
+      <p id="errorMessage">このURLは無効です。<br>事務局からのメールに記載されたURLをご利用ください。</p>
+    </div>
+  </div>
+
+  <!-- ========== ロック画面（再提出済み） ========== -->
+  <div id="screenLocked" class="card hidden">
+    <div class="locked-screen">
+      <div class="icon">🔒</div>
+      <h2>再提出済みです</h2>
+      <p>
+        すでに書類の再提出が完了しています。<br>
+        事務局にて確認中ですので、<br>
+        しばらくお待ちください。<br><br>
+        再度不備がある場合は、<br>
+        事務局より改めてご連絡いたします。
+      </p>
+    </div>
+  </div>
+
+  <!-- ========== 再提出フォーム画面 ========== -->
+  <div id="screenForm" class="hidden">
+    <div class="card">
+      <h2>📌 会員情報</h2>
+      <div class="member-info">
+        <div class="info-row">
+          <span class="label">会員番号</span>
+          <span class="value" id="dispMemberId">-</span>
+        </div>
+        <div class="info-row">
+          <span class="label">店名</span>
+          <span class="value" id="dispStoreName">-</span>
+        </div>
+        <div class="info-row">
+          <span class="label">着用者名</span>
+          <span class="value" id="dispWearerName">-</span>
+        </div>
+      </div>
+
+      <div class="notice-box">
+        <strong>⚠ 書類不備のお知らせ</strong>
+        <span id="noticeText">以下の書類に不備がありました。正しい書類を再提出してください。</span>
+      </div>
+    </div>
+
+    <div id="messageArea" class="message"></div>
+
+    <!-- 顔写真 再提出 -->
+    <div id="photoSection" class="card hidden">
+      <h2>📷 顔写真の再提出</h2>
+      <div class="upload-section">
+        <div class="upload-area" id="photoUploadArea">
+          <div class="icon">📷</div>
+          <p>タップして顔写真を選択</p>
+          <div class="file-name" id="photoFileName"></div>
+          <input type="file" id="photoFile" accept="image/*" onchange="handleFileSelect(this, 'photo')">
+        </div>
+        <div class="preview-container" id="photoPreview"></div>
+        <ul class="guidelines">
+          <li>正面を向いた鮮明な写真</li>
+          <li>背景は無地が望ましい</li>
+          <li>帽子・サングラス不可</li>
+          <li>JPEG, PNG形式</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 公的書類 再提出 -->
+    <div id="docSection" class="card hidden">
+      <h2>📄 公的書類の再提出</h2>
+      <div class="upload-section">
+        <div class="upload-area" id="docUploadArea">
+          <div class="icon">📄</div>
+          <p>タップして書類を選択</p>
+          <div class="file-name" id="docFileName"></div>
+          <input type="file" id="docFile" accept="image/*,.pdf" onchange="handleFileSelect(this, 'doc')">
+        </div>
+        <div class="preview-container" id="docPreview"></div>
+        <ul class="guidelines">
+          <li>営業許可証、開設届出済証明書など</li>
+          <li>有効期限内のもの</li>
+          <li>文字が読める鮮明な画像</li>
+          <li>JPEG, PNG, PDF形式</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card" style="padding:16px;">
+      <button type="button" class="btn-submit" id="submitBtn" onclick="handleSubmit()" disabled>
+        再提出する
+      </button>
+    </div>
+  </div>
+
+  <!-- ========== 完了画面 ========== -->
+  <div id="screenDone" class="card hidden">
+    <div class="result-screen">
+      <div class="icon">✅</div>
+      <h2>再提出が完了しました</h2>
+      <p>
+        書類の再提出を受け付けました。<br>
+        事務局にて確認いたしますので、<br>
+        しばらくお待ちください。<br><br>
+        問題がなければ、買出人章の<br>
+        発行手続きを進めさせていただきます。
+      </p>
+    </div>
+  </div>
+
+  <div class="footer-note">
+    ご不明な点は事務局までお問い合わせください。<br>
+    電話: 03-5492-4065
+  </div>
+</div>
+
+<script>
+  // ★★★ GASデプロイURL ★★★
+  // ※ 実際のデプロイURLに差し替えてください
+  const API_URL = 'https://script.google.com/macros/s/AKfycbwbbyZoRzhWu8Ft5xVvyI1LJc7_RLZaeLwVGapXnlYIIJBUSlgJXQTzofwuLl5nux43kg/exec';
+
+  // URLパラメータ
+  let params = {};
+  let memberInfo = null;
+
+  // ファイルデータ
+  let photoFileData = null;
+  let docFileData = null;
+
+  // ========== 初期化 ========== //
+  document.addEventListener('DOMContentLoaded', async function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    params = {
+      mid: urlParams.get('mid') || '',
+      token: urlParams.get('token') || '',
+      type: urlParams.get('type') || 'both'   // photo, doc, both
+    };
+
+    if (!params.mid || !params.token) {
+      showScreen('error');
+      return;
+    }
+
+    // GASに問い合わせて会員情報を取得 & ステータス確認
+    try {
+      const result = await callGasApi({
+        action: 'verifyResubmit',
+        memberId: params.mid,
+        token: params.token
+      });
+
+      if (!result.success) {
+        document.getElementById('errorMessage').innerHTML =
+          result.error || 'このURLは無効です。';
+        showScreen('error');
+        return;
+      }
+
+      // ロック判定（再提出済みの場合）
+      if (result.locked) {
+        showScreen('locked');
+        return;
+      }
+
+      // 会員情報を表示
+      memberInfo = result.member;
+      document.getElementById('dispMemberId').textContent = memberInfo.memberId;
+      document.getElementById('dispStoreName').textContent = memberInfo.storeName;
+      document.getElementById('dispWearerName').textContent = memberInfo.wearerName;
+
+      // 不備種類に応じてセクション表示
+      if (params.type === 'photo' || params.type === 'both') {
+        document.getElementById('photoSection').classList.remove('hidden');
+      }
+      if (params.type === 'doc' || params.type === 'both') {
+        document.getElementById('docSection').classList.remove('hidden');
+      }
+
+      // 通知テキスト調整
+      const typeText = params.type === 'photo' ? '顔写真' :
+                       params.type === 'doc' ? '公的書類' : '顔写真と公的書類';
+      document.getElementById('noticeText').textContent =
+        `${typeText}に不備がありました。正しい書類を再提出してください。`;
+
+      showScreen('form');
+    } catch (error) {
+      console.error('初期化エラー:', error);
+      document.getElementById('errorMessage').innerHTML =
+        '通信エラーが発生しました。<br>時間をおいてお試しください。';
+      showScreen('error');
+    }
+  });
+
+  // ========== 画面切り替え ========== //
+  function showScreen(name) {
+    ['Loading', 'Error', 'Locked', 'Form', 'Done'].forEach(s => {
+      document.getElementById('screen' + s).classList.add('hidden');
+    });
+    const screenId = 'screen' + name.charAt(0).toUpperCase() + name.slice(1);
+    document.getElementById(screenId).classList.remove('hidden');
+  }
+
+  // ========== ファイル選択ハンドラ ========== //
+  function handleFileSelect(input, type) {
+    const file = input.files[0];
+    if (!file) return;
+
+    // サイズチェック (10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      alert('ファイルサイズが大きすぎます（10MB以下）');
+      input.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const base64 = e.target.result.split(',')[1];
+      const fileData = {
+        fileName: file.name,
+        mimeType: file.type,
+        base64: base64
+      };
+
+      if (type === 'photo') {
+        photoFileData = fileData;
+        document.getElementById('photoFileName').textContent = file.name;
+        document.getElementById('photoUploadArea').classList.add('has-file');
+        // プレビュー
+        document.getElementById('photoPreview').innerHTML =
+          `<img src="${e.target.result}" alt="顔写真プレビュー">`;
+      } else {
+        docFileData = fileData;
+        document.getElementById('docFileName').textContent = file.name;
+        document.getElementById('docUploadArea').classList.add('has-file');
+        // PDFの場合はプレビューなし
+        if (file.type.startsWith('image/')) {
+          document.getElementById('docPreview').innerHTML =
+            `<img src="${e.target.result}" alt="書類プレビュー">`;
+        } else {
+          document.getElementById('docPreview').innerHTML =
+            '<p style="color:#2c5530; font-size:13px; margin-top:8px;">📄 PDFファイルが選択されました</p>';
+        }
+      }
+
+      updateSubmitButton();
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // ========== 送信ボタン有効化チェック ========== //
+  function updateSubmitButton() {
+    const needPhoto = params.type === 'photo' || params.type === 'both';
+    const needDoc = params.type === 'doc' || params.type === 'both';
+
+    let ready = true;
+    if (needPhoto && !photoFileData) ready = false;
+    if (needDoc && !docFileData) ready = false;
+
+    document.getElementById('submitBtn').disabled = !ready;
+  }
+
+  // ========== 送信処理 ========== //
+  async function handleSubmit() {
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>送信中...';
+    hideMessage();
+
+    try {
+      const payload = {
+        action: 'submitResubmit',
+        memberId: params.mid,
+        token: params.token,
+        type: params.type
+      };
+
+      if (photoFileData) {
+        payload.photoFile = photoFileData;
+      }
+      if (docFileData) {
+        payload.docFile = docFileData;
+      }
+
+      const result = await callGasApi(payload);
+
+      if (result.success) {
+        showScreen('done');
+      } else {
+        showMessage('error', result.error || '送信に失敗しました。');
+        btn.disabled = false;
+        btn.innerHTML = '再提出する';
+      }
+    } catch (error) {
+      console.error('送信エラー:', error);
+      showMessage('error', '通信エラーが発生しました。時間をおいてお試しください。');
+      btn.disabled = false;
+      btn.innerHTML = '再提出する';
+    }
+  }
+
+  // ========== GAS API呼び出し ========== //
+  async function callGasApi(data) {
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(data)
+    });
+    return await response.json();
+  }
+
+  // ========== メッセージ表示 ========== //
+  function showMessage(type, text) {
+    const area = document.getElementById('messageArea');
+    area.className = 'message ' + type;
+    area.innerHTML = text;
+  }
+
+  function hideMessage() {
+    const area = document.getElementById('messageArea');
+    area.className = 'message';
+    area.innerHTML = '';
+  }
+</script>
+
+</body>
+</html>
