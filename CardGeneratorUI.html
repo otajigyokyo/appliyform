@@ -939,6 +939,47 @@
   .deficiency-modal .member-summary strong {
     color: #333;
   }
+
+// ================================================================
+// CSS：ページングUIのスタイルを追加
+// ================================================================
+      .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 0;
+      margin-top: 8px;
+      border-top: 1px solid #e0e0e0;
+    }
+    .page-btn {
+      padding: 8px 16px;
+      border: 1px solid #1976d2;
+      background: #fff;
+      color: #1976d2;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: bold;
+      transition: all 0.2s;
+    }
+    .page-btn:hover:not(:disabled) {
+      background: #1976d2;
+      color: #fff;
+    }
+    .page-btn:disabled {
+      border-color: #ccc;
+      color: #ccc;
+      cursor: not-allowed;
+      background: #f5f5f5;
+    }
+    .page-info {
+      font-size: 14px;
+      color: #555;
+      font-weight: bold;
+      min-width: 100px;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -981,7 +1022,7 @@
                placeholder="会員番号、店名、氏名で検索（例：K10032、銀座、山田）"
                onkeypress="handleSearchKeypress(event)">
         <button class="btn-search" onclick="searchMembers()">🔍 検索</button>
-        <button class="btn-recent" onclick="loadRecentMembers()">📋 最新20件</button>
+        <button class="btn-recent" onclick="loadPagedMembers(1)">📋 全件表示</button>
       </div>
       
       <!-- 検索結果 -->
@@ -1001,6 +1042,14 @@
         </div>
         <div class="results-list" id="resultsList">
           <!-- 検索結果がここに入る -->
+          <!-- ページング -->
+          <div class="pagination" id="pagination" style="display: none;">
+            <button class="page-btn" id="btnFirstPage" onclick="goToPage('first')">≪ 最初</button>
+            <button class="page-btn" id="btnPrevPage" onclick="goToPage('prev')">◀ 前へ</button>
+            <span class="page-info" id="pageInfo">1 / 1</span>
+            <button class="page-btn" id="btnNextPage" onclick="goToPage('next')">次へ ▶</button>
+            <button class="page-btn" id="btnLastPage" onclick="goToPage('last')">最後 ≫</button>
+          </div>
         </div>
       </div>
     </div>
@@ -1293,42 +1342,112 @@ function logout() {
       }
     }
     
+    // ========== 検索（ページング対応） ========== //
+
     async function searchMembers() {
-      const keyword = document.getElementById('searchKeyword').value.trim();
+      var keyword = document.getElementById('searchKeyword').value.trim();
       
       if (!keyword) {
         showMessage('検索キーワードを入力してください', 'error');
         return;
       }
       
+      currentKeyword = keyword;
+      currentMode = 'search';
+      await searchMembersPage(1);
+    }
+
+    async function searchMembersPage(page) {
       showLoading(true);
       hideMessage();
       
       try {
-        const result = await callApi('searchMembers', { keyword });
+        var result = await callApi('searchMembersPaged', { 
+          keyword: currentKeyword, 
+          page: page, 
+          perPage: perPage 
+        });
         showLoading(false);
         
         if (result.success) {
+          currentPage = result.currentPage;
+          totalPages = result.totalPages;
           displaySearchResults(result.results, result.message);
+          updatePagination();
         } else {
-          showMessage('❌ 検索エラー: ' + result.error, 'error');
+          showMessage('❌ ' + result.error, 'error');
         }
       } catch (error) {
         showLoading(false);
         showMessage('❌ エラー: ' + error.message, 'error');
       }
     }
+
+    // ========== ページング操作 ========== //
+
+    function updatePagination() {
+      var paginationEl = document.getElementById('pagination');
+      
+      if (totalPages <= 1) {
+        paginationEl.style.display = 'none';
+        return;
+      }
+      
+      paginationEl.style.display = 'flex';
+      document.getElementById('pageInfo').textContent = currentPage + ' / ' + totalPages + ' ページ';
+      document.getElementById('btnFirstPage').disabled = (currentPage <= 1);
+      document.getElementById('btnPrevPage').disabled = (currentPage <= 1);
+      document.getElementById('btnNextPage').disabled = (currentPage >= totalPages);
+      document.getElementById('btnLastPage').disabled = (currentPage >= totalPages);
+    }
+
+    function goToPage(direction) {
+      var targetPage = currentPage;
+      
+      if (direction === 'first') targetPage = 1;
+      else if (direction === 'prev') targetPage = currentPage - 1;
+      else if (direction === 'next') targetPage = currentPage + 1;
+      else if (direction === 'last') targetPage = totalPages;
+      
+      if (targetPage < 1 || targetPage > totalPages || targetPage === currentPage) return;
+      
+      if (currentMode === 'search') {
+        searchMembersPage(targetPage);
+      } else {
+        loadPagedMembers(targetPage);
+      }
+    }
+
+    // ========== 旧関数の互換ラッパー ========== //
+
+    function loadRecentMembers() {
+      loadPagedMembers(1);
+    }
     
-    async function loadRecentMembers() {
+    // ========== ページング状態管理 ========== //
+
+    var currentPage = 1;
+    var totalPages = 1;
+    var perPage = 50;
+    var currentMode = 'list';       // 'list' or 'search'
+    var currentKeyword = '';        // 検索モード時のキーワード保持
+
+    // ========== 全件表示（ページング） ========== //
+
+    async function loadPagedMembers(page) {
       showLoading(true);
       hideMessage();
+      currentMode = 'list';
       
       try {
-        const result = await callApi('getRecentMembers', { count: 20 });
+        var result = await callApi('getPagedMembers', { page: page, perPage: perPage });
         showLoading(false);
         
         if (result.success) {
-          displaySearchResults(result.results, '最新20件を表示');
+          currentPage = result.currentPage;
+          totalPages = result.totalPages;
+          displaySearchResults(result.results, result.message);
+          updatePagination();
         } else {
           showMessage('❌ エラー: ' + result.error, 'error');
         }
@@ -1745,7 +1864,7 @@ function updateListPrintCount(index, cardCount, appCount) {
     
     function initializePage() {
       // 最新20件を自動ロード
-      loadRecentMembers();
+      loadRecentMembers(1);
     }
     
     window.onload = function() {
