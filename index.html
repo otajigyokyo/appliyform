@@ -1700,30 +1700,53 @@
             return uploadedDocuments.length;
         }
 
-        function showCropModal() {
-            const modal = document.getElementById('cropModal');
-            modal.style.display = 'block';
-            
-            const image = document.getElementById('cropImage');
-            
-            if (cropper) {
-                cropper.destroy();
-            }
-            
-            cropper = new Cropper(image, {
-                aspectRatio: 5 / 7,
-                viewMode: 1,
-                dragMode: 'move',
-                autoCropArea: 1,
-                restore: false,
-                guides: true,
-                center: true,
-                highlight: false,
-                cropBoxMovable: false,
-                cropBoxResizable: false,
-                toggleDragModeOnDblclick: false,
-            });
+    function showCropModal() {
+        const modal = document.getElementById('cropModal');
+        modal.style.display = 'block';
+
+        const image = document.getElementById('cropImage');
+
+        if (cropper) {
+            cropper.destroy();
         }
+
+        cropper = new Cropper(image, {
+            aspectRatio: 5 / 7,
+            viewMode: 1,
+            dragMode: 'move',
+            autoCropArea: 1,
+            restore: false,
+            guides: true,
+            center: true,
+            highlight: false,
+            cropBoxMovable: false,
+            cropBoxResizable: false,
+            toggleDragModeOnDblclick: false,
+            ready: function() {
+                // ★ トリミング枠の上に人型シルエットを重ねる
+                addSilhouetteOverlay();
+            }
+        });
+    }
+
+    // ★ 人型シルエットオーバーレイを追加
+    function addSilhouetteOverlay() {
+        // 既存のオーバーレイがあれば削除
+        const existing = document.querySelector('.cropper-silhouette-overlay');
+        if (existing) existing.remove();
+
+        // Cropper の crop-box 要素を取得
+        const cropBox = document.querySelector('.cropper-crop-box');
+        if (!cropBox) return;
+
+        // オーバーレイ要素を作成
+        const overlay = document.createElement('div');
+        overlay.className = 'cropper-silhouette-overlay';
+        overlay.innerHTML = SILHOUETTE_SVG;
+
+        // crop-box の中に追加
+        cropBox.appendChild(overlay);
+    }
 
         function cancelCrop() {
             document.getElementById('cropModal').style.display = 'none';
@@ -1733,6 +1756,9 @@
                 cropper.destroy();
                 cropper = null;
             }
+            // 既存のコードの後に追加：
+            const silhouetteOverlay = document.querySelector('.cropper-silhouette-overlay');
+            if (silhouetteOverlay) silhouetteOverlay.remove();
         }
 
         function confirmCrop() {
@@ -1762,6 +1788,9 @@
                 cropper.destroy();
                 cropper = null;
             }
+            // 既存のコードの後に追加：
+            const silhouetteOverlay = document.querySelector('.cropper-silhouette-overlay');
+            if (silhouetteOverlay) silhouetteOverlay.remove();
         }
 
         function resetPhotoPreview() {
