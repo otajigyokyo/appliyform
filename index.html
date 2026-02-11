@@ -694,6 +694,26 @@
             color: #1976d2;
         }
 
+        /* 人型シルエットオーバーレイ */
+        .cropper-silhouette-overlay {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          pointer-events: none;
+          z-index: 10;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .cropper-silhouette-overlay svg {
+          width: 70%;
+          height: 80%;
+          opacity: 0.25;
+        }    
+
         /* 月額手数料の注意書き */
         .fee-notice {
             background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
@@ -1416,6 +1436,17 @@
         let photoData = null;
         let selectedPhotoFile = null;
 
+    // 人型シルエットSVG（証明写真ガイド用）
+    const SILHOUETTE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 280" fill="none">
+      <!-- 頭部 -->
+      <ellipse cx="100" cy="78" rx="42" ry="52" stroke="#ffffff" stroke-width="1.5" fill="none"/>
+      <!-- 首 -->
+      <path d="M82 128 L82 148 L118 148 L118 128" stroke="#ffffff" stroke-width="1.5" fill="none"/>
+      <!-- 肩・上半身 -->
+      <path d="M82 148 Q60 152 30 180 Q15 195 10 230 L10 280 L190 280 L190 230 Q185 195 170 180 Q140 152 118 148"
+            stroke="#ffffff" stroke-width="1.5" fill="none"/>
+    </svg>`;
+        
         // ★ 公的書類用（最大3ファイル）
         const MAX_DOCUMENTS = 3;
         let uploadedDocuments = [];  // { fileName, dataUrl } の配列
