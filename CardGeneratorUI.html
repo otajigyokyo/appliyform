@@ -1361,6 +1361,7 @@ function logout() {
     async function searchMembersPage(page) {
       showLoading(true);
       hideMessage();
+      document.getElementById('resultsList').innerHTML = '';
       
       try {
         var result = await callApi('searchMembersPaged', { 
@@ -1438,6 +1439,7 @@ function logout() {
     async function loadPagedMembers(page) {
       showLoading(true);
       hideMessage();
+      document.getElementById('resultsList').innerHTML = '';
       currentMode = 'list';
       
       try {
