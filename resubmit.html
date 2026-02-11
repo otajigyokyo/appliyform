@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>書類再提出 | 大田市場花き部 買出人章</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext x='50%25' y='50%25' dominant-baseline='central' text-anchor='middle' font-size='90'%3E📇%3C/text%3E%3C/svg%3E">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -308,6 +311,142 @@
       font-size: 12px;
       color: #aaa;
     }
+
+    /* ========== トリミングモーダル ========== */
+    .crop-modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.85);
+    }
+
+    .crop-modal-content {
+      background-color: white;
+      margin: 2% auto;
+      padding: 20px;
+      width: 90%;
+      max-width: 600px;
+      border-radius: 12px;
+      max-height: 96vh;
+      overflow-y: auto;
+    }
+
+    .crop-modal-content h2 {
+      text-align: center;
+      margin-bottom: 10px;
+      font-size: 18px;
+      color: #333;
+    }
+
+    .crop-info {
+      text-align: center;
+      margin: 10px 0 15px;
+      padding: 10px;
+      background-color: #e3f2fd;
+      border-radius: 6px;
+      font-size: 13px;
+      color: #1976d2;
+      line-height: 1.6;
+    }
+
+    .crop-container {
+      max-height: 500px;
+      margin: 15px 0;
+      position: relative;
+    }
+
+    .crop-container img {
+      max-width: 100%;
+      display: block;
+    }
+
+    .crop-buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 16px;
+    }
+
+    .crop-btn {
+      padding: 12px 28px;
+      font-size: 15px;
+      font-weight: 700;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .crop-btn-cancel {
+      background: #6c757d;
+      color: #fff;
+    }
+
+    .crop-btn-cancel:hover {
+      background: #545b62;
+    }
+
+    .crop-btn-confirm {
+      background: #1976d2;
+      color: #fff;
+    }
+
+    .crop-btn-confirm:hover {
+      background: #1565c0;
+    }
+
+    /* ========== 人型シルエットオーバーレイ ========== */
+    .cropper-silhouette-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cropper-silhouette-overlay svg {
+      width: 70%;
+      height: 80%;
+      opacity: 0.25;
+    }
+
+    /* スマホ対応 */
+    @media (max-width: 768px) {
+      .crop-modal-content {
+        width: 95%;
+        margin: 3% auto;
+        padding: 15px;
+      }
+
+      .crop-modal-content h2 {
+        font-size: 16px;
+      }
+
+      .crop-info {
+        font-size: 12px;
+        padding: 8px;
+      }
+
+      .crop-buttons {
+        flex-direction: row;
+        gap: 10px;
+      }
+
+      .crop-btn {
+        flex: 1;
+        padding: 12px 16px;
+        font-size: 14px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -385,7 +524,7 @@
           <div class="icon">📷</div>
           <p>タップして顔写真を選択</p>
           <div class="file-name" id="photoFileName"></div>
-          <input type="file" id="photoFile" accept="image/*" onchange="handleFileSelect(this, 'photo')">
+          <input type="file" id="photoFile" accept="image/*" onchange="handlePhotoSelect(this)">
         </div>
         <div class="preview-container" id="photoPreview"></div>
         <ul class="guidelines">
@@ -405,7 +544,7 @@
           <div class="icon">📄</div>
           <p>タップして書類を選択</p>
           <div class="file-name" id="docFileName"></div>
-          <input type="file" id="docFile" accept="image/*,.pdf" onchange="handleFileSelect(this, 'doc')">
+          <input type="file" id="docFile" accept="image/*,.pdf" onchange="handleDocSelect(this)">
         </div>
         <div class="preview-container" id="docPreview"></div>
         <ul class="guidelines">
@@ -445,9 +584,26 @@
   </div>
 </div>
 
+<!-- ========== トリミングモーダル ========== -->
+<div id="cropModal" class="crop-modal">
+  <div class="crop-modal-content">
+    <h2>画像をトリミング</h2>
+    <div class="crop-info">
+      📏 縦35mm × 横25mm（縦横比 5:7）にトリミングされます<br>
+      画像をドラッグして位置を調整してください
+    </div>
+    <div class="crop-container" id="cropContainer">
+      <img id="cropImage" src="">
+    </div>
+    <div class="crop-buttons">
+      <button type="button" class="crop-btn crop-btn-cancel" onclick="cancelCrop()">キャンセル</button>
+      <button type="button" class="crop-btn crop-btn-confirm" onclick="confirmCrop()">トリミング確定</button>
+    </div>
+  </div>
+</div>
+
 <script>
   // ★★★ GASデプロイURL ★★★
-  // ※ 実際のデプロイURLに差し替えてください
   const API_URL = 'https://script.google.com/macros/s/AKfycbwbbyZoRzhWu8Ft5xVvyI1LJc7_RLZaeLwVGapXnlYIIJBUSlgJXQTzofwuLl5nux43kg/exec';
 
   // URLパラメータ
@@ -458,13 +614,28 @@
   let photoFileData = null;
   let docFileData = null;
 
+  // Cropper用
+  let cropper = null;
+  let selectedPhotoFile = null;
+
+  // 人型シルエットSVG（証明写真ガイド用）
+  const SILHOUETTE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 280" fill="none">
+    <!-- 頭部 -->
+    <ellipse cx="100" cy="78" rx="42" ry="52" stroke="#ffffff" stroke-width="1.5" fill="none"/>
+    <!-- 首 -->
+    <path d="M82 128 L82 148 L118 148 L118 128" stroke="#ffffff" stroke-width="1.5" fill="none"/>
+    <!-- 肩・上半身 -->
+    <path d="M82 148 Q60 152 30 180 Q15 195 10 230 L10 280 L190 280 L190 230 Q185 195 170 180 Q140 152 118 148"
+          stroke="#ffffff" stroke-width="1.5" fill="none"/>
+  </svg>`;
+
   // ========== 初期化 ========== //
   document.addEventListener('DOMContentLoaded', async function() {
     const urlParams = new URLSearchParams(window.location.search);
     params = {
       mid: urlParams.get('mid') || '',
       token: urlParams.get('token') || '',
-      type: urlParams.get('type') || 'both'   // photo, doc, both
+      type: urlParams.get('type') || 'both'
     };
 
     if (!params.mid || !params.token) {
@@ -472,7 +643,6 @@
       return;
     }
 
-    // GASに問い合わせて会員情報を取得 & ステータス確認
     try {
       const result = await callGasApi({
         action: 'verifyResubmit',
@@ -487,19 +657,16 @@
         return;
       }
 
-      // ロック判定（再提出済みの場合）
       if (result.locked) {
         showScreen('locked');
         return;
       }
 
-      // 会員情報を表示
       memberInfo = result.member;
       document.getElementById('dispMemberId').textContent = memberInfo.memberId;
       document.getElementById('dispStoreName').textContent = memberInfo.storeName;
       document.getElementById('dispWearerName').textContent = memberInfo.wearerName;
 
-      // 不備種類に応じてセクション表示
       if (params.type === 'photo' || params.type === 'both') {
         document.getElementById('photoSection').classList.remove('hidden');
       }
@@ -507,7 +674,6 @@
         document.getElementById('docSection').classList.remove('hidden');
       }
 
-      // 通知テキスト調整
       const typeText = params.type === 'photo' ? '顔写真' :
                        params.type === 'doc' ? '公的書類' : '顔写真と公的書類';
       document.getElementById('noticeText').textContent =
@@ -531,12 +697,141 @@
     document.getElementById(screenId).classList.remove('hidden');
   }
 
-  // ========== ファイル選択ハンドラ ========== //
-  function handleFileSelect(input, type) {
+  // ========== 顔写真選択 → トリミングモーダル表示 ========== //
+  function handlePhotoSelect(input) {
     const file = input.files[0];
     if (!file) return;
 
-    // サイズチェック (10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      alert('ファイルサイズが大きすぎます（10MB以下）');
+      input.value = '';
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      alert('画像ファイルを選択してください');
+      input.value = '';
+      return;
+    }
+
+    selectedPhotoFile = file;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      document.getElementById('cropImage').src = e.target.result;
+      showCropModal();
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // ========== トリミングモーダル表示 ========== //
+  function showCropModal() {
+    const modal = document.getElementById('cropModal');
+    modal.style.display = 'block';
+
+    const image = document.getElementById('cropImage');
+
+    if (cropper) {
+      cropper.destroy();
+    }
+
+    cropper = new Cropper(image, {
+      aspectRatio: 5 / 7,
+      viewMode: 1,
+      dragMode: 'move',
+      autoCropArea: 1,
+      restore: false,
+      guides: true,
+      center: true,
+      highlight: false,
+      cropBoxMovable: false,
+      cropBoxResizable: false,
+      toggleDragModeOnDblclick: false,
+      ready: function() {
+        // トリミング枠の上に人型シルエットを重ねる
+        addSilhouetteOverlay();
+      }
+    });
+  }
+
+  // ========== 人型シルエットオーバーレイを追加 ========== //
+  function addSilhouetteOverlay() {
+    // 既存のオーバーレイがあれば削除
+    const existing = document.querySelector('.cropper-silhouette-overlay');
+    if (existing) existing.remove();
+
+    // Cropper の crop-box 要素を取得
+    const cropBox = document.querySelector('.cropper-crop-box');
+    if (!cropBox) return;
+
+    // オーバーレイ要素を作成
+    const overlay = document.createElement('div');
+    overlay.className = 'cropper-silhouette-overlay';
+    overlay.innerHTML = SILHOUETTE_SVG;
+
+    // crop-box の中に追加
+    cropBox.appendChild(overlay);
+  }
+
+  // ========== トリミングキャンセル ========== //
+  function cancelCrop() {
+    document.getElementById('cropModal').style.display = 'none';
+    document.getElementById('photoFile').value = '';
+    if (cropper) {
+      cropper.destroy();
+      cropper = null;
+    }
+    // シルエット削除
+    const overlay = document.querySelector('.cropper-silhouette-overlay');
+    if (overlay) overlay.remove();
+  }
+
+  // ========== トリミング確定 ========== //
+  function confirmCrop() {
+    if (!cropper) return;
+
+    const canvas = cropper.getCroppedCanvas({
+      width: 250,
+      height: 350,
+      imageSmoothingQuality: 'high'
+    });
+
+    const croppedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+
+    // base64部分だけを取得して photoFileData にセット
+    const base64 = croppedDataUrl.split(',')[1];
+    photoFileData = {
+      fileName: selectedPhotoFile.name,
+      mimeType: 'image/jpeg',
+      base64: base64
+    };
+
+    // UI更新
+    document.getElementById('photoFileName').textContent = selectedPhotoFile.name;
+    document.getElementById('photoUploadArea').classList.add('has-file');
+    document.getElementById('photoPreview').innerHTML =
+      `<img src="${croppedDataUrl}" alt="顔写真プレビュー">
+       <p style="font-size:12px; color:#888; margin-top:6px;">250 × 350 px（25mm × 35mm相当）にトリミング済み</p>`;
+
+    // モーダル閉じる
+    document.getElementById('cropModal').style.display = 'none';
+    if (cropper) {
+      cropper.destroy();
+      cropper = null;
+    }
+
+    // シルエット削除
+    const overlay = document.querySelector('.cropper-silhouette-overlay');
+    if (overlay) overlay.remove();
+
+    updateSubmitButton();
+  }
+
+  // ========== 公的書類選択（トリミングなし） ========== //
+  function handleDocSelect(input) {
+    const file = input.files[0];
+    if (!file) return;
+
     if (file.size > 10 * 1024 * 1024) {
       alert('ファイルサイズが大きすぎます（10MB以下）');
       input.value = '';
@@ -546,31 +841,21 @@
     const reader = new FileReader();
     reader.onload = function(e) {
       const base64 = e.target.result.split(',')[1];
-      const fileData = {
+      docFileData = {
         fileName: file.name,
         mimeType: file.type,
         base64: base64
       };
 
-      if (type === 'photo') {
-        photoFileData = fileData;
-        document.getElementById('photoFileName').textContent = file.name;
-        document.getElementById('photoUploadArea').classList.add('has-file');
-        // プレビュー
-        document.getElementById('photoPreview').innerHTML =
-          `<img src="${e.target.result}" alt="顔写真プレビュー">`;
+      document.getElementById('docFileName').textContent = file.name;
+      document.getElementById('docUploadArea').classList.add('has-file');
+
+      if (file.type.startsWith('image/')) {
+        document.getElementById('docPreview').innerHTML =
+          `<img src="${e.target.result}" alt="書類プレビュー">`;
       } else {
-        docFileData = fileData;
-        document.getElementById('docFileName').textContent = file.name;
-        document.getElementById('docUploadArea').classList.add('has-file');
-        // PDFの場合はプレビューなし
-        if (file.type.startsWith('image/')) {
-          document.getElementById('docPreview').innerHTML =
-            `<img src="${e.target.result}" alt="書類プレビュー">`;
-        } else {
-          document.getElementById('docPreview').innerHTML =
-            '<p style="color:#2c5530; font-size:13px; margin-top:8px;">📄 PDFファイルが選択されました</p>';
-        }
+        document.getElementById('docPreview').innerHTML =
+          '<p style="color:#2c5530; font-size:13px; margin-top:8px;">📄 PDFファイルが選択されました</p>';
       }
 
       updateSubmitButton();
