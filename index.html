@@ -439,6 +439,60 @@
             margin: 5px 0;
         }
 
+        /* 顔写真 注意事項 */
+        .photo-notice {
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 12px 0 15px;
+            text-align: left;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .photo-notice-text {
+            flex: 1;
+            min-width: 180px;
+        }
+
+        .photo-notice-title {
+            font-weight: bold;
+            color: #856404;
+            font-size: 0.95em;
+            margin-bottom: 6px;
+        }
+
+        .photo-notice-text ul {
+            margin: 0 0 0 18px;
+            padding: 0;
+            color: #856404;
+            font-size: 0.88em;
+        }
+
+        .photo-notice-text li {
+            margin: 4px 0;
+            line-height: 1.5;
+        }
+
+        .photo-notice-illustration {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .photo-notice-card-info {
+            width: 100%;
+            font-size: 0.82em;
+            color: #c0392b;
+            font-weight: bold;
+            margin: 4px 0 0;
+            text-align: left;
+        }
+
         /* 規約セクション */
         .terms-section {
             background-color: #fff9e6;
@@ -898,6 +952,17 @@
                 padding: 12px;
             }
 
+            .photo-notice {
+                font-size: 13px;
+                padding: 12px;
+                gap: 10px;
+            }
+
+            .photo-notice-illustration svg {
+                width: 65px;
+                height: 85px;
+            }
+
             .terms-section h2 {
                 font-size: 18px;
             }
@@ -1250,8 +1315,41 @@
             <!-- 顔写真アップロード -->
             <div class="file-upload-section">
                 <h3>申請者本人の顔写真 <span class="required">*必須</span></h3>
-                <p>証明写真をアップロードしてください<br>
-                <small>縦35mm × 横25mmサイズにトリミングされます</small></p>
+                <!-- 注意事項 -->
+                <div class="photo-notice">
+                    <div class="photo-notice-text">
+                        <p class="photo-notice-title">【注意事項】</p>
+                        <ul>
+                            <li>胸から上のお顔がはっきりとわかる写真</li>
+                            <li>証明写真（運転免許証・パスポートなど）と同様の撮り方でお願いいたします</li>
+                        </ul>
+                    </div>
+                    <div class="photo-notice-illustration">
+                        <!-- 証明写真イメージイラスト -->
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 130" width="80" height="104">
+                            <!-- 背景（証明写真枠） -->
+                            <rect x="2" y="2" width="96" height="126" rx="4" ry="4" fill="#e8f0fe" stroke="#90a4ae" stroke-width="1.5"/>
+                            <!-- 胸・肩 -->
+                            <ellipse cx="50" cy="115" rx="32" ry="18" fill="#78909c"/>
+                            <!-- 首 -->
+                            <rect x="42" y="82" width="16" height="14" rx="3" fill="#ffccbc"/>
+                            <!-- 顔 -->
+                            <ellipse cx="50" cy="60" rx="22" ry="27" fill="#ffccbc"/>
+                            <!-- 髪の毛 -->
+                            <path d="M28,52 Q28,28 50,28 Q72,28 72,52 Q72,42 60,38 Q50,35 40,38 Q28,42 28,52Z" fill="#5d4037"/>
+                            <!-- 目（左） -->
+                            <ellipse cx="40" cy="60" rx="3" ry="2" fill="#333"/>
+                            <!-- 目（右） -->
+                            <ellipse cx="60" cy="60" rx="3" ry="2" fill="#333"/>
+                            <!-- 口 -->
+                            <path d="M44,72 Q50,76 56,72" fill="none" stroke="#c68c7c" stroke-width="1.5" stroke-linecap="round"/>
+                            <!-- 「OK」マーク -->
+                            <circle cx="82" cy="16" r="12" fill="#4caf50" opacity="0.9"/>
+                            <text x="82" y="20" text-anchor="middle" fill="#fff" font-size="11" font-weight="bold">OK</text>
+                        </svg>
+                    </div>
+                    <p class="photo-notice-card-info">＊ご提出いただく顔写真は、買出人章カードにそのまま印刷して使用します</p>
+                </div>
                 <input type="file" id="photoUpload" name="photoUpload" class="file-upload-input" accept="image/*" onchange="handlePhotoSelect(event)">
                 <input type="file" id="photoCamera" name="photoCamera" class="file-upload-input" accept="image/*" capture="user" onchange="handlePhotoSelect(event)">
                 <div class="upload-buttons">
