@@ -980,6 +980,82 @@
       min-width: 100px;
       text-align: center;
     }
+
+    .deficiency-step { display: none; }
+.deficiency-step.active { display: block; }
+
+.email-preview-box {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 12px 0;
+}
+.email-preview-box .preview-label {
+  font-size: 12px;
+  color: #6c757d;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.email-preview-box .preview-subject {
+  font-size: 14px;
+  font-weight: 700;
+  color: #333;
+  padding: 8px;
+  background: #fff;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  margin-bottom: 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+.email-preview-box .preview-to {
+  font-size: 13px;
+  color: #495057;
+  margin-bottom: 8px;
+  padding: 6px 8px;
+  background: #e9ecef;
+  border-radius: 4px;
+}
+.email-preview-box textarea.preview-body {
+  width: 100%;
+  min-height: 280px;
+  font-size: 13px;
+  line-height: 1.6;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  padding: 10px;
+  resize: vertical;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+.confirm-box {
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 12px 0;
+  text-align: center;
+}
+.confirm-box .confirm-icon { font-size: 36px; margin-bottom: 8px; }
+.confirm-box .confirm-text { font-size: 14px; color: #664d03; font-weight: 600; }
+.confirm-box .confirm-to { font-size: 16px; font-weight: 700; color: #333; margin-top: 8px; }
+.step-indicator { display: flex; justify-content: center; gap: 8px; margin-bottom: 16px; }
+.step-dot { width: 10px; height: 10px; border-radius: 50%; background: #dee2e6; }
+.step-dot.active { background: #0d6efd; }
+.step-dot.done { background: #198754; }
+.btn-back {
+  background: #6c757d; color: #fff; border: none;
+  padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer;
+}
+.btn-preview {
+  background: #0d6efd; color: #fff; border: none;
+  padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer;
+}
+.btn-confirm-send {
+  background: #dc3545; color: #fff; border: none;
+  padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer;
+}
   </style>
 </head>
 <body>
@@ -2033,7 +2109,6 @@ async function completeCancelAction() {
 }
 
 // ========== 不備連絡モーダル ========== //
-
 function openDeficiencyModal() {
   if (!selectedMemberData) {
     alert('会員を選択してください');
@@ -2047,38 +2122,80 @@ function openDeficiencyModal() {
   overlay.innerHTML = `
     <div class="deficiency-modal">
       <h3>⚠️ 書類不備連絡</h3>
-      <div class="member-summary">
-        <strong>${escapeHtml(member.memberId)}</strong> - 
-        ${escapeHtml(member.storeName)} / 
-        ${escapeHtml(member.wearerName || member.representativeName)}<br>
-        📧 ${escapeHtml(member.email || '未登録')}
+      <div class="step-indicator">
+        <div class="step-dot active" id="stepDot1"></div>
+        <div class="step-dot" id="stepDot2"></div>
+        <div class="step-dot" id="stepDot3"></div>
       </div>
-      
-      <div class="form-group">
-        <label>不備の種類</label>
-        <select id="deficiencyType">
-          <option value="both">顔写真 + 公的書類（両方）</option>
-          <option value="photo">顔写真のみ</option>
-          <option value="doc">公的書類のみ</option>
-        </select>
+
+      <!-- STEP 1: 入力 -->
+      <div class="deficiency-step active" id="defStep1">
+        <div class="member-summary">
+          <strong>${escapeHtml(member.memberId)}</strong> - 
+          ${escapeHtml(member.storeName)} / 
+          ${escapeHtml(member.wearerName)}<br>
+          📧 ${escapeHtml(member.email || '未登録')}
+        </div>
+        <div class="form-group">
+          <label>不備の種類</label>
+          <select id="deficiencyType">
+            <option value="both">顔写真 + 公的書類（両方）</option>
+            <option value="photo">顔写真のみ</option>
+            <option value="doc">公的書類のみ</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>不備の詳細（任意 ※メール本文に記載されます）</label>
+          <textarea id="deficiencyNote" placeholder="例: 写真がぼやけています、書類の有効期限が切れています等"></textarea>
+        </div>
+        <div class="modal-buttons">
+          <button class="btn-cancel" onclick="closeDeficiencyModal()">キャンセル</button>
+          <button class="btn-preview" id="btnPreview" onclick="previewDeficiency()">
+            📄 メールをプレビュー
+          </button>
+        </div>
       </div>
-      
-      <div class="form-group">
-        <label>不備の詳細（任意 ※メール本文に記載されます）</label>
-        <textarea id="deficiencyNote" placeholder="例: 写真がぼやけています、書類の有効期限が切れています等"></textarea>
+
+      <!-- STEP 2: プレビュー（編集可能） -->
+      <div class="deficiency-step" id="defStep2">
+        <div class="email-preview-box">
+          <div class="preview-label">送信先</div>
+          <div class="preview-to" id="previewTo"></div>
+          <div class="preview-label">件名</div>
+          <input type="text" class="preview-subject" id="previewSubject">
+          <div class="preview-label">本文（編集できます）</div>
+          <textarea class="preview-body" id="previewBody"></textarea>
+        </div>
+        <div class="modal-buttons">
+          <button class="btn-back" onclick="goToStep(1)">← 戻る</button>
+          <button class="btn-send" id="btnToConfirm" onclick="goToStep(3)">
+            送信確認へ →
+          </button>
+        </div>
       </div>
-      
-      <div class="modal-buttons">
-        <button class="btn-cancel" onclick="closeDeficiencyModal()">キャンセル</button>
-        <button class="btn-send" id="btnSendDeficiency" onclick="sendDeficiency()">
-          📧 不備連絡メールを送信
-        </button>
+
+      <!-- STEP 3: 最終確認 -->
+      <div class="deficiency-step" id="defStep3">
+        <div class="confirm-box">
+          <div class="confirm-icon">📧</div>
+          <div class="confirm-text">以下の宛先にメールを送信します</div>
+          <div class="confirm-to" id="confirmTo"></div>
+        </div>
+        <div style="font-size:13px; color:#666; margin:12px 0; text-align:center;">
+          送信後は取り消しできません。<br>
+          内容を修正する場合は「戻る」を押してください。
+        </div>
+        <div class="modal-buttons">
+          <button class="btn-back" onclick="goToStep(2)">← 戻る</button>
+          <button class="btn-confirm-send" id="btnSendDeficiency" onclick="sendDeficiency()">
+            📧 送信する
+          </button>
+        </div>
       </div>
     </div>
   `;
 
   document.body.appendChild(overlay);
-  
   overlay.addEventListener('click', function(e) {
     if (e.target === overlay) closeDeficiencyModal();
   });
@@ -2089,9 +2206,56 @@ function closeDeficiencyModal() {
   if (overlay) overlay.remove();
 }
 
+function goToStep(step) {
+  document.querySelectorAll('.deficiency-step').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.step-dot').forEach(el => {
+    el.classList.remove('active');
+    el.classList.remove('done');
+  });
+  document.getElementById('defStep' + step).classList.add('active');
+  for (let i = 1; i <= 3; i++) {
+    const dot = document.getElementById('stepDot' + i);
+    if (i < step) dot.classList.add('done');
+    else if (i === step) dot.classList.add('active');
+  }
+  if (step === 3) {
+    document.getElementById('confirmTo').textContent =
+      document.getElementById('previewTo').textContent;
+  }
+}
+
+async function previewDeficiency() {
+  if (!selectedMemberData) return;
+  const btn = document.getElementById('btnPreview');
+  btn.disabled = true;
+  btn.textContent = 'プレビュー生成中...';
+
+  try {
+    const result = await callApi('previewDeficiencyNotice', {
+      memberId: selectedMemberData.memberId,
+      deficiencyType: document.getElementById('deficiencyType').value,
+      deficiencyNote: document.getElementById('deficiencyNote').value
+    });
+
+    if (result.success) {
+      document.getElementById('previewTo').textContent = result.email;
+      document.getElementById('previewSubject').value = result.subject;
+      document.getElementById('previewBody').value = result.body;
+      goToStep(2);
+    } else {
+      alert('エラー: ' + (result.error || '不明なエラー'));
+    }
+  } catch (error) {
+    console.error('プレビューエラー:', error);
+    alert('通信エラーが発生しました。');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '📄 メールをプレビュー';
+  }
+}
+
 async function sendDeficiency() {
   if (!selectedMemberData) return;
-
   const btn = document.getElementById('btnSendDeficiency');
   btn.disabled = true;
   btn.textContent = '送信中...';
@@ -2100,35 +2264,18 @@ async function sendDeficiency() {
     const result = await callApi('sendDeficiencyNotice', {
       memberId: selectedMemberData.memberId,
       deficiencyType: document.getElementById('deficiencyType').value,
-      deficiencyNote: document.getElementById('deficiencyNote').value
+      deficiencyNote: document.getElementById('deficiencyNote').value,
+      previewedSubject: document.getElementById('previewSubject').value,
+      previewedBody: document.getElementById('previewBody').value
     });
 
     if (result.success) {
       alert('不備連絡メールを送信しました。\n送信先: ' + result.email);
       closeDeficiencyModal();
-      
-      // ローカルデータ更新
       selectedMemberData.deficiencyStatus = '不備連絡済み';
-      
-      // 選択中の表示更新
-      document.getElementById('selectedCancelStatusArea').innerHTML =
-        getCancelBadgeLg(selectedMemberData.cancelStatus || '') +
-        getDeficiencyBadge('不備連絡済み');
-      
-      // 一覧側のバッジ更新
-      const index = window.searchResultsData.findIndex(m => m.rowNumber === selectedMemberData.rowNumber);
-      if (index >= 0) {
-        window.searchResultsData[index].deficiencyStatus = '不備連絡済み';
-        const items = document.querySelectorAll('.result-item');
-        if (items[index]) {
-          const storeNameEl = items[index].querySelector('.result-store-name');
-          if (storeNameEl) {
-            storeNameEl.innerHTML =
-              escapeHtml(selectedMemberData.storeName) +
-              getCancelBadge(selectedMemberData.cancelStatus || '') +
-              getDeficiencyBadge('不備連絡済み');
-          }
-        }
+      const searchInput = document.getElementById('searchInput');
+      if (searchInput && searchInput.value) {
+        document.getElementById('searchBtn').click();
       }
     } else {
       alert('送信エラー: ' + (result.error || '不明なエラー'));
@@ -2138,7 +2285,7 @@ async function sendDeficiency() {
     alert('通信エラーが発生しました。');
   } finally {
     btn.disabled = false;
-    btn.textContent = '📧 不備連絡メールを送信';
+    btn.textContent = '📧 送信する';
   }
 }
   </script>
