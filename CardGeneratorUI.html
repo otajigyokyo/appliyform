@@ -844,13 +844,13 @@
   }
 
   .deficiency-modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.5);
-    z-index: 10000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;      /* ← これが重要：中央配置 */
+  z-index: 10000;
   }
 
   .deficiency-modal {
@@ -858,7 +858,9 @@
     border-radius: 12px;
     padding: 24px;
     width: 90%;
-    max-width: 480px;
+    max-width: 520px;
+    max-height: 85vh;        /* ← 追加：画面の85%まで */
+    overflow-y: auto;        /* ← 追加：スクロール可能に */
     box-shadow: 0 8px 32px rgba(0,0,0,0.2);
   }
 
