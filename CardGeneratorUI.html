@@ -2125,10 +2125,9 @@ function openDeficiencyModal() {
       <div class="step-indicator">
         <div class="step-dot active" id="stepDot1"></div>
         <div class="step-dot" id="stepDot2"></div>
-        <div class="step-dot" id="stepDot3"></div>
       </div>
 
-      <!-- STEP 1: 入力 -->
+      <!-- STEP 1: 入力 + プレビュー -->
       <div class="deficiency-step active" id="defStep1">
         <div class="member-summary">
           <strong>${escapeHtml(member.memberId)}</strong> - 
@@ -2138,7 +2137,7 @@ function openDeficiencyModal() {
         </div>
         <div class="form-group">
           <label>不備の種類</label>
-          <select id="deficiencyType">
+          <select id="deficiencyType" onchange="clearPreview()">
             <option value="both">顔写真 + 公的書類（両方）</option>
             <option value="photo">顔写真のみ</option>
             <option value="doc">公的書類のみ</option>
@@ -2146,36 +2145,38 @@ function openDeficiencyModal() {
         </div>
         <div class="form-group">
           <label>不備の詳細（任意 ※メール本文に記載されます）</label>
-          <textarea id="deficiencyNote" placeholder="例: 写真がぼやけています、書類の有効期限が切れています等"></textarea>
+          <textarea id="deficiencyNote" placeholder="例: 写真がぼやけています、書類の有効期限が切れています等" oninput="clearPreview()"></textarea>
         </div>
-        <div class="modal-buttons">
-          <button class="btn-cancel" onclick="closeDeficiencyModal()">キャンセル</button>
-          <button class="btn-preview" id="btnPreview" onclick="previewDeficiency()">
+
+        <!-- プレビュー生成ボタン -->
+        <div id="previewBtnArea">
+          <button class="btn-preview" id="btnPreview" onclick="previewDeficiency()" style="width:100%;">
             📄 メールをプレビュー
           </button>
         </div>
-      </div>
 
-      <!-- STEP 2: プレビュー（編集可能） -->
-      <div class="deficiency-step" id="defStep2">
-        <div class="email-preview-box">
-          <div class="preview-label">送信先</div>
-          <div class="preview-to" id="previewTo"></div>
-          <div class="preview-label">件名</div>
-          <input type="text" class="preview-subject" id="previewSubject">
-          <div class="preview-label">本文（編集できます）</div>
-          <textarea class="preview-body" id="previewBody"></textarea>
+        <!-- プレビュー結果（生成後に表示） -->
+        <div id="previewArea" style="display:none;">
+          <div class="email-preview-box">
+            <div class="preview-label">送信先</div>
+            <div class="preview-to" id="previewTo"></div>
+            <div class="preview-label">件名</div>
+            <input type="text" class="preview-subject" id="previewSubject">
+            <div class="preview-label">本文（編集できます）</div>
+            <textarea class="preview-body" id="previewBody"></textarea>
+          </div>
         </div>
+        
         <div class="modal-buttons">
-          <button class="btn-back" onclick="goToStep(1)">← 戻る</button>
-          <button class="btn-send" id="btnToConfirm" onclick="goToStep(3)">
+          <button class="btn-cancel" onclick="closeDeficiencyModal()">キャンセル</button>
+          <button class="btn-send" id="btnToConfirm" onclick="goToStep(2)" style="display:none;">
             送信確認へ →
           </button>
         </div>
       </div>
 
-      <!-- STEP 3: 最終確認 -->
-      <div class="deficiency-step" id="defStep3">
+      <!-- STEP 2: 最終確認 -->
+      <div class="deficiency-step" id="defStep2">
         <div class="confirm-box">
           <div class="confirm-icon">📧</div>
           <div class="confirm-text">以下の宛先にメールを送信します</div>
@@ -2186,7 +2187,7 @@ function openDeficiencyModal() {
           内容を修正する場合は「戻る」を押してください。
         </div>
         <div class="modal-buttons">
-          <button class="btn-back" onclick="goToStep(2)">← 戻る</button>
+          <button class="btn-back" onclick="goToStep(1)">← 戻る</button>
           <button class="btn-confirm-send" id="btnSendDeficiency" onclick="sendDeficiency()">
             📧 送信する
           </button>
@@ -2201,9 +2202,13 @@ function openDeficiencyModal() {
   });
 }
 
-function closeDeficiencyModal() {
-  const overlay = document.getElementById('deficiencyModalOverlay');
-  if (overlay) overlay.remove();
+function clearPreview() {
+  const previewArea = document.getElementById('previewArea');
+  const btnToConfirm = document.getElementById('btnToConfirm');
+  const btnPreview = document.getElementById('btnPreview');
+  if (previewArea) previewArea.style.display = 'none';
+  if (btnToConfirm) btnToConfirm.style.display = 'none';
+  if (btnPreview) btnPreview.style.display = '';
 }
 
 function goToStep(step) {
@@ -2213,12 +2218,12 @@ function goToStep(step) {
     el.classList.remove('done');
   });
   document.getElementById('defStep' + step).classList.add('active');
-  for (let i = 1; i <= 3; i++) {
+  for (let i = 1; i <= 2; i++) {
     const dot = document.getElementById('stepDot' + i);
     if (i < step) dot.classList.add('done');
     else if (i === step) dot.classList.add('active');
   }
-  if (step === 3) {
+  if (step === 2) {
     document.getElementById('confirmTo').textContent =
       document.getElementById('previewTo').textContent;
   }
@@ -2241,7 +2246,9 @@ async function previewDeficiency() {
       document.getElementById('previewTo').textContent = result.email;
       document.getElementById('previewSubject').value = result.subject;
       document.getElementById('previewBody').value = result.body;
-      goToStep(2);
+      document.getElementById('previewArea').style.display = 'block';
+      document.getElementById('btnToConfirm').style.display = '';
+      btn.style.display = 'none';
     } else {
       alert('エラー: ' + (result.error || '不明なエラー'));
     }
