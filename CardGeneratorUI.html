@@ -163,6 +163,23 @@
     .btn-recent:hover {
       background: #545b62;
     }
+
+    .btn-deficiency-filter {
+      background: linear-gradient(135deg, #ff9800, #f57c00);
+      color: #fff;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-deficiency-filter:hover {
+      background: linear-gradient(135deg, #f57c00, #e65100);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);
+    }
     
     /* ========== 検索結果 ========== */
     .search-results {
@@ -1101,6 +1118,7 @@
                onkeypress="handleSearchKeypress(event)">
         <button class="btn-search" onclick="searchMembers()">🔍 検索</button>
         <button class="btn-recent" onclick="loadPagedMembers(1)">📋 全件表示</button>
+        <button class="btn-deficiency-filter" onclick="loadDeficiencyMembers(1)">⚠️ 不備のみ</button>
       </div>
       
       <!-- 検索結果 -->
@@ -1422,7 +1440,6 @@ function logout() {
     }
     
     // ========== 検索（ページング対応） ========== //
-
     async function searchMembers() {
       var keyword = document.getElementById('searchKeyword').value.trim();
       
@@ -1463,6 +1480,31 @@ function logout() {
       }
     }
 
+    // ========== 不備ステータス絞り込み（ページング対応） ========== //
+
+    async function loadDeficiencyMembers(page) {
+      showLoading(true);
+      hideMessage();
+      currentMode = 'deficiency';
+
+      try {
+        var result = await callApi('getDeficiencyMembers', { page: page, perPage: perPage });
+        showLoading(false);
+
+        if (result.success) {
+          currentPage = result.currentPage;
+          totalPages = result.totalPages;
+          displaySearchResults(result.results, result.message);
+          updatePagination();
+        } else {
+          showMessage('❌ エラー: ' + result.error, 'error');
+        }
+      } catch (error) {
+        showLoading(false);
+        showMessage('❌ エラー: ' + error.message, 'error');
+      }
+    }
+    
     // ========== ページング操作 ========== //
 
     function updatePagination() {
@@ -1491,8 +1533,11 @@ function logout() {
       
       if (targetPage < 1 || targetPage > totalPages || targetPage === currentPage) return;
       
+      // 変更後
       if (currentMode === 'search') {
         searchMembersPage(targetPage);
+      } else if (currentMode === 'deficiency') {
+        loadDeficiencyMembers(targetPage);
       } else {
         loadPagedMembers(targetPage);
       }
@@ -1509,7 +1554,7 @@ function logout() {
     var currentPage = 1;
     var totalPages = 1;
     var perPage = 50;
-    var currentMode = 'list';       // 'list' or 'search'
+    var currentMode = 'list';  // 'list' or 'search' or 'deficiency'
     var currentKeyword = '';        // 検索モード時のキーワード保持
 
     // ========== 全件表示（ページング） ========== //
