@@ -2129,7 +2129,7 @@ function openDeficiencyModal() {
         <div class="step-dot" id="stepDot2"></div>
       </div>
 
-      <!-- STEP 1: 入力 + プレビュー -->
+      <!-- STEP 1: プレビュー＆編集 -->
       <div class="deficiency-step active" id="defStep1">
         <div class="member-summary">
           <strong>${escapeHtml(member.memberId)}</strong> - 
@@ -2137,27 +2137,11 @@ function openDeficiencyModal() {
           ${escapeHtml(member.wearerName)}<br>
           📧 ${escapeHtml(member.email || '未登録')}
         </div>
-        <div class="form-group">
-          <label>不備の種類</label>
-          <select id="deficiencyType" onchange="clearPreview()">
-            <option value="both">顔写真 + 公的書類（両方）</option>
-            <option value="photo">顔写真のみ</option>
-            <option value="doc">公的書類のみ</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>不備の詳細（任意 ※メール本文に記載されます）</label>
-          <textarea id="deficiencyNote" placeholder="例: 写真がぼやけています、書類の有効期限が切れています等" oninput="clearPreview()"></textarea>
+
+        <div id="previewLoading" style="text-align:center; padding:24px; color:#666;">
+          メール文面を生成中...
         </div>
 
-        <!-- プレビュー生成ボタン -->
-        <div id="previewBtnArea">
-          <button class="btn-preview" id="btnPreview" onclick="previewDeficiency()" style="width:100%;">
-            📄 メールをプレビュー
-          </button>
-        </div>
-
-        <!-- プレビュー結果（生成後に表示） -->
         <div id="previewArea" style="display:none;">
           <div class="email-preview-box">
             <div class="preview-label">送信先</div>
@@ -2167,13 +2151,10 @@ function openDeficiencyModal() {
             <div class="preview-label">本文（編集できます）</div>
             <textarea class="preview-body" id="previewBody"></textarea>
           </div>
-        </div>
-        
-        <div class="modal-buttons">
-          <button class="btn-cancel" onclick="closeDeficiencyModal()">キャンセル</button>
-          <button class="btn-send" id="btnToConfirm" onclick="goToStep(2)" style="display:none;">
-            送信確認へ →
-          </button>
+          <div class="modal-buttons">
+            <button class="btn-cancel" onclick="document.getElementById('deficiencyModalOverlay').remove()">キャンセル</button>
+            <button class="btn-send" onclick="goToStep(2)">送信確認へ →</button>
+          </div>
         </div>
       </div>
 
@@ -2200,17 +2181,34 @@ function openDeficiencyModal() {
 
   document.body.appendChild(overlay);
   overlay.addEventListener('click', function(e) {
-    if (e.target === overlay) closeDeficiencyModal();
+    if (e.target === overlay) overlay.remove();
   });
+
+  // 自動でプレビュー取得
+  loadDeficiencyPreview();
 }
 
-function clearPreview() {
-  const previewArea = document.getElementById('previewArea');
-  const btnToConfirm = document.getElementById('btnToConfirm');
-  const btnPreview = document.getElementById('btnPreview');
-  if (previewArea) previewArea.style.display = 'none';
-  if (btnToConfirm) btnToConfirm.style.display = 'none';
-  if (btnPreview) btnPreview.style.display = '';
+async function loadDeficiencyPreview() {
+  try {
+    const result = await callApi('previewDeficiencyNotice', {
+      memberId: selectedMemberData.memberId,
+      deficiencyType: 'both',
+      deficiencyNote: ''
+    });
+
+    if (result.success) {
+      document.getElementById('previewTo').textContent = result.email;
+      document.getElementById('previewSubject').value = result.subject;
+      document.getElementById('previewBody').value = result.body;
+      document.getElementById('previewLoading').style.display = 'none';
+      document.getElementById('previewArea').style.display = 'block';
+    } else {
+      document.getElementById('previewLoading').textContent =
+        'エラー: ' + (result.error || '文面の生成に失敗しました');
+    }
+  } catch (error) {
+    document.getElementById('previewLoading').textContent = '通信エラーが発生しました。';
+  }
 }
 
 function goToStep(step) {
@@ -2231,36 +2229,9 @@ function goToStep(step) {
   }
 }
 
-async function previewDeficiency() {
-  if (!selectedMemberData) return;
-  const btn = document.getElementById('btnPreview');
-  btn.disabled = true;
-  btn.textContent = 'プレビュー生成中...';
-
-  try {
-    const result = await callApi('previewDeficiencyNotice', {
-      memberId: selectedMemberData.memberId,
-      deficiencyType: document.getElementById('deficiencyType').value,
-      deficiencyNote: document.getElementById('deficiencyNote').value
-    });
-
-    if (result.success) {
-      document.getElementById('previewTo').textContent = result.email;
-      document.getElementById('previewSubject').value = result.subject;
-      document.getElementById('previewBody').value = result.body;
-      document.getElementById('previewArea').style.display = 'block';
-      document.getElementById('btnToConfirm').style.display = '';
-      btn.style.display = 'none';
-    } else {
-      alert('エラー: ' + (result.error || '不明なエラー'));
-    }
-  } catch (error) {
-    console.error('プレビューエラー:', error);
-    alert('通信エラーが発生しました。');
-  } finally {
-    btn.disabled = false;
-    btn.textContent = '📄 メールをプレビュー';
-  }
+function closeDeficiencyModal() {
+  const overlay = document.getElementById('deficiencyModalOverlay');
+  if (overlay) overlay.remove();
 }
 
 async function sendDeficiency() {
@@ -2272,8 +2243,8 @@ async function sendDeficiency() {
   try {
     const result = await callApi('sendDeficiencyNotice', {
       memberId: selectedMemberData.memberId,
-      deficiencyType: document.getElementById('deficiencyType').value,
-      deficiencyNote: document.getElementById('deficiencyNote').value,
+      deficiencyType: 'both',
+      deficiencyNote: '',
       previewedSubject: document.getElementById('previewSubject').value,
       previewedBody: document.getElementById('previewBody').value
     });
@@ -2290,7 +2261,6 @@ async function sendDeficiency() {
       alert('送信エラー: ' + (result.error || '不明なエラー'));
     }
   } catch (error) {
-    console.error('不備連絡エラー:', error);
     alert('通信エラーが発生しました。');
   } finally {
     btn.disabled = false;
