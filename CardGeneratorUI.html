@@ -1482,7 +1482,14 @@ function logout() {
 
     // ========== 不備ステータス絞り込み（ページング対応） ========== //
 
-    async function loadDeficiencyMembers(page) {
+async function loadDeficiencyMembers(page) {
+      // ★ ボタンを即座に無効化＋テキスト変更
+      var btn = document.querySelector('.btn-deficiency-filter');
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = '⏳ 読込中...';
+      }
+      
       showLoading(true);
       hideMessage();
       currentMode = 'deficiency';
@@ -1502,6 +1509,12 @@ function logout() {
       } catch (error) {
         showLoading(false);
         showMessage('❌ エラー: ' + error.message, 'error');
+      } finally {
+        // ★ ボタンを復元
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = '⚠️ 不備のみ';
+        }
       }
     }
     
