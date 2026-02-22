@@ -340,21 +340,27 @@
       margin-bottom: 10px;
     }
     
-    .selected-info {
+    .selected-info-row {
       display: flex;
       gap: 20px;
+      align-items: center;
       flex-wrap: wrap;
       font-size: 15px;
+      margin-bottom: 8px;
     }
-    
-    .selected-info span {
+
+    .selected-info-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .selected-info-row span {
       color: #333;
     }
-    
-    .selected-info strong {
+
+    .selected-info-row strong {
       color: #667eea;
     }
-    
+
     .selected-print-count {
       color: #28a745 !important;
       font-weight: bold;
@@ -1159,14 +1165,16 @@
     <!-- 選択中の会員 -->
     <div class="selected-member" id="selectedMember">
       <h3>📌 選択中の会員</h3>
-      <div class="selected-info">
+      <div class="selected-info-row">
         <span><strong>会員番号:</strong> <span id="selectedMemberId">-</span></span>
         <span><strong>店名:</strong> <span id="selectedStoreName">-</span></span>
         <span><strong>着用者:</strong> <span id="selectedWearerName">-</span></span>
+        <span id="selectedCancelStatusArea"></span>
+      </div>
+      <div class="selected-info-row">
         <span><strong>カード:</strong> <input type="checkbox" id="selectedCardCheck" class="print-checkbox" onclick="toggleSelectedPrintStatus('card', this)"></span>
         <span><strong>申請書:</strong> <input type="checkbox" id="selectedAppCheck" class="print-checkbox" onclick="toggleSelectedPrintStatus('app', this)"></span>
         <span><strong>ステータス:</strong> <span id="selectedStatus">-</span></span>
-        <span id="selectedCancelStatusArea"></span>
         <span><strong>不備:</strong>
           <select id="selectedDeficiencyStatus" onchange="updateDeficiencyStatus(this.value)" style="padding:4px 8px; border-radius:6px; border:1px solid #ccc; font-size:13px;">
             <option value="">―</option>
