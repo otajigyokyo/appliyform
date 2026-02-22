@@ -2268,6 +2268,15 @@ function openDeficiencyModal() {
           📧 ${escapeHtml(member.email || '未登録')}
         </div>
 
+        <div class="form-group">
+          <label>不備の箇所</label>
+          <select id="deficiencyTypeSelect" onchange="onDeficiencyTypeChange(this.value)" style="width:100%; padding:10px 12px; border:1px solid #ddd; border-radius:8px; font-size:14px; font-family:inherit;">
+            <option value="photo">顔写真</option>
+            <option value="doc">公的書類</option>
+            <option value="both" selected>顔写真および公的書類</option>
+          </select>
+        </div>
+
         <div id="previewLoading" style="text-align:center; padding:24px; color:#666;">
           メール文面を生成中...
         </div>
@@ -2318,11 +2327,41 @@ function openDeficiencyModal() {
   loadDeficiencyPreview();
 }
 
+// 不備種類テキストマッピング
+const DEFICIENCY_TYPE_TEXT = {
+  'photo': '顔写真',
+  'doc': '公的書類',
+  'both': '顔写真および公的書類'
+};
+let currentDeficiencyType = 'both';
+
+function onDeficiencyTypeChange(newType) {
+  const bodyEl = document.getElementById('previewBody');
+  if (!bodyEl || !bodyEl.value) return;
+
+  const oldText = DEFICIENCY_TYPE_TEXT[currentDeficiencyType];
+  const newText = DEFICIENCY_TYPE_TEXT[newType];
+
+  // 本文内の不備種類テキストを置換（最初の1箇所のみ）
+  bodyEl.value = bodyEl.value.replace(oldText, newText);
+
+  // 再提出URLのtypeパラメータを置換
+  bodyEl.value = bodyEl.value.replace(
+    'type=' + encodeURIComponent(currentDeficiencyType),
+    'type=' + encodeURIComponent(newType)
+  );
+
+  currentDeficiencyType = newType;
+}
+
 async function loadDeficiencyPreview() {
   try {
+    const typeSelect = document.getElementById('deficiencyTypeSelect');
+    currentDeficiencyType = typeSelect ? typeSelect.value : 'both';
+
     const result = await callApi('previewDeficiencyNotice', {
       memberId: selectedMemberData.memberId,
-      deficiencyType: 'both',
+      deficiencyType: currentDeficiencyType,
       deficiencyNote: ''
     });
 
@@ -2371,9 +2410,10 @@ async function sendDeficiency() {
   btn.textContent = '送信中...';
 
   try {
+    const typeSelect = document.getElementById('deficiencyTypeSelect');
     const result = await callApi('sendDeficiencyNotice', {
       memberId: selectedMemberData.memberId,
-      deficiencyType: 'both',
+      deficiencyType: typeSelect ? typeSelect.value : 'both',
       deficiencyNote: '',
       previewedSubject: document.getElementById('previewSubject').value,
       previewedBody: document.getElementById('previewBody').value
