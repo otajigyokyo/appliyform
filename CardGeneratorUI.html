@@ -844,6 +844,11 @@
     color: #0c5460;
     border: 1px solid #17a2b8;
   }
+  .deficiency-badge.def-issued {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #28a745;
+  }
 
   .btn-deficiency {
     background: #ff9800;
@@ -1162,6 +1167,14 @@
         <span><strong>申請書:</strong> <input type="checkbox" id="selectedAppCheck" class="print-checkbox" onclick="toggleSelectedPrintStatus('app', this)"></span>
         <span><strong>ステータス:</strong> <span id="selectedStatus">-</span></span>
         <span id="selectedCancelStatusArea"></span>
+        <span><strong>不備:</strong>
+          <select id="selectedDeficiencyStatus" onchange="updateDeficiencyStatus(this.value)" style="padding:4px 8px; border-radius:6px; border:1px solid #ccc; font-size:13px;">
+            <option value="">―</option>
+            <option value="不備連絡済み">不備連絡済み</option>
+            <option value="再提出済み">再提出済み</option>
+            <option value="発行完了">発行完了</option>
+          </select>
+        </span>
       </div>
     </div>
     
@@ -1426,9 +1439,12 @@ function logout() {
         return '<span class="deficiency-badge def-notified">不備連絡済み</span>';
       }
       if (defStatus === '再提出済み') {
-      return '<span class="deficiency-badge def-resubmitted">再提出済み</span>';
+        return '<span class="deficiency-badge def-resubmitted">再提出済み</span>';
       }
-    return '';
+      if (defStatus === '発行完了') {
+        return '<span class="deficiency-badge def-issued">発行完了</span>';
+      }
+      return '';
     }
     
     // ========== 検索機能 ========== //
@@ -1664,7 +1680,10 @@ async function loadDeficiencyMembers(page) {
       // ★ 解約ステータス表示
       const cancelStatus = member.cancelStatus || '';
       document.getElementById('selectedCancelStatusArea').innerHTML = getCancelBadgeLg(cancelStatus);
-      
+
+      // ★ 不備ステータスをドロップダウンに反映
+      document.getElementById('selectedDeficiencyStatus').value = member.deficiencyStatus || '';
+
       document.getElementById('selectedMember').classList.add('show');
       
       // ボタンを有効化
@@ -2166,6 +2185,51 @@ async function completeCancelAction() {
   document.getElementById('btnApplication').disabled = !enabled;
   document.getElementById('btnBoth').disabled = !enabled;
   document.getElementById('btnDeficiency').disabled = !enabled;  // ★ 追加
+}
+
+// ========== 不備ステータス変更 ========== //
+
+async function updateDeficiencyStatus(newStatus) {
+  if (!selectedMemberData) return;
+
+  const memberId = selectedMemberData.memberId;
+  const dropdown = document.getElementById('selectedDeficiencyStatus');
+  const oldStatus = selectedMemberData.deficiencyStatus || '';
+
+  try {
+    const result = await callApi('updateDeficiencyStatus', {
+      memberId: memberId,
+      newStatus: newStatus
+    });
+
+    if (result.success) {
+      // ローカルデータを更新
+      selectedMemberData.deficiencyStatus = newStatus;
+
+      // 一覧側のバッジもリアルタイム更新
+      const index = window.searchResultsData.findIndex(m => m.rowNumber === selectedMemberData.rowNumber);
+      if (index >= 0) {
+        window.searchResultsData[index].deficiencyStatus = newStatus;
+        const items = document.querySelectorAll('.result-item');
+        if (items[index]) {
+          const storeNameEl = items[index].querySelector('.result-store-name');
+          if (storeNameEl) {
+            const cancelStatus = selectedMemberData.cancelStatus || '';
+            storeNameEl.innerHTML = escapeHtml(selectedMemberData.storeName)
+              + getCancelBadge(cancelStatus)
+              + getDeficiencyBadge(newStatus);
+          }
+        }
+      }
+    } else {
+      // 失敗時は元に戻す
+      dropdown.value = oldStatus;
+      showMessage('❌ 不備ステータス更新失敗: ' + result.error, 'error');
+    }
+  } catch (error) {
+    dropdown.value = oldStatus;
+    showMessage('❌ エラー: ' + error.message, 'error');
+  }
 }
 
 // ========== 不備連絡モーダル ========== //
