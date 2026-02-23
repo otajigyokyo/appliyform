@@ -771,6 +771,10 @@
         
         if (result.success && result.member) {
           memberData = result.member;
+          console.log('=== getMemberDetail レスポンス ===');
+          console.log('representativeNameKana:', result.member.representativeNameKana);
+          console.log('wearerNameKana:', result.member.wearerNameKana);
+          console.log('全データ:', JSON.stringify(result.member, null, 2));
           displayMemberDetail(memberData);
         } else {
           showError(result.error || '会員情報の取得に失敗しました');
