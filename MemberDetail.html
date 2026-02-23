@@ -337,10 +337,76 @@
       color: #6c757d;
     }
     
+    /* 編集モード */
+    .edit-input, .edit-select {
+      width: 100%;
+      padding: 8px 12px;
+      border: 2px solid #667eea;
+      border-radius: 6px;
+      font-size: 15px;
+      font-family: inherit;
+      background: #fff;
+      color: #333;
+    }
+
+    .edit-input:focus, .edit-select:focus {
+      outline: none;
+      border-color: #764ba2;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+    }
+
+    .edit-select {
+      cursor: pointer;
+    }
+
+    .info-item.editing {
+      background: #f0f0ff;
+      border-color: #667eea;
+    }
+
+    .header-item.editing {
+      background: #f0f0ff;
+      padding: 8px;
+      border-radius: 6px;
+    }
+
+    .btn-edit {
+      background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+      color: white;
+    }
+
+    .btn-edit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(255, 152, 0, 0.4);
+    }
+
+    .btn-save {
+      background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+      color: white;
+    }
+
+    .btn-save:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+    }
+
+    .btn-cancel {
+      background: #6c757d;
+      color: white;
+    }
+
+    .btn-cancel:hover {
+      background: #5a6268;
+    }
+
+    .actions.edit-mode {
+      grid-template-columns: 1fr 1fr;
+    }
+
     /* アクションボタン */
     .actions {
       display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
       gap: 10px;
       padding: 20px 25px;
       background: #f8f9fa;
@@ -644,8 +710,11 @@
         </div>
       </div>
       
-      <!-- アクションボタン -->
-      <div class="actions">
+      <!-- アクションボタン（通常モード） -->
+      <div class="actions" id="normalActions">
+        <button id="btn-edit" class="btn btn-edit" onclick="enterEditMode()">
+          ✏️ 編集
+        </button>
         <button id="btn-card" class="btn btn-card" onclick="generateCard()">
           🎫 カード生成
         </button>
@@ -654,6 +723,15 @@
         </button>
         <button class="btn btn-close" onclick="window.close()">
           ✕ 閉じる
+        </button>
+      </div>
+      <!-- アクションボタン（編集モード） -->
+      <div class="actions edit-mode" id="editActions" style="display: none;">
+        <button id="btn-save" class="btn btn-save" onclick="saveEdit()">
+          💾 保存
+        </button>
+        <button class="btn btn-cancel" onclick="cancelEdit()">
+          ❌ キャンセル
         </button>
       </div>
     </div>
@@ -1004,6 +1082,211 @@ function printDocument() {
       }
     }
     // ★★★ ここまで追加 ★★★
+
+    // ========== 編集モード ========== //
+    let isEditMode = false;
+
+    // 編集対象フィールドの定義
+    const editableFields = [
+      { key: 'storeName', elementId: 'store-name', label: '店名', type: 'text', section: 'header' },
+      { key: 'wearerName', elementId: 'wearer-name', label: '着用者氏名', type: 'text', section: 'header' },
+      { key: 'wearerNameKana', elementId: 'wearer-name-kana', label: '着用者ふりがな', type: 'text', section: 'header' },
+      { key: 'status', elementId: 'status-badge', label: 'ステータス', type: 'select', section: 'header' },
+      { key: 'representativeName', elementId: 'rep-name', label: '代表者名', type: 'text', section: 'info' },
+      { key: 'representativeNameKana', elementId: 'rep-name-kana', label: '代表者ふりがな', type: 'text', section: 'info' },
+      { key: 'businessType', elementId: 'business-type', label: '業態', type: 'text', section: 'info' },
+      { key: 'address', elementId: 'address', label: '住所', type: 'text', section: 'info' },
+      { key: 'phone', elementId: 'phone', label: '電話', type: 'text', section: 'info' },
+      { key: 'fax', elementId: 'fax', label: 'FAX', type: 'text', section: 'info' },
+      { key: 'email', elementId: 'email', label: 'メール', type: 'text', section: 'info' },
+    ];
+
+    const statusOptions = [
+      { value: 'ACTIVE', label: '有効' },
+      { value: 'INACTIVE', label: '無効' },
+      { value: 'DUPLICATE', label: '重複削除' },
+    ];
+
+    // 元の値を保持
+    let originalValues = {};
+
+    function getFieldValue(field) {
+      if (field.key === 'status') return memberData.status || '';
+      if (field.key === 'wearerNameKana') {
+        const raw = memberData.wearerNameKana || '';
+        return raw;
+      }
+      if (field.key === 'representativeNameKana') {
+        return memberData.representativeNameKana || '';
+      }
+      const el = document.getElementById(field.elementId);
+      return el ? el.textContent.replace(/^（|）$/g, '').trim() : '';
+    }
+
+    function enterEditMode() {
+      isEditMode = true;
+      originalValues = {};
+
+      editableFields.forEach(field => {
+        const el = document.getElementById(field.elementId);
+        if (!el) return;
+
+        const currentValue = getFieldValue(field);
+        originalValues[field.key] = currentValue;
+
+        if (field.type === 'select') {
+          // ステータス: ドロップダウン
+          const select = document.createElement('select');
+          select.className = 'edit-select';
+          select.id = 'edit-' + field.key;
+          statusOptions.forEach(opt => {
+            const option = document.createElement('option');
+            option.value = opt.value;
+            option.textContent = opt.label;
+            if (opt.value === currentValue) option.selected = true;
+            select.appendChild(option);
+          });
+          el.replaceWith(select);
+        } else {
+          // テキストフィールド
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.className = 'edit-input';
+          input.id = 'edit-' + field.key;
+          input.value = currentValue === '-' ? '' : currentValue;
+          input.placeholder = field.label;
+          el.replaceWith(input);
+        }
+
+        // 親要素にeditingクラス
+        const inputEl = document.getElementById('edit-' + field.key);
+        if (inputEl) {
+          const parent = inputEl.closest('.info-item, .header-item, .status-box');
+          if (parent) parent.classList.add('editing');
+        }
+      });
+
+      // ボタン切替
+      document.getElementById('normalActions').style.display = 'none';
+      document.getElementById('editActions').style.display = 'grid';
+    }
+
+    function cancelEdit() {
+      if (!confirm('編集内容を破棄しますか？')) return;
+      restoreDisplayMode();
+    }
+
+    function restoreDisplayMode() {
+      isEditMode = false;
+
+      editableFields.forEach(field => {
+        const inputEl = document.getElementById('edit-' + field.key);
+        if (!inputEl) return;
+
+        // editingクラス削除
+        const parent = inputEl.closest('.info-item, .header-item, .status-box');
+        if (parent) parent.classList.remove('editing');
+
+        if (field.type === 'select') {
+          const badge = document.createElement('span');
+          badge.id = field.elementId;
+          const status = memberData.status || '';
+          if (status === 'ACTIVE') {
+            badge.textContent = '有効';
+            badge.className = 'status-badge status-active';
+          } else if (status === 'INACTIVE') {
+            badge.textContent = '無効';
+            badge.className = 'status-badge status-inactive';
+          } else if (status === 'DUPLICATE') {
+            badge.textContent = '重複削除';
+            badge.className = 'status-badge status-duplicate';
+          } else {
+            badge.textContent = '保留';
+            badge.className = 'status-badge status-pending';
+          }
+          inputEl.replaceWith(badge);
+        } else {
+          const span = document.createElement('span');
+          span.id = field.elementId;
+          if (field.key === 'wearerNameKana' || field.key === 'representativeNameKana') {
+            span.className = 'furigana';
+            const kana = field.key === 'wearerNameKana' ? memberData.wearerNameKana : memberData.representativeNameKana;
+            span.textContent = kana ? '（' + kana + '）' : '';
+          } else if (field.key === 'storeName') {
+            span.className = 'store-name';
+            span.textContent = memberData.storeName || '-';
+          } else if (field.key === 'wearerName') {
+            span.textContent = memberData.wearerName || '-';
+          } else if (field.key === 'representativeName') {
+            span.textContent = memberData.representativeName || '-';
+          } else {
+            span.className = 'info-value';
+            span.textContent = memberData[field.key] || '-';
+          }
+          inputEl.replaceWith(span);
+        }
+      });
+
+      // ボタン切替
+      document.getElementById('normalActions').style.display = 'grid';
+      document.getElementById('editActions').style.display = 'none';
+    }
+
+    async function saveEdit() {
+      const updates = {};
+      let hasChanges = false;
+
+      editableFields.forEach(field => {
+        const inputEl = document.getElementById('edit-' + field.key);
+        if (!inputEl) return;
+        const newValue = inputEl.value.trim();
+        if (newValue !== originalValues[field.key]) {
+          hasChanges = true;
+        }
+        updates[field.key] = newValue;
+      });
+
+      if (!hasChanges) {
+        alert('変更がありません。');
+        return;
+      }
+
+      if (!confirm('変更内容を保存しますか？')) return;
+
+      const saveBtn = document.getElementById('btn-save');
+      saveBtn.disabled = true;
+      saveBtn.textContent = '保存中...';
+
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            action: 'updateMember',
+            rowNumber: memberData.rowNumber,
+            updates: updates
+          })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          // memberDataを更新
+          Object.keys(updates).forEach(key => {
+            memberData[key] = updates[key];
+          });
+
+          restoreDisplayMode();
+          alert('保存しました。');
+        } else {
+          alert('保存エラー: ' + (result.error || '不明なエラー'));
+        }
+      } catch (error) {
+        alert('保存中にエラーが発生しました: ' + error.message);
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = '💾 保存';
+      }
+    }
   </script>
 </body>
 </html>
