@@ -128,6 +128,12 @@
       color: #856404;
       border: 1px solid #ffc107;
     }
+
+    .status-duplicate {
+      background: #e2e3e5;
+      color: #495057;
+      border: 1px solid #6c757d;
+    }
     
     .store-name {
       font-size: 22px;
@@ -719,6 +725,9 @@
       } else if (member.status === 'INACTIVE') {
         statusBadge.textContent = '無効';
         statusBadge.className = 'status-badge status-inactive';
+      } else if (member.status === 'DUPLICATE') {
+        statusBadge.textContent = '重複削除';
+        statusBadge.className = 'status-badge status-duplicate';
       } else {
         statusBadge.textContent = '保留';
         statusBadge.className = 'status-badge status-pending';
