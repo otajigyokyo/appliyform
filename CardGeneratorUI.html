@@ -312,6 +312,11 @@
       background: #fff3cd;
       color: #856404;
     }
+
+    .status-duplicate-deleted {
+      background: #8b5cf6;
+      color: white;
+    }
     
     /* ========== 印刷回数 ========== */
     .result-print-count {
@@ -1201,10 +1206,14 @@
       </button>
     </div>
 
-    <!-- ★ 不備連絡ボタン -->
-    <div style="margin-top: 10px; text-align: right;">
+    <!-- ★ 不備連絡・二重削除ボタン -->
+    <div style="margin-top: 10px; text-align: right; display: flex; gap: 10px; justify-content: flex-end;">
       <button class="btn-deficiency" id="btnDeficiency" onclick="openDeficiencyModal()" disabled>
         ⚠️ 不備連絡
+      </button>
+      <button id="btnDuplicate" onclick="deleteDuplicateMember()" disabled
+        style="padding: 8px 16px; background: #8b5cf6; color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer;">
+        🗑 二重登録削除
       </button>
     </div>
     
@@ -1702,7 +1711,8 @@ async function loadDeficiencyMembers(page) {
       document.getElementById('btnCard').disabled = !enabled;
       document.getElementById('btnApplication').disabled = !enabled;
       document.getElementById('btnBoth').disabled = !enabled;
-      document.getElementById('btnDeficiency').disabled = !enabled;  // ★ 追加
+      document.getElementById('btnDeficiency').disabled = !enabled;
+      document.getElementById('btnDuplicate').disabled = !enabled;
     }
     
     // 印刷回数表示を更新
@@ -1725,14 +1735,16 @@ function updateListPrintCount(index, cardCount, appCount) {
       const s = status.toUpperCase();
       if (s === 'ACTIVE') return 'status-active';
       if (s === 'INACTIVE') return 'status-inactive';
+      if (s === 'DUPLICATE_DELETED') return 'status-duplicate-deleted';
       return 'status-pending';
     }
-    
+
     function getStatusText(status) {
       if (!status) return '未設定';
       const s = status.toUpperCase();
       if (s === 'ACTIVE') return '有効';
       if (s === 'INACTIVE') return '無効';
+      if (s === 'DUPLICATE_DELETED') return '二重削除';
       return status;
     }
     
@@ -2191,7 +2203,60 @@ async function completeCancelAction() {
   document.getElementById('btnCard').disabled = !enabled;
   document.getElementById('btnApplication').disabled = !enabled;
   document.getElementById('btnBoth').disabled = !enabled;
-  document.getElementById('btnDeficiency').disabled = !enabled;  // ★ 追加
+  document.getElementById('btnDeficiency').disabled = !enabled;
+  document.getElementById('btnDuplicate').disabled = !enabled;
+}
+
+// ========== 二重登録削除 ========== //
+async function deleteDuplicateMember() {
+  if (!selectedMemberData) return;
+
+  const memberId = selectedMemberData.memberId;
+  const storeName = selectedMemberData.storeName;
+
+  if (!confirm(`【二重登録削除】\n\n会員番号: ${memberId}\n店名: ${storeName}\n\nこの会員を二重登録として削除しますか？\n※ ステータスが「二重削除」に変更されます。`)) {
+    return;
+  }
+
+  const btn = document.getElementById('btnDuplicate');
+  btn.disabled = true;
+  btn.textContent = '処理中...';
+
+  try {
+    const result = await callApi('deleteDuplicate', {
+      rowNumber: selectedMemberData.rowNumber
+    });
+
+    if (result.success) {
+      showMessage('✅ 二重登録を削除しました（' + memberId + '）', 'success');
+
+      // 選択中の会員データを更新
+      selectedMemberData.status = 'DUPLICATE_DELETED';
+      document.getElementById('selectedStatus').textContent = '二重削除';
+      document.getElementById('selectedStatus').className = 'result-status status-duplicate-deleted';
+
+      // リスト上のステータスも更新
+      const index = selectedMemberData._listIndex;
+      if (index !== undefined && window.searchResultsData) {
+        window.searchResultsData[index].status = 'DUPLICATE_DELETED';
+        const items = document.querySelectorAll('.result-item');
+        if (items[index]) {
+          const statusEl = items[index].querySelector('.result-status');
+          if (statusEl) {
+            statusEl.textContent = '二重削除';
+            statusEl.className = 'result-status status-duplicate-deleted';
+          }
+        }
+      }
+    } else {
+      showMessage('❌ エラー: ' + result.error, 'error');
+    }
+  } catch (error) {
+    showMessage('❌ エラー: ' + error.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🗑 二重登録削除';
+  }
 }
 
 // ========== 不備ステータス変更 ========== //

@@ -134,6 +134,12 @@
       color: #495057;
       border: 1px solid #6c757d;
     }
+
+    .status-duplicate-deleted {
+      background: #8b5cf6;
+      color: white;
+      border: 1px solid #7c3aed;
+    }
     
     .store-name {
       font-size: 22px;
@@ -811,6 +817,9 @@
       } else if (member.status === 'DUPLICATE') {
         statusBadge.textContent = '重複削除';
         statusBadge.className = 'status-badge status-duplicate';
+      } else if (member.status === 'DUPLICATE_DELETED') {
+        statusBadge.textContent = '二重削除';
+        statusBadge.className = 'status-badge status-duplicate-deleted';
       } else {
         statusBadge.textContent = '保留';
         statusBadge.className = 'status-badge status-pending';
@@ -1110,6 +1119,7 @@ function printDocument() {
       { value: 'ACTIVE', label: '有効' },
       { value: 'INACTIVE', label: '無効' },
       { value: 'DUPLICATE', label: '重複削除' },
+      { value: 'DUPLICATE_DELETED', label: '二重削除' },
     ];
 
     // 元の値を保持
@@ -1205,6 +1215,9 @@ function printDocument() {
           } else if (status === 'DUPLICATE') {
             badge.textContent = '重複削除';
             badge.className = 'status-badge status-duplicate';
+          } else if (status === 'DUPLICATE_DELETED') {
+            badge.textContent = '二重削除';
+            badge.className = 'status-badge status-duplicate-deleted';
           } else {
             badge.textContent = '保留';
             badge.className = 'status-badge status-pending';
