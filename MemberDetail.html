@@ -582,7 +582,32 @@
           </div>
         </div>
       </div>
-      
+
+      <!-- アクションボタン（通常モード） -->
+      <div class="actions" id="normalActions">
+        <button id="btn-edit" class="btn btn-edit" onclick="enterEditMode()">
+          ✏️ 編集
+        </button>
+        <button id="btn-card" class="btn btn-card" onclick="generateCard()">
+          🎫 カード生成
+        </button>
+        <button id="btn-app" class="btn btn-app" onclick="generateApp()">
+          📋 申請書生成
+        </button>
+        <button class="btn btn-close" onclick="window.close()">
+          ✕ 閉じる
+        </button>
+      </div>
+      <!-- アクションボタン（編集モード） -->
+      <div class="actions edit-mode" id="editActions" style="display: none;">
+        <button id="btn-save" class="btn btn-save" onclick="saveEdit()">
+          💾 保存
+        </button>
+        <button class="btn btn-cancel" onclick="cancelEdit()">
+          ❌ キャンセル
+        </button>
+      </div>
+
       <!-- 基本情報 -->
       <div class="section">
         <div class="section-title">📋 基本情報</div>
@@ -710,30 +735,6 @@
         </div>
       </div>
       
-      <!-- アクションボタン（通常モード） -->
-      <div class="actions" id="normalActions">
-        <button id="btn-edit" class="btn btn-edit" onclick="enterEditMode()">
-          ✏️ 編集
-        </button>
-        <button id="btn-card" class="btn btn-card" onclick="generateCard()">
-          🎫 カード生成
-        </button>
-        <button id="btn-app" class="btn btn-app" onclick="generateApp()">
-          📋 申請書生成
-        </button>
-        <button class="btn btn-close" onclick="window.close()">
-          ✕ 閉じる
-        </button>
-      </div>
-      <!-- アクションボタン（編集モード） -->
-      <div class="actions edit-mode" id="editActions" style="display: none;">
-        <button id="btn-save" class="btn btn-save" onclick="saveEdit()">
-          💾 保存
-        </button>
-        <button class="btn btn-cancel" onclick="cancelEdit()">
-          ❌ キャンセル
-        </button>
-      </div>
     </div>
   </div>
   
