@@ -1709,6 +1709,15 @@ async function loadDeficiencyMembers(page) {
       
       // ボタンを有効化
       setButtonsEnabled(true);
+
+      // ★ ステータスに応じて生成・不備連絡ボタンを無効化
+      const s = (member.status || '').toUpperCase();
+      if (s === 'INACTIVE' || s === 'DUPLICATE_DELETED') {
+        document.getElementById('btnCard').disabled = true;
+        document.getElementById('btnApplication').disabled = true;
+        document.getElementById('btnBoth').disabled = true;
+        document.getElementById('btnDeficiency').disabled = true;
+      }
     }
     
     function setButtonsEnabled(enabled) {
