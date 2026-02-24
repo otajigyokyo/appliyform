@@ -1655,16 +1655,20 @@ async function loadDeficiencyMembers(page) {
         // ★ 不備ステータスを取得 ← この2行を追加
         const deficiencyStatus = member.deficiencyStatus || '';
         const deficiencyBadgeHtml = getDeficiencyBadge(deficiencyStatus);
+        // ★ DUPLICATE_DELETED判定
+        const isDupDeleted = (member.status || '').toUpperCase() === 'DUPLICATE_DELETED';
+        const rowStyle = isDupDeleted ? 'opacity:0.5; background:#f0f0f0;' : '';
+        const cbDisabled = isDupDeleted ? 'disabled' : '';
 
         return `
-        <div class="result-item" onclick="selectMember(${index}, this)" data-index="${index}">
+        <div class="result-item" onclick="selectMember(${index}, this)" data-index="${index}" style="${rowStyle}">
           <input type="radio" name="memberSelect" class="result-radio" onclick="event.stopPropagation(); selectMember(${index}, this.closest('.result-item'))">
           <div class="result-info">
             <span class="result-member-id">${escapeHtml(member.memberId)}</span>
             <span class="result-store-name">${escapeHtml(member.storeName)}${cancelBadgeHtml}${deficiencyBadgeHtml}</span>
             <span class="result-wearer-name">${escapeHtml(member.wearerName || member.representativeName)}</span>
-            <span class="result-print-count card-count"><input type="checkbox" class="print-checkbox" ${cardCount > 0 ? 'checked' : ''} onclick="event.stopPropagation(); togglePrintStatus(${index}, 'card', this)"></span>
-            <span class="result-print-count app-count"><input type="checkbox" class="print-checkbox" ${appCount > 0 ? 'checked' : ''} onclick="event.stopPropagation(); togglePrintStatus(${index}, 'app', this)"></span>
+            <span class="result-print-count card-count"><input type="checkbox" class="print-checkbox" ${cardCount > 0 ? 'checked' : ''} ${cbDisabled} onclick="event.stopPropagation(); togglePrintStatus(${index}, 'card', this)"></span>
+            <span class="result-print-count app-count"><input type="checkbox" class="print-checkbox" ${appCount > 0 ? 'checked' : ''} ${cbDisabled} onclick="event.stopPropagation(); togglePrintStatus(${index}, 'app', this)"></span>
             <span class="result-status ${getStatusClass(member.status)}">${getStatusText(member.status)}</span>
           </div>
         </div>
@@ -1710,14 +1714,17 @@ async function loadDeficiencyMembers(page) {
       // ボタンを有効化
       setButtonsEnabled(true);
 
-      // ★ ステータスに応じて生成・不備連絡ボタンを無効化
+      // ★ ステータスに応じて生成・不備連絡ボタン＆チェックボックスを無効化
       const s = (member.status || '').toUpperCase();
-      if (s === 'INACTIVE' || s === 'DUPLICATE_DELETED') {
+      const isDisabled = (s === 'INACTIVE' || s === 'DUPLICATE_DELETED');
+      if (isDisabled) {
         document.getElementById('btnCard').disabled = true;
         document.getElementById('btnApplication').disabled = true;
         document.getElementById('btnBoth').disabled = true;
         document.getElementById('btnDeficiency').disabled = true;
       }
+      document.getElementById('selectedCardCheck').disabled = isDisabled;
+      document.getElementById('selectedAppCheck').disabled = isDisabled;
     }
     
     function setButtonsEnabled(enabled) {
