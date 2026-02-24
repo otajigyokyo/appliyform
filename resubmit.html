@@ -453,7 +453,7 @@
 
 <div class="container">
   <div class="header">
-    <h1>📋 書類再提出フォーム</h1>
+    <h1 id="pageTitle">📋 再提出フォーム</h1>
     <p>大田市場花き事業協同組合</p>
   </div>
 
@@ -678,6 +678,11 @@
                        params.type === 'doc' ? '公的書類' : '顔写真と公的書類';
       document.getElementById('noticeText').textContent =
         `${typeText}に不備がありました。正しい書類を再提出してください。`;
+
+      // ★ タイプに応じてページタイトルを切り替え
+      const titleText = params.type === 'photo' ? '📋 顔写真の再提出フォーム' :
+                         params.type === 'doc' ? '📋 書類の再提出フォーム' : '📋 再提出フォーム';
+      document.getElementById('pageTitle').textContent = titleText;
 
       showScreen('form');
     } catch (error) {
