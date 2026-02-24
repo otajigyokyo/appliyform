@@ -2518,31 +2518,27 @@ function openDeficiencyModal() {
   loadDeficiencyPreview();
 }
 
-// 不備種類テキストマッピング
-const DEFICIENCY_TYPE_TEXT = {
-  'photo': '【顔写真】',
-  'doc': '【公的書類】',
-  'both': '【顔写真および公的書類】'
-};
 let currentDeficiencyType = 'both';
 
-function onDeficiencyTypeChange(newType) {
-  const bodyEl = document.getElementById('previewBody');
-  if (!bodyEl || !bodyEl.value) return;
-
-  const oldText = DEFICIENCY_TYPE_TEXT[currentDeficiencyType];
-  const newText = DEFICIENCY_TYPE_TEXT[newType];
-
-  // 本文内の不備種類テキストを置換（最初の1箇所のみ）
-  bodyEl.value = bodyEl.value.replace(oldText, newText);
-
-  // 再提出URLのtypeパラメータを置換
-  bodyEl.value = bodyEl.value.replace(
-    'type=' + encodeURIComponent(currentDeficiencyType),
-    'type=' + encodeURIComponent(newType)
-  );
-
+async function onDeficiencyTypeChange(newType) {
   currentDeficiencyType = newType;
+
+  // APIを再呼び出しして正しいテンプレートで文面を再生成
+  try {
+    document.getElementById('previewBody').value = '文面を再生成中...';
+    const result = await callApi('previewDeficiencyNotice', {
+      memberId: selectedMemberData.memberId,
+      deficiencyType: newType,
+      deficiencyNote: ''
+    });
+
+    if (result.success) {
+      document.getElementById('previewSubject').value = result.subject;
+      document.getElementById('previewBody').value = result.body;
+    }
+  } catch (error) {
+    console.log('プレビュー再取得エラー:', error);
+  }
 }
 
 async function loadDeficiencyPreview() {
