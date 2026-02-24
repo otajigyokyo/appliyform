@@ -865,6 +865,64 @@
     border: 1px solid #28a745;
   }
 
+    .resubmit-alert {
+      margin: 0 auto 16px;
+      max-width: 1050px;
+      animation: slideDown 0.4s ease-out;
+    }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .resubmit-alert-inner {
+      background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+      border: 2px solid #ff9800;
+      border-radius: 10px;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 2px 8px rgba(255, 152, 0, 0.2);
+    }
+    .resubmit-alert-icon {
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+    .resubmit-alert-text {
+      flex: 1;
+      font-size: 14px;
+      font-weight: 600;
+      color: #e65100;
+    }
+    .resubmit-alert-btn {
+      background: #ff9800;
+      color: #fff;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.2s;
+    }
+    .resubmit-alert-btn:hover {
+      background: #f57c00;
+    }
+    .resubmit-alert-close {
+      background: none;
+      border: none;
+      font-size: 18px;
+      color: #bf360c;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+    .resubmit-alert-close:hover {
+      background: rgba(191, 54, 12, 0.1);
+    }
+
   .btn-deficiency {
     background: #ff9800;
     color: #fff;
@@ -1127,6 +1185,16 @@
       <a href="index.html" class="nav-link form" target="_blank">📝 申請フォームを開く</a>
     </div>
     
+    <!-- ★ 再提出アラート -->
+    <div id="resubmitAlert" class="resubmit-alert" style="display: none;">
+      <div class="resubmit-alert-inner">
+        <span class="resubmit-alert-icon">🔔</span>
+        <span class="resubmit-alert-text" id="resubmitAlertText"></span>
+        <button class="resubmit-alert-btn" onclick="loadDeficiencyMembers(1)">不備一覧を表示</button>
+        <button class="resubmit-alert-close" onclick="dismissResubmitAlert()" title="閉じる">✕</button>
+      </div>
+    </div>
+
     <!-- 検索セクション -->
     <div class="search-section">
       <h2>🔍 会員検索</h2>
@@ -1518,6 +1586,43 @@ function logout() {
     }
 
     // ========== 不備ステータス絞り込み（ページング対応） ========== //
+
+    // ========== 再提出アラートチェック ========== //
+    async function checkResubmitAlert() {
+      try {
+        const result = await callApi('getDeficiencyMembers', { page: 1, perPage: 100 });
+        if (!result.success) return;
+
+        // 「再提出済み」の会員を数える
+        const resubmitted = (result.results || []).filter(
+          m => m.deficiencyStatus === '再提出済み'
+        );
+
+        const alertEl = document.getElementById('resubmitAlert');
+        const textEl = document.getElementById('resubmitAlertText');
+
+        if (resubmitted.length > 0) {
+          const names = resubmitted.slice(0, 3).map(
+            m => m.memberId + ' ' + m.storeName
+          ).join('、');
+          const suffix = resubmitted.length > 3
+            ? ' 他' + (resubmitted.length - 3) + '件'
+            : '';
+
+          textEl.textContent = '📋 書類の再提出があります（'
+            + resubmitted.length + '件）：' + names + suffix;
+          alertEl.style.display = 'block';
+        } else {
+          alertEl.style.display = 'none';
+        }
+      } catch (error) {
+        console.log('再提出アラートチェックエラー:', error);
+      }
+    }
+
+    function dismissResubmitAlert() {
+      document.getElementById('resubmitAlert').style.display = 'none';
+    }
 
 async function loadDeficiencyMembers(page) {
       // ★ ボタンを即座に無効化＋テキスト変更
@@ -2063,6 +2168,8 @@ function updateListPrintCount(index, cardCount, appCount) {
     function initializePage() {
       // 最新20件を自動ロード
       loadRecentMembers(1);
+      // ★ 再提出アラートチェック
+      checkResubmitAlert();
     }
     
     window.onload = function() {
