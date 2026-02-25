@@ -1819,9 +1819,9 @@ async function loadDeficiencyMembers(page) {
       // ボタンを有効化
       setButtonsEnabled(true);
 
-      // ★ ステータスに応じて生成・不備連絡ボタン＆チェックボックスを無効化
+      // ★ DUPLICATE_DELETED のみ生成・不備連絡ボタン＆チェックボックスを無効化
       const s = (member.status || '').toUpperCase();
-      const isDisabled = (s === 'INACTIVE' || s === 'DUPLICATE_DELETED');
+      const isDisabled = (s === 'DUPLICATE_DELETED');
       if (isDisabled) {
         document.getElementById('btnCard').disabled = true;
         document.getElementById('btnApplication').disabled = true;
