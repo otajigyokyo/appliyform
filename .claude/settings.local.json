@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir X:\\\\git\\\\appliyform\\\\gas:*)",
+      "Bash(cd X:\\\\git\\\\appliyform\\\\gas:*)",
+      "Bash(cd /x/git/appliyform/gas/remote_check && npx clasp pull 2>&1)",
+      "Bash(cd:*)",
+      "Bash(cd /x/git/appliyform/gas && npx clasp deploy -i AKfycbwbbyZoRzhWu8Ft5xVvyI1LJc7_RLZaeLwVGapXnlYIIJBUSlgJXQTzofwuLl5nux43kg -d \"不備連絡メールのフォームラベルをtype別に切替\" 2>&1)",
+      "Bash(clasp login:*)"
+    ]
+  }
+}

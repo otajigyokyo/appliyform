@@ -1279,14 +1279,22 @@
       </button>
     </div>
 
-    <!-- ★ 不備連絡・二重削除ボタン -->
-    <div style="margin-top: 10px; text-align: right; display: flex; gap: 10px; justify-content: flex-end;">
+    <!-- ★ 不備連絡・二重削除・会費ペイボタン -->
+    <div style="margin-top: 10px; text-align: right; display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap;">
       <button class="btn-deficiency" id="btnDeficiency" onclick="openDeficiencyModal()" disabled>
         ⚠️ 不備連絡
       </button>
       <button id="btnDuplicate" onclick="deleteDuplicateMember()" disabled
         style="padding: 8px 16px; background: #8b5cf6; color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer;">
         🗑 二重登録削除
+      </button>
+      <button id="btnCheckKaihipay" onclick="checkKaihipayStatus()" disabled
+        style="padding: 8px 16px; background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer;">
+        🔍 会費ペイ状態確認
+      </button>
+      <button id="btnRetryKaihipay" onclick="retryKaihipayRegistration()" disabled
+        style="padding: 8px 16px; background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%); color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 8px rgba(255,107,53,0.3);">
+        💳 会費ペイ再登録
       </button>
     </div>
     
@@ -1839,6 +1847,8 @@ async function loadDeficiencyMembers(page) {
       document.getElementById('btnBoth').disabled = !enabled;
       document.getElementById('btnDeficiency').disabled = !enabled;
       document.getElementById('btnDuplicate').disabled = !enabled;
+      document.getElementById('btnCheckKaihipay').disabled = !enabled;
+      document.getElementById('btnRetryKaihipay').disabled = !enabled;
     }
     
     // 印刷回数表示を更新
@@ -2333,6 +2343,115 @@ async function completeCancelAction() {
   document.getElementById('btnBoth').disabled = !enabled;
   document.getElementById('btnDeficiency').disabled = !enabled;
   document.getElementById('btnDuplicate').disabled = !enabled;
+  document.getElementById('btnCheckKaihipay').disabled = !enabled;
+  document.getElementById('btnRetryKaihipay').disabled = !enabled;
+}
+
+// ========== 会費ペイ再登録 ========== //
+async function retryKaihipayRegistration() {
+  if (!selectedMemberData || !selectedMemberData.memberId) {
+    alert('会員が選択されていません');
+    return;
+  }
+
+  const memberId = selectedMemberData.memberId;
+  const storeName = selectedMemberData.storeName || '';
+
+  if (!confirm(
+    memberId + ' ' + storeName + ' の会費ペイ登録を実行しますか？\n\n' +
+    '処理内容:\n' +
+    '1. 会費ペイに会員登録（未登録の場合）\n' +
+    '2. コース追加（未追加の場合）\n' +
+    '3. 支払い案内メールが会員に自動送信されます'
+  )) {
+    return;
+  }
+
+  const btn = document.getElementById('btnRetryKaihipay');
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '⏳ 処理中...';
+  btn.style.opacity = '0.6';
+
+  try {
+    const result = await callApi('retryKaihipayRegistration', {
+      memberId: memberId
+    });
+
+    if (result.success) {
+      const stepsText = (result.steps || []).join('\n');
+      alert(
+        '✅ 会費ペイ登録成功！\n\n' +
+        '会員番号: ' + result.memberId + '\n' +
+        '店名: ' + result.storeName + '\n\n' +
+        '処理結果:\n' + stepsText + '\n\n' +
+        '会員に支払い案内メールが送信されます。'
+      );
+    } else {
+      alert('❌ 会費ペイ登録に失敗しました\n\n' + (result.error || result.message || '不明なエラー'));
+    }
+
+  } catch (error) {
+    alert('❌ 通信エラー: ' + error.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalText;
+    btn.style.opacity = '1';
+  }
+}
+
+// ========== 会費ペイ状態確認 ========== //
+async function checkKaihipayStatus() {
+  if (!selectedMemberData || !selectedMemberData.memberId) {
+    alert('会員が選択されていません');
+    return;
+  }
+
+  const memberId = selectedMemberData.memberId;
+
+  const btn = document.getElementById('btnCheckKaihipay');
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '🔍 確認中...';
+
+  try {
+    const result = await callApi('checkKaihipayStatus', {
+      memberId: memberId
+    });
+
+    if (result.success) {
+      if (result.registered) {
+        const cd = result.customerData || {};
+        const courses = (cd.courses || []).map(function(c) { return c.course_name || c.course_id; }).join(', ') || 'なし';
+
+        alert(
+          '✅ 会費ペイに登録済み\n\n' +
+          '会員番号: ' + cd.customer_number + '\n' +
+          '氏名: ' + cd.name + '\n' +
+          'メール: ' + cd.mail + '\n' +
+          '支払方法: ' + cd.payment_method_type + '\n' +
+          'コース: ' + courses + '\n\n' +
+          (result.hasPaymentMethod
+            ? '支払方法も登録されています。'
+            : '⚠️ 支払方法が未登録です。会員に案内メールが届いているか確認してください。')
+        );
+      } else {
+        alert(
+          '❌ 会費ペイに未登録\n\n' +
+          memberId + ' は会費ペイに登録されていません。\n' +
+          '「💳 会費ペイ再登録」ボタンで登録を実行してください。'
+        );
+      }
+    } else {
+      alert('❌ 確認に失敗しました\n\n' + (result.error || '不明なエラー'));
+    }
+
+  } catch (error) {
+    alert('❌ 通信エラー: ' + error.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalText;
+  }
 }
 
 // ========== 二重登録削除 ========== //
