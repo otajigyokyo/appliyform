@@ -629,6 +629,10 @@
             <div class="info-label">業種</div>
             <div id="business-type" class="info-value">-</div>
           </div>
+          <div class="info-item">
+            <div class="info-label">郵便番号</div>
+            <div id="postal-code" class="info-value">-</div>
+          </div>
           <div class="info-item full-width">
             <div class="info-label">住所</div>
             <div id="address" class="info-value">-</div>
@@ -867,7 +871,30 @@
       }
       
       document.getElementById('business-type').textContent = member.businessType || '-';
-      document.getElementById('address').textContent = member.address || '-';
+
+      // 郵便番号・住所の分離表示
+      // GAS側が postalCode を別フィールドで返す場合はそのまま使用
+      // address に「〒XXX-XXXX」が含まれている場合はフロントで分離（後方互換）
+      if (member.postalCode) {
+        document.getElementById('postal-code').textContent = '〒' + member.postalCode;
+        document.getElementById('address').textContent = member.address || '-';
+      } else if (member.address) {
+        const postalMatch = member.address.match(/^〒?(\d{3}-?\d{4})\s*/);
+        if (postalMatch) {
+          const postalCode = postalMatch[1].includes('-') ? postalMatch[1] : postalMatch[1].slice(0, 3) + '-' + postalMatch[1].slice(3);
+          document.getElementById('postal-code').textContent = '〒' + postalCode;
+          document.getElementById('address').textContent = member.address.slice(postalMatch[0].length).trim() || '-';
+          // 分離した値をmemberDataにも反映
+          memberData.postalCode = postalCode;
+          memberData.address = member.address.slice(postalMatch[0].length).trim();
+        } else {
+          document.getElementById('postal-code').textContent = '-';
+          document.getElementById('address').textContent = member.address;
+        }
+      } else {
+        document.getElementById('postal-code').textContent = '-';
+        document.getElementById('address').textContent = '-';
+      }
       document.getElementById('phone').textContent = member.phone || '-';
       document.getElementById('fax').textContent = member.fax || '-';
       document.getElementById('email').textContent = member.email || '-';
@@ -1109,6 +1136,7 @@ function printDocument() {
       { key: 'representativeName', elementId: 'rep-name', label: '代表者名', type: 'text', section: 'info' },
       { key: 'representativeNameKana', elementId: 'rep-name-kana', label: '代表者ふりがな', type: 'text', section: 'info' },
       { key: 'businessType', elementId: 'business-type', label: '業態', type: 'text', section: 'info' },
+      { key: 'postalCode', elementId: 'postal-code', label: '郵便番号', type: 'text', section: 'info' },
       { key: 'address', elementId: 'address', label: '住所', type: 'text', section: 'info' },
       { key: 'phone', elementId: 'phone', label: '電話', type: 'text', section: 'info' },
       { key: 'fax', elementId: 'fax', label: 'FAX', type: 'text', section: 'info' },
@@ -1133,6 +1161,9 @@ function printDocument() {
       }
       if (field.key === 'representativeNameKana') {
         return memberData.representativeNameKana || '';
+      }
+      if (field.key === 'postalCode') {
+        return memberData.postalCode || '';
       }
       const el = document.getElementById(field.elementId);
       return el ? el.textContent.replace(/^（|）$/g, '').trim() : '';
@@ -1230,6 +1261,10 @@ function printDocument() {
             span.className = 'furigana';
             const kana = field.key === 'wearerNameKana' ? memberData.wearerNameKana : memberData.representativeNameKana;
             span.textContent = kana ? '（' + kana + '）' : '';
+          } else if (field.key === 'postalCode') {
+            span.className = 'info-value';
+            const pc = memberData.postalCode;
+            span.textContent = pc ? '〒' + pc : '-';
           } else if (field.key === 'storeName') {
             span.className = 'store-name';
             span.textContent = memberData.storeName || '-';
