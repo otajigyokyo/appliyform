@@ -627,12 +627,175 @@
       text-decoration: underline;
     }
     
+    /* テスト送信タブ */
+    .test-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 20px;
+      background: #f8f9fa;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .test-controls label {
+      font-size: 14px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .test-controls input[type="email"] {
+      flex: 1;
+      min-width: 250px;
+      padding: 10px 14px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .test-controls input[type="email"]:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .test-section-label {
+      font-size: 15px;
+      font-weight: 600;
+      color: #555;
+      margin: 20px 0 10px;
+      padding-left: 4px;
+    }
+
+    .test-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 14px;
+    }
+
+    .test-card {
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 10px;
+      overflow: hidden;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .test-card:hover {
+      border-color: #667eea;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .test-card-header {
+      padding: 12px 16px 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .test-card-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      flex-shrink: 0;
+    }
+
+    .tci-applicant { background: #e8f0fe; }
+    .tci-admin { background: #fce8e6; }
+    .tci-warning { background: #fff3cd; }
+    .tci-success { background: #d4edda; }
+    .tci-deficiency { background: #fff0e6; }
+    .tci-cancel { background: #f8d7da; }
+
+    .test-card-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .test-card-body {
+      padding: 6px 16px 14px;
+    }
+
+    .test-card-subject {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 4px;
+    }
+
+    .test-card-subject code {
+      background: #eee;
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-size: 11px;
+      word-break: break-all;
+    }
+
+    .test-card-target {
+      margin-bottom: 10px;
+    }
+
+    .test-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .tb-applicant { background: #e8f0fe; color: #1a73e8; }
+    .tb-admin { background: #fce8e6; color: #d93025; }
+
+    .btn-test-send {
+      width: 100%;
+      padding: 9px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      transition: opacity 0.2s;
+    }
+
+    .btn-test-send:hover { opacity: 0.9; }
+    .btn-test-send:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-test-send.sending { background: #999; }
+
+    .test-card-status {
+      margin-top: 8px;
+      padding: 8px 10px;
+      border-radius: 6px;
+      font-size: 13px;
+      display: none;
+    }
+
+    .test-card-status.show { display: block; }
+
+    .test-card-status.ts-success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .test-card-status.ts-error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
     /* レスポンシブ */
     @media (max-width: 900px) {
       .two-column {
         grid-template-columns: 1fr;
       }
-      
+
       .recipient-panel {
         max-height: 300px;
       }
@@ -792,6 +955,7 @@
     <div class="nav-tabs">
       <button class="nav-tab active" onclick="switchTab('compose')">✉️ メール作成</button>
       <button class="nav-tab" onclick="switchTab('templates')">📝 テンプレート管理</button>
+      <button class="nav-tab" onclick="switchTab('testsend')">🧪 テスト送信</button>
     </div>
     
     <!-- メール作成タブ -->
@@ -891,11 +1055,173 @@
           ➕ 新規作成
         </button>
       </div>
-      
+
       <div class="template-list" id="template-list">
         <div class="loading">
           <div class="spinner"></div>
           <div>テンプレートを読み込み中...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- テスト送信タブ -->
+    <div id="tab-testsend" class="card">
+      <div class="section-title">🧪 メールテスト送信</div>
+      <p style="color: #666; font-size: 14px; margin-bottom: 16px;">システムから送信される各種メールをダミーデータでテスト送信します。件名に【テスト】が付与されます。</p>
+
+      <div class="test-controls">
+        <label for="test-to-address">送信先:</label>
+        <input type="email" id="test-to-address" value="otajigyokyo@gmail.com" placeholder="送信先メールアドレス">
+      </div>
+
+      <!-- 申請者向けメール -->
+      <div class="test-section-label">申請者向けメール</div>
+      <div class="test-cards">
+        <div class="test-card">
+          <div class="test-card-header">
+            <div class="test-card-icon tci-applicant">📩</div>
+            <div class="test-card-title">申請受付メール</div>
+          </div>
+          <div class="test-card-body">
+            <div class="test-card-subject">件名: <code>【大田市場花き部】買出人章交付申請を受け付けました</code></div>
+            <div class="test-card-target"><span class="test-badge tb-applicant">申請者宛</span></div>
+            <button class="btn-test-send" onclick="sendTestMail('applicant', this)">テスト送信</button>
+            <div class="test-card-status" id="ts-applicant"></div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header">
+            <div class="test-card-icon tci-deficiency">📷</div>
+            <div class="test-card-title">不備通知（写真）</div>
+          </div>
+          <div class="test-card-body">
+            <div class="test-card-subject">件名: <code>【大田市場花き部】買出人章申請 書類不備のお知らせ</code></div>
+            <div class="test-card-target"><span class="test-badge tb-applicant">申請者宛</span></div>
+            <button class="btn-test-send" onclick="sendTestMail('deficiency_photo', this)">テスト送信</button>
+            <div class="test-card-status" id="ts-deficiency_photo"></div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header">
+            <div class="test-card-icon tci-deficiency">📄</div>
+            <div class="test-card-title">不備通知（書類）</div>
+          </div>
+          <div class="test-card-body">
+            <div class="test-card-subject">件名: <code>【大田市場花き部】買出人章申請 書類不備のお知らせ</code></div>
+            <div class="test-card-target"><span class="test-badge tb-applicant">申請者宛</span></div>
+            <button class="btn-test-send" onclick="sendTestMail('deficiency_doc', this)">テスト送信</button>
+            <div class="test-card-status" id="ts-deficiency_doc"></div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header">
+            <div class="test-card-icon tci-deficiency">📝</div>
+            <div class="test-card-title">不備通知（両方）</div>
+          </div>
+          <div class="test-card-body">
+            <div class="test-card-subject">件名: <code>【大田市場花き部】買出人章申請 書類不備のお知らせ</code></div>
+            <div class="test-card-target"><span class="test-badge tb-applicant">申請者宛</span></div>
+            <button class="btn-test-send" onclick="sendTestMail('deficiency_both', this)">テスト送信</button>
+            <div class="test-card-status" id="ts-deficiency_both"></div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header">
+            <div class="test-card-icon tci-cancel">⚠️</div>
+            <div class="test-card-title">解約確認メール</div>
+          </div>
+          <div class="test-card-body">
+            <div class="test-card-subject">件名: <code>【大田市場花き部】解約申請の確認</code></div>
+            <div class="test-card-target"><span class="test-badge tb-applicant">申請者宛</span></div>
+            <button class="btn-test-send" onclick="sendTestMail('cancelConfirm', this)">テスト送信</button>
+            <div class="test-card-status" id="ts-cancelConfirm"></div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header">
+            <div class="test-card-icon tci-cancel">✔</div>
+            <div class="test-card-title">解約完了メール</div>
+          </div>
+          <div class="test-card-body">
+            <div class="test-card-subject">件名: <code>【大田市場花き部】解約手続きが完了しました</code></div>
+            <div class="test-card-target"><span class="test-badge tb-applicant">申請者宛</span></div>
+            <button class="btn-test-send" onclick="sendTestMail('cancelComplete', this)">テスト送信</button>
+            <div class="test-card-status" id="ts-cancelComplete"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 管理者向けメール -->
+      <div class="test-section-label">管理者向けメール</div>
+      <div class="test-cards">
+        <div class="test-card">
+          <div class="test-card-header">
+            <div class="test-card-icon tci-admin">🔔</div>
+            <div class="test-card-title">新規申請通知</div>
+          </div>
+          <div class="test-card-body">
+            <div class="test-card-subject">件名: <code>【新規申請】買出人章交付申請がありました - テスト花店</code></div>
+            <div class="test-card-target"><span class="test-badge tb-admin">管理者宛</span></div>
+            <button class="btn-test-send" onclick="sendTestMail('admin', this)">テスト送信</button>
+            <div class="test-card-status" id="ts-admin"></div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header">
+            <div class="test-card-icon tci-warning">⚠️</div>
+            <div class="test-card-title">未払い警告</div>
+          </div>
+          <div class="test-card-body">
+            <div class="test-card-subject">件名: <code>【未払い警告】テスト花店 - 月額決済が失敗しました</code></div>
+            <div class="test-card-target"><span class="test-badge tb-admin">管理者宛</span></div>
+            <button class="btn-test-send" onclick="sendTestMail('unpaid', this)">テスト送信</button>
+            <div class="test-card-status" id="ts-unpaid"></div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header">
+            <div class="test-card-icon tci-success">💳</div>
+            <div class="test-card-title">支払登録完了通知</div>
+          </div>
+          <div class="test-card-body">
+            <div class="test-card-subject">件名: <code>【支払登録完了】テスト花店 - 会員ステータスがACTIVEになりました</code></div>
+            <div class="test-card-target"><span class="test-badge tb-admin">管理者宛</span></div>
+            <button class="btn-test-send" onclick="sendTestMail('statusUpdate', this)">テスト送信</button>
+            <div class="test-card-status" id="ts-statusUpdate"></div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header">
+            <div class="test-card-icon tci-deficiency">🔄</div>
+            <div class="test-card-title">再提出通知</div>
+          </div>
+          <div class="test-card-body">
+            <div class="test-card-subject">件名: <code>【再提出】K99999 テスト花店 書類再提出がありました</code></div>
+            <div class="test-card-target"><span class="test-badge tb-admin">管理者宛</span></div>
+            <button class="btn-test-send" onclick="sendTestMail('resubmit', this)">テスト送信</button>
+            <div class="test-card-status" id="ts-resubmit"></div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header">
+            <div class="test-card-icon tci-cancel">📨</div>
+            <div class="test-card-title">解約通知（管理者）</div>
+          </div>
+          <div class="test-card-body">
+            <div class="test-card-subject">件名: <code>【解約申請】テスト花店 - 解約申請中</code></div>
+            <div class="test-card-target"><span class="test-badge tb-admin">管理者宛</span></div>
+            <button class="btn-test-send" onclick="sendTestMail('cancelAdmin', this)">テスト送信</button>
+            <div class="test-card-status" id="ts-cancelAdmin"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -1516,6 +1842,54 @@
       }, 3000);
     }
     
+    // ========== テスト送信 ========== //
+
+    async function sendTestMail(type, btnEl) {
+      const toAddress = document.getElementById('test-to-address').value.trim();
+      if (!toAddress) {
+        showNotification('送信先メールアドレスを入力してください', 'error');
+        return;
+      }
+
+      const statusEl = document.getElementById('ts-' + type);
+      btnEl.disabled = true;
+      btnEl.textContent = '送信中...';
+      btnEl.classList.add('sending');
+      statusEl.className = 'test-card-status';
+      statusEl.style.display = 'none';
+
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            action: 'sendTestEmail',
+            type: type,
+            toAddress: toAddress
+          })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          statusEl.textContent = '\u2713 送信完了 (' + toAddress + ')';
+          statusEl.className = 'test-card-status show ts-success';
+          showNotification('\u2713 テスト送信完了', 'success');
+        } else {
+          statusEl.textContent = '\u2717 エラー: ' + (result.error || '不明なエラー');
+          statusEl.className = 'test-card-status show ts-error';
+          showNotification('送信エラー: ' + (result.error || '不明なエラー'), 'error');
+        }
+      } catch (error) {
+        statusEl.textContent = '\u2717 エラー: ' + error.message;
+        statusEl.className = 'test-card-status show ts-error';
+        showNotification('送信エラー: ' + error.message, 'error');
+      } finally {
+        btnEl.disabled = false;
+        btnEl.textContent = 'テスト送信';
+        btnEl.classList.remove('sending');
+      }
+    }
+
     // HTMLエスケープ
     function escapeHtml(text) {
       if (!text) return '';
