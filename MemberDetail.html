@@ -573,6 +573,23 @@
               <span id="status-badge" class="status-badge status-active">有効</span>
             </div>
           </div>
+          <!-- 二重削除メモセクション（DUPLICATE_DELETEDのみ表示） -->
+          <div id="duplicateMemoSection" style="display:none; margin-top:10px;">
+            <label style="font-size:12px; color:#888; display:block; margin-bottom:4px;">削除理由・メモ</label>
+            <textarea id="duplicateMemoText" rows="3"
+              style="width:100%; max-width:400px; border:1px solid #ccc; border-radius:6px;
+                     padding:8px; font-size:13px; resize:vertical; box-sizing:border-box;"
+              placeholder="削除理由、重複している会員番号など..."></textarea>
+            <div style="margin-top:6px;">
+              <button onclick="saveDuplicateMemoHandler()"
+                style="padding:5px 14px; background:#6c757d; color:white;
+                       border:none; border-radius:4px; cursor:pointer; font-size:13px;">
+                メモ保存
+              </button>
+              <span id="duplicateMemoStatus"
+                style="font-size:12px; margin-left:10px; color:#666;"></span>
+            </div>
+          </div>
           <!-- 店名 -->
           <div class="header-item">
             <div class="header-label">店名</div>
@@ -828,7 +845,15 @@
         statusBadge.textContent = '保留';
         statusBadge.className = 'status-badge status-pending';
       }
-      
+
+      // DUPLICATE_DELETEDの場合、メモセクション表示＆既存メモ読み込み
+      if (member.status === 'DUPLICATE_DELETED') {
+        document.getElementById('duplicateMemoSection').style.display = 'block';
+        if (member.duplicateMemo) {
+          document.getElementById('duplicateMemoText').value = member.duplicateMemo;
+        }
+      }
+
       // 顔写真
       if (member.photoUrl) {
         const photoImg = document.getElementById('photo');
@@ -922,7 +947,38 @@
       document.getElementById('error').style.display = 'block';
       document.getElementById('error-message').textContent = message;
     }
-    
+
+    // 二重削除メモ保存
+    async function saveDuplicateMemoHandler() {
+      if (!memberData || !memberData.memberId) return;
+      var memo = document.getElementById('duplicateMemoText').value;
+      var statusEl = document.getElementById('duplicateMemoStatus');
+      statusEl.textContent = '保存中...';
+      statusEl.style.color = '#666';
+
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            action: 'saveDuplicateMemo',
+            memberId: memberData.memberId,
+            memo: memo
+          })
+        });
+        const result = await response.json();
+        if (result.success) {
+          statusEl.textContent = '✓ 保存しました';
+          statusEl.style.color = 'green';
+          setTimeout(function() { statusEl.textContent = ''; }, 3000);
+        } else {
+          statusEl.textContent = '保存失敗: ' + (result.error || '');
+          statusEl.style.color = 'red';
+        }
+      } catch (err) {
+        statusEl.textContent = 'エラー: ' + err.message;
+        statusEl.style.color = 'red';
+      }
+    }
 
     // カード生成
     async function generateCard() {
