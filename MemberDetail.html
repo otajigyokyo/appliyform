@@ -519,7 +519,11 @@
         flex-direction: column;
         gap: 8px;
       }
-      
+
+      #duplicateMemoSection {
+        margin-left: 0 !important;
+      }
+
       .member-id {
         font-size: 24px;
       }
@@ -562,7 +566,7 @@
           <div id="photo-placeholder" class="photo-placeholder">📷会員写真</div>
         </div>
         <div class="member-info">
-          <!-- 買出人番号とステータス -->
+          <!-- 買出人番号とステータスとメモ -->
           <div class="header-row">
             <div class="member-id-box">
               <div class="header-label">買出人番号</div>
@@ -572,22 +576,22 @@
               <div class="header-label">会員ステータス</div>
               <span id="status-badge" class="status-badge status-active">有効</span>
             </div>
-          </div>
-          <!-- 二重削除メモセクション（DUPLICATE_DELETEDのみ表示） -->
-          <div id="duplicateMemoSection" style="display:none; margin-top:10px;">
-            <label style="font-size:12px; color:#888; display:block; margin-bottom:4px;">削除理由・メモ</label>
-            <textarea id="duplicateMemoText" rows="3"
-              style="width:100%; max-width:400px; border:1px solid #ccc; border-radius:6px;
-                     padding:8px; font-size:13px; resize:vertical; box-sizing:border-box;"
-              placeholder="削除理由、重複している会員番号など..."></textarea>
-            <div style="margin-top:6px;">
-              <button onclick="saveDuplicateMemoHandler()"
-                style="padding:5px 14px; background:#6c757d; color:white;
-                       border:none; border-radius:4px; cursor:pointer; font-size:13px;">
-                メモ保存
-              </button>
-              <span id="duplicateMemoStatus"
-                style="font-size:12px; margin-left:10px; color:#666;"></span>
+            <!-- 二重削除メモ（DUPLICATE_DELETEDのみ表示、バッジ右横） -->
+            <div id="duplicateMemoSection" style="display:none; margin-left:16px; flex:1; min-width:0;">
+              <div class="header-label">削除理由・メモ</div>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <textarea id="duplicateMemoText" rows="1"
+                  style="width:250px; border:1px solid #ccc; border-radius:6px;
+                         padding:6px 8px; font-size:13px; resize:none; box-sizing:border-box;"
+                  placeholder="削除理由、重複している会員番号など..."></textarea>
+                <button onclick="saveDuplicateMemoHandler()"
+                  style="padding:5px 10px; background:#6c757d; color:white;
+                         border:none; border-radius:4px; cursor:pointer; font-size:12px; white-space:nowrap;">
+                  保存
+                </button>
+                <span id="duplicateMemoStatus"
+                  style="font-size:12px; color:#666; white-space:nowrap;"></span>
+              </div>
             </div>
           </div>
           <!-- 店名 -->
