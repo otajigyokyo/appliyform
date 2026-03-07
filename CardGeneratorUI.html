@@ -180,6 +180,23 @@
       transform: translateY(-1px);
       box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);
     }
+
+    .btn-inactive-filter {
+      background: linear-gradient(135deg, #78909c, #546e7a);
+      color: #fff;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-inactive-filter:hover {
+      background: linear-gradient(135deg, #546e7a, #37474f);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(120, 144, 156, 0.3);
+    }
     
     /* ========== 検索結果 ========== */
     .search-results {
@@ -1207,6 +1224,7 @@
         <button class="btn-search" onclick="searchMembers()">🔍 検索</button>
         <button class="btn-recent" onclick="loadPagedMembers(1)">📋 全件表示</button>
         <button class="btn-deficiency-filter" onclick="loadDeficiencyMembers(1)">⚠️ 不備のみ</button>
+        <button class="btn-inactive-filter" onclick="loadInactiveMembers(1)">🚫 無効会員</button>
       </div>
       
       <!-- 検索結果 -->
@@ -1668,6 +1686,42 @@ async function loadDeficiencyMembers(page) {
       }
     }
     
+    // ========== 無効会員絞り込み（ページング対応） ========== //
+
+    async function loadInactiveMembers(page) {
+      var btn = document.querySelector('.btn-inactive-filter');
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = '⏳ 読込中...';
+      }
+
+      showLoading(true);
+      hideMessage();
+      currentMode = 'inactive';
+
+      try {
+        var result = await callApi('getInactiveMembers', { page: page, perPage: perPage });
+        showLoading(false);
+
+        if (result.success) {
+          currentPage = result.currentPage;
+          totalPages = result.totalPages;
+          displaySearchResults(result.results, result.message);
+          updatePagination();
+        } else {
+          showMessage('❌ エラー: ' + result.error, 'error');
+        }
+      } catch (error) {
+        showLoading(false);
+        showMessage('❌ エラー: ' + error.message, 'error');
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = '🚫 無効会員';
+        }
+      }
+    }
+
     // ========== ページング操作 ========== //
 
     function updatePagination() {
@@ -1701,6 +1755,8 @@ async function loadDeficiencyMembers(page) {
         searchMembersPage(targetPage);
       } else if (currentMode === 'deficiency') {
         loadDeficiencyMembers(targetPage);
+      } else if (currentMode === 'inactive') {
+        loadInactiveMembers(targetPage);
       } else {
         loadPagedMembers(targetPage);
       }
@@ -1717,7 +1773,7 @@ async function loadDeficiencyMembers(page) {
     var currentPage = 1;
     var totalPages = 1;
     var perPage = 50;
-    var currentMode = 'list';  // 'list' or 'search' or 'deficiency'
+    var currentMode = 'list';  // 'list' or 'search' or 'deficiency' or 'inactive'
     var currentKeyword = '';        // 検索モード時のキーワード保持
 
     // ========== 全件表示（ページング） ========== //
