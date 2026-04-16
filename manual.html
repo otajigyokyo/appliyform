@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>買出人章交付申請 — 申込からお支払いまでの流れ</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap');
+
+:root {
+  --primary: #1a5276;
+  --primary-light: #2980b9;
+  --primary-bg: #eaf2f8;
+  --accent: #e67e22;
+  --accent-bg: #fef5e7;
+  --success: #27ae60;
+  --success-bg: #e8f8f0;
+  --danger: #c0392b;
+  --danger-bg: #fdecea;
+  --gray-50: #f8f9fa;
+  --gray-100: #f1f3f5;
+  --gray-200: #e9ecef;
+  --gray-300: #dee2e6;
+  --gray-500: #868e96;
+  --gray-700: #495057;
+  --gray-900: #212529;
+  --radius: 8px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-lg: 0 4px 12px rgba(0,0,0,0.1);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:'Noto Sans JP',sans-serif;
+  background:var(--gray-100);
+  color:var(--gray-900);
+  line-height:1.8;
+  min-height:100vh;
+}
+
+/* Header */
+.site-header{
+  background:var(--primary);
+  color:#fff;
+  padding:12px 20px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  position:sticky;top:0;z-index:100;
+  box-shadow:var(--shadow-lg);
+}
+.site-header h1{font-size:15px;font-weight:500;letter-spacing:0.02em}
+.back-link{
+  color:rgba(255,255,255,0.85);
+  text-decoration:none;font-size:13px;
+  display:flex;align-items:center;gap:4px;
+  transition:color 0.2s;
+}
+.back-link:hover{color:#fff}
+
+/* Main container */
+.container{
+  max-width:780px;
+  margin:0 auto;
+  padding:20px 16px 100px;
+}
+
+/* Page content */
+.page{display:none}
+.page.active{display:block;animation:fadeIn 0.25s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* TOC */
+.toc{
+  background:#fff;
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  overflow:hidden;
+  margin-bottom:20px;
+}
+.toc-title{
+  background:var(--primary);color:#fff;
+  padding:14px 20px;font-size:15px;font-weight:500;
+}
+.toc-list{list-style:none;padding:0}
+.toc-item{
+  display:flex;align-items:center;
+  padding:12px 20px;
+  border-bottom:1px solid var(--gray-200);
+  cursor:pointer;
+  transition:background 0.15s;
+  gap:12px;
+}
+.toc-item:last-child{border-bottom:none}
+.toc-item:hover{background:var(--primary-bg)}
+.toc-num{
+  flex-shrink:0;
+  width:28px;height:28px;
+  background:var(--primary-bg);color:var(--primary);
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;
+}
+.toc-label{font-size:14px;color:var(--gray-700)}
+.toc-label strong{color:var(--gray-900);font-weight:500}
+
+/* Card */
+.card{
+  background:#fff;
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  margin-bottom:16px;
+  overflow:hidden;
+}
+.card-header{
+  padding:16px 20px;
+  font-size:16px;font-weight:700;
+  color:var(--primary);
+  border-bottom:2px solid var(--primary-bg);
+  display:flex;align-items:center;gap:10px;
+}
+.card-header .badge{
+  font-size:11px;font-weight:500;
+  padding:2px 10px;border-radius:20px;
+  background:var(--primary);color:#fff;
+}
+.card-body{padding:16px 20px}
+.card-body p{margin-bottom:12px;font-size:14px;color:var(--gray-700)}
+.card-body p:last-child{margin-bottom:0}
+
+/* Phase header */
+.phase-banner{
+  padding:14px 20px;
+  border-radius:var(--radius);
+  margin-bottom:16px;
+  display:flex;align-items:center;gap:10px;
+}
+.phase-banner.blue{background:var(--primary-bg);color:var(--primary)}
+.phase-banner.amber{background:var(--accent-bg);color:#b7600a}
+.phase-banner.green{background:var(--success-bg);color:#1a7a42}
+.phase-banner.gray{background:var(--gray-200);color:var(--gray-700)}
+.phase-banner h2{font-size:16px;font-weight:700}
+.phase-banner .phase-num{
+  font-size:11px;font-weight:700;
+  padding:2px 10px;border-radius:20px;
+  background:currentColor;color:#fff;
+}
+.phase-banner.blue .phase-num{background:var(--primary)}
+.phase-banner.amber .phase-num{background:var(--accent)}
+.phase-banner.green .phase-num{background:var(--success)}
+.phase-banner.gray .phase-num{background:var(--gray-500)}
+
+/* Step heading */
+.step-heading{
+  font-size:15px;font-weight:700;
+  color:var(--primary);
+  margin:20px 0 10px;
+  padding-left:12px;
+  border-left:3px solid var(--primary-light);
+}
+
+/* Tables */
+.tbl{width:100%;border-collapse:collapse;font-size:13px;margin:12px 0}
+.tbl th{
+  background:var(--primary);color:#fff;
+  padding:8px 12px;text-align:left;font-weight:500;
+  font-size:12px;
+}
+.tbl td{
+  padding:8px 12px;
+  border-bottom:1px solid var(--gray-200);
+  color:var(--gray-700);
+  vertical-align:top;
+}
+.tbl tr:nth-child(even) td{background:var(--gray-50)}
+.tbl tr:hover td{background:var(--primary-bg)}
+
+/* Alert / Note */
+.note{
+  padding:10px 14px;
+  border-radius:6px;
+  font-size:13px;
+  margin:12px 0;
+  display:flex;gap:8px;
+  align-items:flex-start;
+}
+.note.warn{background:var(--accent-bg);color:#8a4b08;border-left:3px solid var(--accent)}
+.note.info{background:var(--primary-bg);color:var(--primary);border-left:3px solid var(--primary-light)}
+.note.danger{background:var(--danger-bg);color:#922b21;border-left:3px solid var(--danger)}
+.note-icon{flex-shrink:0;font-size:15px;margin-top:1px}
+
+/* Bullet list */
+.blist{padding-left:20px;margin:8px 0;font-size:14px;color:var(--gray-700)}
+.blist li{margin-bottom:6px}
+.blist li strong{color:var(--gray-900);font-weight:500}
+
+/* FAQ table */
+.faq-item{
+  background:#fff;
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  margin-bottom:10px;
+  overflow:hidden;
+}
+.faq-q{
+  padding:12px 16px;
+  font-size:14px;font-weight:500;
+  background:var(--accent-bg);
+  color:#8a4b08;
+  cursor:pointer;
+  display:flex;align-items:center;gap:8px;
+}
+.faq-q::before{content:'Q';font-size:11px;font-weight:700;background:var(--accent);color:#fff;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.faq-a{
+  padding:12px 16px 12px 46px;
+  font-size:13px;color:var(--gray-700);
+  border-top:1px solid var(--gray-200);
+}
+
+/* Pagination */
+.pagination{
+  position:fixed;bottom:0;left:0;right:0;
+  background:#fff;
+  border-top:1px solid var(--gray-200);
+  box-shadow:0 -2px 8px rgba(0,0,0,0.06);
+  padding:10px 16px;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  z-index:100;
+}
+.pag-btn{
+  padding:7px 16px;
+  border:1px solid var(--gray-300);
+  border-radius:6px;
+  background:#fff;color:var(--gray-700);
+  font-size:13px;font-family:inherit;
+  cursor:pointer;
+  transition:all 0.15s;
+  min-width:70px;
+  text-align:center;
+}
+.pag-btn:hover:not(:disabled){background:var(--primary-bg);border-color:var(--primary-light);color:var(--primary)}
+.pag-btn:disabled{opacity:0.35;cursor:not-allowed}
+.pag-dots{display:flex;gap:5px;align-items:center}
+.pag-dot{
+  width:8px;height:8px;
+  border-radius:50%;
+  background:var(--gray-300);
+  cursor:pointer;
+  transition:all 0.2s;
+}
+.pag-dot.active{background:var(--primary);width:20px;border-radius:10px}
+.pag-dot:hover:not(.active){background:var(--gray-500)}
+.pag-info{
+  font-size:12px;color:var(--gray-500);
+  position:absolute;right:16px;
+}
+
+/* Print */
+@media print{
+  .site-header,.pagination{display:none}
+  .page{display:block!important}
+  .container{max-width:100%;padding:0}
+}
+
+/* Mobile */
+@media(max-width:600px){
+  .site-header h1{font-size:13px}
+  .card-header{font-size:14px;padding:12px 16px}
+  .card-body{padding:12px 16px}
+  .pag-info{display:none}
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <h1>買出人章交付申請 — 申込からお支払いまでの流れ</h1>
+  <a href="CardGeneratorUI.html" class="back-link">← 管理画面に戻る</a>
+</header>
+
+<div class="container">
+
+<!-- ========== PAGE 1: TOC ========== -->
+<div class="page" id="p1">
+  <div style="text-align:center;padding:20px 0 10px">
+    <div style="font-size:11px;color:var(--gray-500);margin-bottom:4px">大田市場花き事業協同組合</div>
+    <div style="font-size:20px;font-weight:700;color:var(--primary)">申込からお支払いまでの流れ</div>
+    <div style="font-size:13px;color:var(--gray-500);margin-top:4px">事務局向け共有マニュアル — 登録者からの質問に対応するための参考資料</div>
+  </div>
+
+  <div class="toc">
+    <div class="toc-title">目次</div>
+    <ul class="toc-list">
+      <li class="toc-item" onclick="goTo(2)"><span class="toc-num">1</span><span class="toc-label"><strong>全体の流れ（概要）</strong> — 4つのフェーズ一覧</span></li>
+      <li class="toc-item" onclick="goTo(3)"><span class="toc-num">2</span><span class="toc-label"><strong>Phase 1：申請フォーム入力</strong> — STEP 1〜4</span></li>
+      <li class="toc-item" onclick="goTo(4)"><span class="toc-num">3</span><span class="toc-label"><strong>Phase 1：申請フォーム入力</strong> — STEP 5〜7</span></li>
+      <li class="toc-item" onclick="goTo(5)"><span class="toc-num">4</span><span class="toc-label"><strong>Phase 2：自動処理</strong> — システム側の処理</span></li>
+      <li class="toc-item" onclick="goTo(6)"><span class="toc-num">5</span><span class="toc-label"><strong>Phase 3：お支払い登録</strong> — 申請者が操作</span></li>
+      <li class="toc-item" onclick="goTo(7)"><span class="toc-num">6</span><span class="toc-label"><strong>Phase 4：審査・発行</strong> — 事務局が対応</span></li>
+      <li class="toc-item" onclick="goTo(8)"><span class="toc-num">7</span><span class="toc-label"><strong>よくある問い合わせと対応</strong> — FAQ</span></li>
+      <li class="toc-item" onclick="goTo(9)"><span class="toc-num">8</span><span class="toc-label"><strong>事務局側の確認ポイント</strong> — 管理画面の機能</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ========== PAGE 2: 全体概要 ========== -->
+<div class="page" id="p2">
+  <div class="card">
+    <div class="card-header">全体の流れ（概要）</div>
+    <div class="card-body">
+      <p>申請者が買出人章を申請し、お支払い登録を完了するまでのフローは以下の4つのフェーズで構成されています。</p>
+      <table class="tbl">
+        <thead><tr><th>フェーズ</th><th>内容</th><th>説明</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Phase 1</strong></td><td>申請フォーム入力</td><td>申請者がWebフォームで情報入力（STEP 1〜7）</td></tr>
+          <tr><td><strong>Phase 2</strong></td><td>自動処理</td><td>システムがシート登録・会費ペイ連携・メール送信を実行</td></tr>
+          <tr><td><strong>Phase 3</strong></td><td>お支払い登録</td><td>申請者が会費ペイで支払方法を登録</td></tr>
+          <tr><td><strong>Phase 4</strong></td><td>審査・発行</td><td>事務局が書類審査→買出人章を発行</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="note info">
+    <span class="note-icon">💡</span>
+    <span>申請フォームURL：<strong>https://kaidashi.jigyokyo.com/</strong></span>
+  </div>
+</div>
+
+<!-- ========== PAGE 3: Phase 1 (STEP 1-4) ========== -->
+<div class="page" id="p3">
+  <div class="phase-banner blue">
+    <span class="phase-num">Phase 1</span>
+    <h2>申請フォーム入力（STEP 1〜4）</h2>
+  </div>
+
+  <div class="card">
+    <div class="card-header">STEP 1 <span class="badge">基本情報の入力</span></div>
+    <div class="card-body">
+      <p>申請日、店舗名、代表者名などの基本情報を入力します。</p>
+      <table class="tbl">
+        <thead><tr><th>入力項目</th><th>内容・注意点</th></tr></thead>
+        <tbody>
+          <tr><td>申請日</td><td>自動で今日の日付が入ります</td></tr>
+          <tr><td>店舗名（屋号）</td><td>正式な店舗名を入力</td></tr>
+          <tr><td>代表者名</td><td>漢字とフリガナの両方を入力</td></tr>
+          <tr><td>使用者名</td><td>買出人章を実際に使用する人の名前（代表者と異なる場合）</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">STEP 2 <span class="badge">連絡先・業態の入力</span></div>
+    <div class="card-body">
+      <p>住所、電話番号、メールアドレス、業態などを入力します。</p>
+      <table class="tbl">
+        <thead><tr><th>入力項目</th><th>内容・注意点</th></tr></thead>
+        <tbody>
+          <tr><td>郵便番号・住所</td><td>郵便番号入力で住所が自動補完されます</td></tr>
+          <tr><td>電話番号</td><td>店舗の連絡先電話番号</td></tr>
+          <tr><td>メールアドレス</td><td>会費ペイの支払い案内もこのアドレスに届きます</td></tr>
+          <tr><td>業態</td><td>生花店・花教室・ブライダル・造園 等から選択</td></tr>
+        </tbody>
+      </table>
+      <div class="note warn">
+        <span class="note-icon">⚠</span>
+        <span>メールアドレスは会費ペイの支払い登録案内にも使用されるため、正確なアドレスが重要です。メールが届かない場合、お支払い登録ができません。</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">STEP 3 <span class="badge">顔写真のアップロード</span></div>
+    <div class="card-body">
+      <p>買出人章カードに使用する証明写真風の顔写真をアップロードします。スマートフォンのカメラでその場で撮影することも可能です。</p>
+      <ul class="blist">
+        <li>正面向き、無背景の写真</li>
+        <li>ファイル形式：JPEGまたはPNG</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">STEP 4 <span class="badge">顔写真のトリミング</span></div>
+    <div class="card-body">
+      <p>アップロードした写真を、縦35mm×横25mm（5:7）の比率でトリミングします。画面上でドラッグして範囲を調整できます。</p>
+      <div class="note warn">
+        <span class="note-icon">⚠</span>
+        <span>トリミングが不適切だとカードの写真が切れてしまうため、顔が中央に収まるように調整してもらってください。</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== PAGE 4: Phase 1 (STEP 5-7) ========== -->
+<div class="page" id="p4">
+  <div class="phase-banner blue">
+    <span class="phase-num">Phase 1</span>
+    <h2>申請フォーム入力（STEP 5〜7）</h2>
+  </div>
+
+  <div class="card">
+    <div class="card-header">STEP 5 <span class="badge">公的書類のアップロード</span></div>
+    <div class="card-body">
+      <p>花き関連事業を行っていることを証明する公的書類をアップロードします。最大3点まで可能です。</p>
+      <p><strong>【必要書類の例】</strong></p>
+      <ul class="blist">
+        <li>開業届出書の写し</li>
+        <li>店舗契約書</li>
+        <li>履歴事項全部証明書（会社謄本）</li>
+        <li>税務署受付済の所得申告書</li>
+      </ul>
+      <div class="note warn">
+        <span class="note-icon">⚠</span>
+        <span>「花や植物を取り扱う職業・事業内容」が確認できる文言の記載が必要です。公的書類がない場合は、HP・Instagram・名刺など2点以上で代替可能です。</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">STEP 6 <span class="badge">規約同意・手数料確認</span></div>
+    <div class="card-body">
+      <p>買出人章規約（全条）が表示されます。申請者は規約を最後までスクロールし、「同意する」にチェックを入れます。</p>
+      <p><strong>【規約の主な内容】</strong></p>
+      <ul class="blist">
+        <li>第3条：花き部内で常時首から下げて着用する義務</li>
+        <li>第5条：個人使用・譲渡禁止</li>
+        <li><strong>第7条：資格維持手数料 月額800円（税込）</strong></li>
+        <li>第10条：解約は毎月5日までに連絡</li>
+      </ul>
+      <div class="note info">
+        <span class="note-icon">💡</span>
+        <span>規約を最後までスクロールしないと同意チェックが有効にならないよう制御されています。</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">STEP 7 <span class="badge">送信完了画面</span></div>
+    <div class="card-body">
+      <p>「申請を送信」ボタンを押すと、モーダルで完了画面が表示されます。この画面には以下が表示されます。</p>
+      <ul class="blist">
+        <li>支払い管理システム（会費ペイ）から届くメールの件名案内</li>
+        <li>資格維持手数料：月額800円（税込）の自動決済について</li>
+        <li><strong>支払い登録が完了するまで買出人章が発行できない旨の注意</strong></li>
+        <li>今後の流れ（4ステップ）</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ========== PAGE 5: Phase 2 ========== -->
+<div class="page" id="p5">
+  <div class="phase-banner amber">
+    <span class="phase-num">Phase 2</span>
+    <h2>自動処理（システム側）</h2>
+  </div>
+
+  <div class="card">
+    <div class="card-header">送信後に実行される3つの自動処理</div>
+    <div class="card-body">
+      <p>申請者がSTEP 7で送信を完了すると、システムが自動的に以下の3つの処理を実行します。</p>
+      <table class="tbl">
+        <thead><tr><th>No.</th><th>処理</th><th>説明</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td><strong>シート登録</strong></td><td>申請情報がGoogleスプレッドシートに保存されます。会員番号（K+5桁の連番）が自動で付与されます。</td></tr>
+          <tr><td>2</td><td><strong>会費ペイ連携</strong></td><td>会費ペイAPIを通じて会員登録が行われ、支払い方法登録用のURLが発行されます。</td></tr>
+          <tr><td>3</td><td><strong>メール送信</strong></td><td>申請者に申請受付の確認メールが送信されます。また、会費ペイからも支払い登録案内メールが届きます。</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="note danger">
+    <span class="note-icon">⚠</span>
+    <span><strong>まれに会費ペイへの登録が失敗することがあります。</strong>その場合、管理画面の「会費ペイ再登録」ボタンで手動リトライが可能です。「🔍 会費ペイ状態確認」ボタンで登録状態を確認できます。</span>
+  </div>
+
+  <div class="card">
+    <div class="card-header">会費ペイ登録が失敗した場合の対処</div>
+    <div class="card-body">
+      <ol class="blist">
+        <li>管理画面で該当会員を検索</li>
+        <li>「🔍 会費ペイ状態確認」ボタンで現在のステータスを確認</li>
+        <li>未登録の場合 →「💳 会費ペイ再登録」ボタンを押してリトライ</li>
+        <li>再登録が成功すると、会費ペイから支払い案内メールが申請者に届きます</li>
+      </ol>
+    </div>
+  </div>
+</div>
+
+<!-- ========== PAGE 6: Phase 3 ========== -->
+<div class="page" id="p6">
+  <div class="phase-banner green">
+    <span class="phase-num">Phase 3</span>
+    <h2>お支払い登録（申請者が操作）</h2>
+  </div>
+
+  <div class="note info">
+    <span class="note-icon">💡</span>
+    <span>このフェーズは申請者が自分で操作する部分です。<strong>事務局への問い合わせが最も多いフェーズ</strong>でもあります。</span>
+  </div>
+
+  <div class="card">
+    <div class="card-header">ステップ 1 <span class="badge">メールを受信</span></div>
+    <div class="card-body">
+      <p>申請完了後、会費ペイから<strong>「お支払い方法の登録のお願い」</strong>という件名のメールが申請者に届きます。</p>
+      <div class="note warn">
+        <span class="note-icon">⚠</span>
+        <span><strong>このメールが届かないという問い合わせが非常に多いです。</strong><br>主な原因：①迷惑メールフォルダに振り分けられている ②メールアドレスの入力間違い ③会費ペイ登録が失敗している</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">ステップ 2 <span class="badge">支払い方法の選択・登録</span></div>
+    <div class="card-body">
+      <p>メール内のリンクをクリックすると、会費ペイの支払い登録画面が開きます。以下のいずれかを選択できます。</p>
+      <table class="tbl">
+        <thead><tr><th>支払方法</th><th>説明</th></tr></thead>
+        <tbody>
+          <tr><td><strong>クレジットカード</strong></td><td>VISA・JCB・Mastercard等のカード情報を入力。登録後、毎月自動決済されます。</td></tr>
+          <tr><td><strong>口座振替</strong></td><td>銀行口座情報を入力。登録後、毎月自動引き落としされます。</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">ステップ 3 <span class="badge">支払い登録完了</span></div>
+    <div class="card-body">
+      <p>支払い方法の登録が完了すると、会費ペイから登録完了のメールが届きます。<strong>これで申請者側の操作はすべて完了です。</strong></p>
+    </div>
+  </div>
+</div>
+
+<!-- ========== PAGE 7: Phase 4 ========== -->
+<div class="page" id="p7">
+  <div class="phase-banner gray">
+    <span class="phase-num">Phase 4</span>
+    <h2>審査・発行（事務局が対応）</h2>
+  </div>
+
+  <div class="card">
+    <div class="card-header">事務局の対応手順</div>
+    <div class="card-body">
+      <p>支払い登録が完了した申請者について、事務局が以下の対応を行います。</p>
+      <table class="tbl">
+        <thead><tr><th>順序</th><th>内容</th><th>目安</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td><strong>書類審査</strong> — アップロードされた公的書類、顔写真、入力内容を確認</td><td>約5営業日</td></tr>
+          <tr><td>2</td><td><strong>不備がある場合</strong> — 申請者にメールで連絡し、再提出を依頼</td><td>—</td></tr>
+          <tr><td>3</td><td><strong>審査通過</strong> — 買出人章カードの印刷・発行準備に進む</td><td>—</td></tr>
+          <tr><td>4</td><td><strong>買出人章発行</strong> — カードが出来上がり次第、申請者に連絡</td><td>通常10日後</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="note info">
+    <span class="note-icon">💡</span>
+    <span>審査・発行はお支払い登録の完了が前提です。支払い登録が未完了の申請者は、管理画面の「会費ペイ状態確認」で状況を確認してください。</span>
+  </div>
+</div>
+
+<!-- ========== PAGE 8: FAQ ========== -->
+<div class="page" id="p8">
+  <div class="card">
+    <div class="card-header">よくある問い合わせと対応</div>
+    <div class="card-body">
+      <p>申請者から多い問い合わせと、事務局での対応方法をまとめます。</p>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q">「支払い登録のメールが届かない」</div>
+    <div class="faq-a">①迷惑メールフォルダを確認してもらう。②管理画面で「🔍 会費ペイ状態確認」を実行。③未登録の場合は「💳 会費ペイ再登録」ボタンでリトライ。</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q">「メールアドレスを間違えた」</div>
+    <div class="faq-a">管理画面の会員詳細でメールアドレスを修正後、会費ペイ再登録を実行してください。</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q">「支払い方法を変更したい」</div>
+    <div class="faq-a">会費ペイのマイページから申請者自身で変更可能です。マイページURLは会費ペイからのメールに記載されています。</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q">「写真のアップロードができない」</div>
+    <div class="faq-a">ファイルサイズが大きすぎる可能性があります。JPEG/PNG形式で、サイズを小さくして再アップロードを依頼してください。</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q">「申請後、いつ買出人章がもらえるか」</div>
+    <div class="faq-a">支払い登録完了後 → 書類審査（5営業日程度）→ カード印刷（約10日）。支払い登録が先に完了していることが前提です。</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q">「解約したい」</div>
+    <div class="faq-a">毎月5日までに事務局に連絡。または解約ページ（cancel.html）から申請可能です。</div>
+  </div>
+</div>
+
+<!-- ========== PAGE 9: Admin Tips ========== -->
+<div class="page" id="p9">
+  <div class="card">
+    <div class="card-header">事務局側の確認ポイント</div>
+    <div class="card-body">
+      <p>管理画面で利用できる主な機能と、トラブル発生時の対処方法です。</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">管理画面で確認できること</div>
+    <div class="card-body">
+      <ul class="blist">
+        <li><strong>🔍 会費ペイ状態確認ボタン</strong> — 支払方法（クレジットカード/口座振替）、コース登録状態を確認可能</li>
+        <li><strong>💳 会費ペイ再登録ボタン</strong> — API連携が失敗した会員の再登録を実行</li>
+        <li><strong>会員詳細ページ</strong> — 登録情報の編集、書類の確認、メモ記入が可能</li>
+        <li><strong>不備ステータスフィルター</strong> — 書類不備のある会員を一覧表示</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">トラブルシューティング</div>
+    <div class="card-body">
+      <table class="tbl">
+        <thead><tr><th>症状</th><th>対処方法</th></tr></thead>
+        <tbody>
+          <tr><td>申請データがシートにない</td><td>フォーム送信時のエラー可能性。申請者に再送信を依頼。</td></tr>
+          <tr><td>会費ペイに未登録</td><td>管理画面の「💳 会費ペイ再登録」で手動リトライ。</td></tr>
+          <tr><td>重複登録が発生</td><td>古いデータを「DUPLICATE_DELETED」ステータスに変更。</td></tr>
+          <tr><td>画面表示がおかしい</td><td>ブラウザで Ctrl+Shift+R（ハードリフレッシュ）を実行。</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div style="text-align:center;padding:24px 0;color:var(--gray-500);font-size:12px">
+    大田市場花き事業協同組合 — 買出人章管理システム
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<!-- Pagination -->
+<nav class="pagination">
+  <button class="pag-btn" id="prevBtn" onclick="prev()">← 前へ</button>
+  <div class="pag-dots" id="dots"></div>
+  <button class="pag-btn" id="nextBtn" onclick="next()">次へ →</button>
+  <span class="pag-info" id="pagInfo"></span>
+</nav>
+
+<script>
+const total = 9;
+let current = 1;
+
+function init() {
+  const dots = document.getElementById('dots');
+  for (let i = 1; i <= total; i++) {
+    const d = document.createElement('span');
+    d.className = 'pag-dot';
+    d.onclick = () => goTo(i);
+    dots.appendChild(d);
+  }
+  // Check hash
+  const h = parseInt(location.hash.replace('#p',''));
+  if (h >= 1 && h <= total) current = h;
+  render();
+}
+
+function render() {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const el = document.getElementById('p' + current);
+  if (el) el.classList.add('active');
+
+  document.querySelectorAll('.pag-dot').forEach((d, i) => {
+    d.classList.toggle('active', i + 1 === current);
+  });
+  document.getElementById('prevBtn').disabled = current === 1;
+  document.getElementById('nextBtn').disabled = current === total;
+  document.getElementById('pagInfo').textContent = current + ' / ' + total;
+  location.hash = 'p' + current;
+  window.scrollTo({top: 0, behavior: 'instant'});
+}
+
+function goTo(n) { current = n; render(); }
+function prev() { if (current > 1) { current--; render(); } }
+function next() { if (current < total) { current++; render(); } }
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowLeft') prev();
+  if (e.key === 'ArrowRight') next();
+});
+
+// Swipe support
+let sx = 0;
+document.addEventListener('touchstart', e => { sx = e.touches[0].clientX; });
+document.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - sx;
+  if (Math.abs(dx) > 60) { dx > 0 ? prev() : next(); }
+});
+
+init();
+</script>
+</body>
+</html>
