@@ -670,9 +670,13 @@
             <div class="info-label">メールアドレス</div>
             <div id="email" class="info-value">-</div>
           </div>
+          <div class="info-item full-width">
+            <div class="info-label">備考</div>
+            <div id="remarks" class="info-value" style="white-space: pre-wrap; word-wrap: break-word;"><span style="color: #999;">（記載なし）</span></div>
+          </div>
         </div>
       </div>
-      
+
       <!-- 資格情報 -->
       <div class="section">
         <div class="section-title">🎫 資格情報</div>
@@ -927,7 +931,15 @@
       document.getElementById('phone').textContent = member.phone || '-';
       document.getElementById('fax').textContent = member.fax || '-';
       document.getElementById('email').textContent = member.email || '-';
-      
+
+      // 備考（読み取り専用）
+      const remarksEl = document.getElementById('remarks');
+      if (member.remarks && member.remarks.trim()) {
+        remarksEl.textContent = member.remarks;
+      } else {
+        remarksEl.innerHTML = '<span style="color: #999;">（記載なし）</span>';
+      }
+
       // 資格情報
       document.getElementById('created-at').textContent = member.createdAt || '-';
       document.getElementById('expires-at').textContent = member.expiresAt || '-';
