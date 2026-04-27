@@ -1,3 +1,6 @@
 gas/.clasp.json
 gas/.clasprc.json
 gas/
+.claude/settings.local.json
+.claude/
+*.local.json
